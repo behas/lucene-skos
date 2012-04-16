@@ -71,7 +71,7 @@ public abstract class AbstractFilterTest {
     }
     
     if (searcher != null) {
-      searcher.close();
+      searcher.getIndexReader().close();
     }
     
   }

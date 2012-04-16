@@ -10,14 +10,14 @@ import org.apache.lucene.util.AttributeImpl;
  */
 public class SKOSAttributeImpl extends AttributeImpl implements SKOSAttribute {
   
-  private static final long serialVersionUID = -6358866223731185045L;
-  
   private SKOSType st;
   
+  @Override
   public void setSKOSType(SKOSType st) {
     this.st = st;
   }
   
+  @Override
   public SKOSType getSKOSType() {
     return this.st;
   }

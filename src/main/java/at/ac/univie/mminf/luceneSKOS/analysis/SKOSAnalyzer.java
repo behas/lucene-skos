@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordTokenizer;
-import org.apache.lucene.analysis.LowerCaseFilter;
-import org.apache.lucene.analysis.StopAnalyzer;
-import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenFilter;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.core.KeywordTokenizer;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.core.StopAnalyzer;
+import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.util.Version;
@@ -81,9 +80,10 @@ public class SKOSAnalyzer extends Analyzer {
   /**
    * {@inheritDoc}
    */
-  public TokenStream tokenStream(String fieldName, Reader reader) {
-    
-    TokenStream result = null;
+  @Override
+  protected TokenStreamComponents createComponents(String fileName,
+      Reader reader) {
+    TokenStreamComponents result = null;
     
     if (expansionType.equals(ExpansionType.URI)) {
       
@@ -91,30 +91,30 @@ public class SKOSAnalyzer extends Analyzer {
       
       TokenFilter skosURIFilter = new SKOSURIFilter(kwTokenizer, skosEngine);
       
-      result = new LowerCaseFilter(skosURIFilter);
+      TokenFilter lwFilter = new LowerCaseFilter(Version.LUCENE_40,
+          skosURIFilter);
       
+      result = new TokenStreamComponents(kwTokenizer, lwFilter);
     } else {
       
-      Tokenizer stdTokenizer = new StandardTokenizer(Version.LUCENE_30, reader);
+      Tokenizer stdTokenizer = new StandardTokenizer(Version.LUCENE_40, reader);
       
-      TokenFilter stdFilter = new StandardFilter(stdTokenizer);
+      TokenFilter stdFilter = new StandardFilter(Version.LUCENE_40,
+          stdTokenizer);
       
       // TODO: improve usage of stop filter
-      TokenFilter stopFilter = new StopFilter(true, stdFilter,
+      TokenFilter stopFilter = new StopFilter(Version.LUCENE_40, stdFilter,
           StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       
-      TokenFilter skosLabelFilter;
+      TokenFilter skosLabelFilter = new SKOSLabelFilter(stopFilter, skosEngine);
       
-      skosLabelFilter = new SKOSLabelFilter(stopFilter, skosEngine);
+      TokenFilter lwFilter = new LowerCaseFilter(Version.LUCENE_40,
+          skosLabelFilter);
       
-      result = new LowerCaseFilter(skosLabelFilter);
-      
+      result = new TokenStreamComponents(stdTokenizer, lwFilter);
     }
     
     return result;
-    
   }
-  
-  // TODO: implement reusableTokenStream(...) for performance improvement
   
 }

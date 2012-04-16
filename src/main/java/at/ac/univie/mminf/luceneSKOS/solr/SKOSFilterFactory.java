@@ -30,6 +30,8 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
   
   private SKOSEngine skosEngine;
   
+
+  @Override
   public void inform(ResourceLoader loader) {
     
     skosFile = args.get("skosFile");

@@ -5,9 +5,9 @@ import java.util.Stack;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.AttributeSource;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute;
@@ -33,7 +33,7 @@ public abstract class SKOSFilter extends TokenFilter {
   protected AttributeSource.State current;
   
   /* the term text (propagated to the index) */
-  protected final TermAttribute termAtt;
+  protected final CharTermAttribute termAtt;
   
   /* the token position relative to the previous token (propagated) */
   protected final PositionIncrementAttribute posIncrAtt;
@@ -58,10 +58,10 @@ public abstract class SKOSFilter extends TokenFilter {
     super(in);
     termStack = new Stack<ExpandedTerm>();
     this.engine = engine;
-    this.termAtt = (TermAttribute) addAttribute(TermAttribute.class);
-    this.posIncrAtt = (PositionIncrementAttribute) addAttribute(PositionIncrementAttribute.class);
-    this.payloadAtt = (PayloadAttribute) addAttribute(PayloadAttribute.class);
-    this.skosAtt = (SKOSAttribute) addAttribute(SKOSAttribute.class);
+    this.termAtt = addAttribute(CharTermAttribute.class);
+    this.posIncrAtt = addAttribute(PositionIncrementAttribute.class);
+    this.payloadAtt = addAttribute(PayloadAttribute.class);
+    this.skosAtt = addAttribute(SKOSAttribute.class);
     
   }
   
@@ -70,6 +70,7 @@ public abstract class SKOSFilter extends TokenFilter {
    * 
    * To be implemented by the concrete sub-classes
    */
+  @Override
   public abstract boolean incrementToken() throws IOException;
   
   /**
@@ -93,7 +94,7 @@ public abstract class SKOSFilter extends TokenFilter {
     /*
      * Adds the expanded term to the term buffer
      */
-    termAtt.setTermBuffer(term);
+    termAtt.setEmpty().append(term);
     
     /*
      * set position increment to zero to put multiple terms into the same

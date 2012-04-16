@@ -7,11 +7,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
@@ -22,6 +25,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 
 import at.ac.univie.mminf.luceneSKOS.skos.SKOS;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
@@ -85,7 +89,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    * SimpleAnalyzer = LetterTokenizer + LowerCaseFilter
    * 
    */
-  private Analyzer analyzer = new SimpleAnalyzer();
+  private Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
   
   /**
    * Stores the maximum number of terms contained in a prefLabel
@@ -141,15 +145,8 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   public SKOSEngineImpl(String filenameOrURI, String... languages)
       throws IOException {
-    
     // load the skos model from the given file
-    
-    FileManager fileManager = new FileManager();
-    fileManager.addLocatorFile();
-    fileManager.addLocatorURL();
-    fileManager.addLocatorClassLoader(SKOSEngineImpl.class.getClassLoader());
-    
-    skosModel = fileManager.loadModel(filenameOrURI);
+    skosModel = FileManager.get().loadModel(filenameOrURI);
     
     if (languages != null) {
       this.languages = Arrays.asList(languages);
@@ -170,7 +167,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     indexSKOSModel();
     
-    this.searcher = new IndexSearcher(indexDir);
+    this.searcher = new IndexSearcher(DirectoryReader.open(indexDir));
     
   }
   
@@ -298,9 +295,9 @@ public class SKOSEngineImpl implements SKOSEngine {
     searcher.search(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
         queryString)), collector);
     
-    for (ScoreDoc hit : collector.getHits()) {
+    for (Integer hit : collector.getDocs()) {
       
-      Document doc = searcher.doc(hit.doc);
+      Document doc = searcher.doc(hit);
       
       String conceptURI = doc.getValues(SKOSEngineImpl.FIELD_URI)[0];
       
@@ -325,9 +322,9 @@ public class SKOSEngineImpl implements SKOSEngine {
     searcher.search(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
         queryString)), collector);
     
-    for (ScoreDoc hit : collector.getHits()) {
+    for (Integer hit : collector.getDocs()) {
       
-      Document doc = searcher.doc(hit.doc);
+      Document doc = searcher.doc(hit);
       
       String[] values = doc.getValues(SKOSEngineImpl.FIELD_ALT_LABEL);
       
@@ -385,8 +382,9 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   private void indexSKOSModel() throws IOException {
     
-    IndexWriter writer = new IndexWriter(indexDir, analyzer,
-        IndexWriter.MaxFieldLength.UNLIMITED);
+    IndexWriterConfig cfg = new IndexWriterConfig(Version.LUCENE_40, analyzer);
+    
+    IndexWriter writer = new IndexWriter(indexDir, cfg);
     
     /* iterate SKOS concepts, create Lucene docs and add them to the index */
     
@@ -421,9 +419,8 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     String conceptURI = skos_concept.getURI();
     
-    // store and index the concept URI
     Field uriField = new Field(SKOSEngineImpl.FIELD_URI, conceptURI,
-        Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
+        StringField.TYPE_STORED);
     conceptDoc.add(uriField);
     
     // index the preferred lexical labels
@@ -443,7 +440,7 @@ public class SKOSEngineImpl implements SKOSEngine {
       prefLabel = prefLabel.toLowerCase();
       
       Field prefLabelField = new Field(SKOSEngineImpl.FIELD_PREF_LABEL,
-          prefLabel, Field.Store.YES, Field.Index.NOT_ANALYZED);
+          prefLabel, StringField.TYPE_STORED);
       
       conceptDoc.add(prefLabelField);
       
@@ -472,7 +469,7 @@ public class SKOSEngineImpl implements SKOSEngine {
       }
       
       Field altLabelField = new Field(SKOSEngineImpl.FIELD_ALT_LABEL, altLabel,
-          Field.Store.YES, Field.Index.NO);
+          StringField.TYPE_STORED);
       
       conceptDoc.add(altLabelField);
       
@@ -491,10 +488,10 @@ public class SKOSEngineImpl implements SKOSEngine {
         continue;
       }
       
-      Resource bc = (Resource) broaderConcept.as(Resource.class);
+      Resource bc = broaderConcept.as(Resource.class);
       
       Field broaderConceptField = new Field(SKOSEngineImpl.FIELD_BROADER,
-          bc.getURI(), Field.Store.YES, Field.Index.NO);
+          bc.getURI(), StringField.TYPE_STORED);
       
       conceptDoc.add(broaderConceptField);
       
@@ -514,10 +511,10 @@ public class SKOSEngineImpl implements SKOSEngine {
         
       }
       
-      Resource nc = (Resource) narrowerConcept.as(Resource.class);
+      Resource nc = narrowerConcept.as(Resource.class);
       
       Field narrowerConceptField = new Field(SKOSEngineImpl.FIELD_NARROWER,
-          nc.getURI(), Field.Store.YES, Field.Index.NO);
+          nc.getURI(), StringField.TYPE_STORED);
       
       conceptDoc.add(narrowerConceptField);
       
@@ -547,34 +544,30 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   public static class AllDocCollector extends Collector {
     
-    List<ScoreDoc> docs = new ArrayList<ScoreDoc>();
+    List<Integer> docs = new ArrayList<Integer>();
+    int base;
     
-    private Scorer scorer;
-    
-    private int docBase;
-    
+    @Override
     public boolean acceptsDocsOutOfOrder() {
       return true;
     }
     
-    public void setScorer(Scorer scorer) {
-      this.scorer = scorer;
-    }
+    @Override
+    public void setScorer(Scorer scorer) throws IOException {}
     
-    public void setNextReader(IndexReader reader, int docBase) {
-      this.docBase = docBase;
-    }
-    
+    @Override
     public void collect(int doc) throws IOException {
-      docs.add(new ScoreDoc(doc + docBase, scorer.score()));
+      doc += base;
+      docs.add(doc);
     }
     
-    public void reset() {
-      docs.clear();
-    }
-    
-    public List<ScoreDoc> getHits() {
+    public List<Integer> getDocs() {
       return docs;
+    }
+    
+    @Override
+    public void setNextReader(AtomicReaderContext context) throws IOException {
+      base = context.docBase;
     }
     
   }

@@ -22,7 +22,7 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * @author Martin Kysel <martin.kysel@univie.ac.at>
  * 
  */
-public class SKOSLabelFilter extends SKOSFilter {
+public final class SKOSLabelFilter extends SKOSFilter {
   
   /* the size of the buffer used for multi-term prediction */
   private int bufferSize = 1;
@@ -58,6 +58,7 @@ public class SKOSLabelFilter extends SKOSFilter {
   /**
    * Advances the stream to the next token
    */
+  @Override
   public boolean incrementToken() throws IOException {
     
     /* there are expanded terms for the given token */
@@ -127,7 +128,7 @@ public class SKOSLabelFilter extends SKOSFilter {
       
       restoreState(bufferedStates[i]);
       
-      sb.append(termAtt.term());
+      sb.append(termAtt.toString());
       sb.append(" ");
     }
     

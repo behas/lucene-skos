@@ -17,8 +17,6 @@ import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOS
  */
 public class SKOSPayload extends Payload {
   
-  private static final long serialVersionUID = 2036694880487284226L;
-  
   public SKOSPayload(SKOSAttribute skosAtt) {
     
     super();

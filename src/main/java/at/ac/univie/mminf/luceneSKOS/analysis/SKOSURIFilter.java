@@ -19,7 +19,7 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
  * 
  */
-public class SKOSURIFilter extends SKOSFilter {
+public final class SKOSURIFilter extends SKOSFilter {
   
   /**
    * Constructor.
@@ -49,7 +49,7 @@ public class SKOSURIFilter extends SKOSFilter {
     if (!input.incrementToken()) return false;
     
     /* check whether there are expanded terms for a given token */
-    if (addTermsToStack(termAtt.term())) {
+    if (addTermsToStack(termAtt.toString())) {
       
       /* if yes, capture the state of all attributes */
       current = captureState();

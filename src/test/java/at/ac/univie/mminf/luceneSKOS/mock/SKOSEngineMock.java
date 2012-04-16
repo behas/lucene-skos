@@ -74,6 +74,7 @@ public class SKOSEngineMock implements SKOSEngine {
     
   }
   
+  @Override
   public String[] getConcepts(String prefLabel) throws IOException {
     
     prefLabel = prefLabel.toLowerCase();
@@ -97,6 +98,7 @@ public class SKOSEngineMock implements SKOSEngine {
     return conceptURIs.toArray(new String[0]);
   }
   
+  @Override
   public String[] getAltTerms(String prefLabel) throws IOException {
     
     prefLabel = prefLabel.toLowerCase();
