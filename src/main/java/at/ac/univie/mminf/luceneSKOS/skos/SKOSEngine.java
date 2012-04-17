@@ -85,11 +85,4 @@ public interface SKOSEngine {
    */
   String[] getAltTerms(String prefLabel) throws IOException;
   
-  /**
-   * Returns the maximum number of terms contained in a single prefLabel
-   * 
-   * @return -1 if is unknown
-   */
-  int getMaxPrefLabelTerms();
-  
 }

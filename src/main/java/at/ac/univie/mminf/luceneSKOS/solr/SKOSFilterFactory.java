@@ -1,11 +1,11 @@
 package at.ac.univie.mminf.luceneSKOS.solr;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.solr.analysis.BaseTokenFilterFactory;
 import org.apache.solr.common.ResourceLoader;
+import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.util.plugin.ResourceLoaderAware;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
@@ -28,37 +28,37 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
   
   private ExpansionType expansionType;
   
+  private int bufferSize;
+  
   private SKOSEngine skosEngine;
   
 
   @Override
   public void inform(ResourceLoader loader) {
     
-    skosFile = args.get("skosFile");
+    SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
     
-    System.out.println("Passed argument: " + skosFile);
+    skosFile = args.get("skosFile");
     
     String expansionTypeString = args.get("expansionType");
     
-    if (skosFile == null || expansionTypeString == null) {
+    String bufferSizeString = args.get("bufferSize");
+    
+    System.out.println("Passed argument: " + skosFile + " Type: "
+        + expansionTypeString + " bufferSize: "
+        + (bufferSizeString != null ? bufferSizeString : "Default"));
+    
+    if (skosFile == null || expansionTypeString == null)
       throw new IllegalArgumentException(
-          "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
-    }
+        "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
     
     try {
       
-      InputStream ins = loader.openResource(skosFile);
-      
-      if (skosFile.endsWith(".n3")) {
-        skosEngine = SKOSEngineFactory.getSKOSEngine(ins, "N3");
-      } else if (skosFile.endsWith(".rdf")) {
-        skosEngine = SKOSEngineFactory.getSKOSEngine(ins, "RDF/XML");
-      } else if (skosFile.endsWith(".ttl")) {
-        skosEngine = SKOSEngineFactory.getSKOSEngine(ins, "TURTLE");
-      } else {
-        throw new IOException(
-            "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
-      }
+      if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
+          || skosFile.endsWith(".ttl"))
+        skosEngine = SKOSEngineFactory.getSKOSEngine(solrLoader.getConfigDir() + skosFile);
+      else throw new IOException(
+          "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
       
     } catch (IOException e) {
       throw new RuntimeException("Could not instantiate SKOS engine", e);
@@ -74,13 +74,19 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
           "The property 'expansionType' must be either URI or LABEL");
     }
     
+    if (bufferSizeString != null) {
+      int bs = Integer.parseInt(bufferSizeString);
+      if (bs > 0) bufferSize = bs;
+      else throw new IllegalArgumentException(
+          "The property 'bufferSize' must be a positive (smallish) integer");
+    }
   }
   
   @Override
   public TokenStream create(TokenStream input) {
     
     if (expansionType.equals(ExpansionType.LABEL)) {
-      return new SKOSLabelFilter(input, skosEngine);
+      return new SKOSLabelFilter(input, skosEngine, bufferSize);
       
     } else {
       return new SKOSURIFilter(input, skosEngine);

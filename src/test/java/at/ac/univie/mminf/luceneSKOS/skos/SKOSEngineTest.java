@@ -52,8 +52,6 @@ public class SKOSEngineTest {
     Assert.assertEquals(1,
         skosEngine.getAltTerms("Food and Agriculture Organization").length);
     
-    Assert.assertEquals(4, skosEngine.getMaxPrefLabelTerms());
-    
   }
   
   @Test

@@ -40,18 +40,14 @@ public final class SKOSLabelFilter extends SKOSFilter {
    * @param skosEngine
    *          the skos expansion engine
    * @param bufferSize
-   *          the length of the longest pref-label in the SKOS thesaurus (needed
-   *          for mult-term expansion)
+   *          the length of the longest pref-label to consider (needed for
+   *          mult-term expansion)
    */
-  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine) {
+  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine, int bufferSize) {
     
     super(in, skosEngine);
     
-    int maxPrefLabelTerms = skosEngine.getMaxPrefLabelTerms();
-    
-    if (maxPrefLabelTerms > 0) {
-      bufferSize = maxPrefLabelTerms;
-    }
+    this.bufferSize = bufferSize;
     
   }
   

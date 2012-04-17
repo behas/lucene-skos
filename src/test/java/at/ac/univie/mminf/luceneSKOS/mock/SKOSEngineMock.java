@@ -269,13 +269,6 @@ public class SKOSEngineMock implements SKOSEngine {
     
   }
   
-  @Override
-  public int getMaxPrefLabelTerms() {
-    
-    return this.maxPrefLabelTerms;
-    
-  }
-  
   /**
    * Returns the number of (whitespace separated) terms contained in a label
    * 

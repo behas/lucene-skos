@@ -1,11 +1,16 @@
 package at.ac.univie.mminf.luceneSKOS.skos.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
@@ -24,6 +29,7 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
@@ -81,7 +87,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    * 
    * If NULL, all languages are supported
    */
-  private List<String> languages;
+  private Set<String> languages;
   
   /**
    * The analyzer used during indexing of / querying for concepts
@@ -90,11 +96,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    * 
    */
   private Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
-  
-  /**
-   * Stores the maximum number of terms contained in a prefLabel
-   */
-  private int maxPrefLabelTerms = -1;
   
   /**
    * Constructor for all label-languages
@@ -130,8 +131,11 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     skosModel.read(inputStream, null, lang);
     
-    initializeEngine();
+    indexDir = new RAMDirectory();
     
+    indexSKOSModel();
+    
+    searcher = new IndexSearcher(DirectoryReader.open(indexDir));
   }
   
   /**
@@ -145,30 +149,25 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   public SKOSEngineImpl(String filenameOrURI, String... languages)
       throws IOException {
-    // load the skos model from the given file
-    skosModel = FileManager.get().loadModel(filenameOrURI);
-    
+    String langSig = "";
     if (languages != null) {
-      this.languages = Arrays.asList(languages);
+      this.languages = new TreeSet<String>(Arrays.asList(languages));
+      langSig = "-" + StringUtils.join(this.languages, ".");
     }
     
-    initializeEngine();
+    String baseName = FilenameUtils.getBaseName(filenameOrURI);
+    File dir = new File("skosdata/" + baseName + langSig);
+    indexDir = FSDirectory.open(dir);
     
-  }
-  
-  /**
-   * Sets up the Lucene index and starts the indexing process
-   * 
-   * @throws IOException
-   */
-  private void initializeEngine() throws IOException {
+    // TODO: Generate also if source file is modified
+    if (!dir.isDirectory()) {
+      // load the skos model from the given file
+      skosModel = FileManager.get().loadModel(filenameOrURI);
+      
+      indexSKOSModel();
+    }
     
-    this.indexDir = new RAMDirectory();
-    
-    indexSKOSModel();
-    
-    this.searcher = new IndexSearcher(DirectoryReader.open(indexDir));
-    
+    searcher = new IndexSearcher(DirectoryReader.open(indexDir));
   }
   
   /*
@@ -338,13 +337,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     
   }
   
-  @Override
-  public int getMaxPrefLabelTerms() {
-    
-    return this.maxPrefLabelTerms;
-    
-  }
-  
   /**
    * Returns the values of a given field for a given concept
    * 
@@ -444,12 +436,6 @@ public class SKOSEngineImpl implements SKOSEngine {
       
       conceptDoc.add(prefLabelField);
       
-      // count the number of terms in the label for determing max terms
-      int noTerms = countLabelTerms(prefLabel);
-      if (maxPrefLabelTerms < noTerms) {
-        maxPrefLabelTerms = noTerms;
-      }
-      
     }
     
     // store the alternative lexical labels
@@ -521,18 +507,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return conceptDoc;
-    
-  }
-  
-  /**
-   * Returns the number of (whitespace separated) terms contained in a label
-   * 
-   * @param label
-   * @return
-   */
-  private int countLabelTerms(String label) {
-    
-    return label.split(" ").length;
     
   }
   

@@ -46,6 +46,11 @@ public class SKOSAnalyzer extends Analyzer {
   private ExpansionType expansionType = ExpansionType.LABEL;
   
   /**
+   * The size of the buffer used for multi-term prediction
+   */
+  private int bufferSize = 1;
+  
+  /**
    * Instantiates the SKOSAnalyzer for a given skosFile and expansionType
    * 
    * @param skosFile
@@ -61,6 +66,29 @@ public class SKOSAnalyzer extends Analyzer {
     this.skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
     
     this.expansionType = expansionType;
+  }
+  
+  /**
+   * Instantiates the SKOSAnalyzer for a given skosFile and expansionType
+   * 
+   * @param skosFile
+   *          the SKOS file to be used
+   * @param expansionType
+   *          URI or LABEL expansion
+   * @param bufferSize
+   *          the length of the longest pref-label to consider (needed for
+   *          mult-term expansion)
+   * @throws IOException
+   *           if the skosFile cannot be loaded
+   */
+  public SKOSAnalyzer(String skosFile, ExpansionType expansionType, int bufferSize)
+      throws IOException {
+    
+    skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
+    
+    this.expansionType = expansionType;
+    
+    this.bufferSize = bufferSize;
   }
   
   /**
@@ -106,7 +134,7 @@ public class SKOSAnalyzer extends Analyzer {
       TokenFilter stopFilter = new StopFilter(Version.LUCENE_40, stdFilter,
           StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       
-      TokenFilter skosLabelFilter = new SKOSLabelFilter(stopFilter, skosEngine);
+      TokenFilter skosLabelFilter = new SKOSLabelFilter(stopFilter, skosEngine, bufferSize);
       
       TokenFilter lwFilter = new LowerCaseFilter(Version.LUCENE_40,
           skosLabelFilter);
