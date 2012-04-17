@@ -24,6 +24,22 @@ public interface SKOSAttribute extends Attribute {
     
     PREF, ALT, HIDDEN, BROADER, NARROWER;
     
+    public static SKOSType fromInteger(int x) {
+      switch (x) {
+        case 0:
+          return PREF;
+        case 1:
+          return ALT;
+        case 2:
+          return HIDDEN;
+        case 3:
+          return BROADER;
+        case 4:
+          return NARROWER;
+      }
+      return null;
+    }
+    
   }
   
   /**

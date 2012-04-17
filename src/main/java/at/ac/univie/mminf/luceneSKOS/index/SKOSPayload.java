@@ -10,8 +10,6 @@ import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOS
  * Encodes a given SKOSAttribute as term payload simply by converting the
  * SKOSAttribute enums to and from string.
  * 
- * TODO: improve efficiency; only one byte is needed!
- * 
  * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
  * 
  */
@@ -21,9 +19,9 @@ public class SKOSPayload extends Payload {
     
     super();
     
-    String attr = skosAtt.getSKOSType().toString();
+    int attr = skosAtt.getSKOSType().ordinal();
     
-    byte[] pl = attr.getBytes();
+    byte[] pl = new byte[] {(byte) attr};
     
     super.setData(pl);
     
@@ -44,19 +42,9 @@ public class SKOSPayload extends Payload {
   
   public static SKOSAttribute getSKOSAttribute(byte[] payload) {
     
-    String attr = new String(payload).trim();
+    int attr = payload[0];
     
-    SKOSType skosType = null;
-    
-    if (attr.equals(SKOSType.ALT.toString())) {
-      skosType = SKOSType.ALT;
-    } else if (attr.equals(SKOSType.HIDDEN.toString())) {
-      skosType = SKOSType.HIDDEN;
-    } else if (attr.equals(SKOSType.BROADER.toString())) {
-      skosType = SKOSType.BROADER;
-    } else if (attr.equals(SKOSType.NARROWER.toString())) {
-      skosType = SKOSType.NARROWER;
-    }
+    SKOSType skosType = SKOSType.fromInteger(attr);
     
     if (skosType == null) {
       return null;
