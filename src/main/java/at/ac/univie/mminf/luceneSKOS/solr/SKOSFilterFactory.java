@@ -44,9 +44,12 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
     
     String bufferSizeString = args.get("bufferSize");
     
+    String languageString = args.get("language");
+    
     System.out.println("Passed argument: " + skosFile + " Type: "
         + expansionTypeString + " bufferSize: "
-        + (bufferSizeString != null ? bufferSizeString : "Default"));
+        + (bufferSizeString != null ? bufferSizeString : "Default")
+        + " language: " + (languageString != null ? languageString : "All"));
     
     if (skosFile == null || expansionTypeString == null)
       throw new IllegalArgumentException(
@@ -56,7 +59,9 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
       
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
           || skosFile.endsWith(".ttl"))
-        skosEngine = SKOSEngineFactory.getSKOSEngine(solrLoader.getConfigDir() + skosFile);
+        skosEngine = SKOSEngineFactory
+          .getSKOSEngine(solrLoader.getConfigDir() + skosFile,
+              languageString != null ? languageString.split(" ") : null);
       else throw new IOException(
           "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
       
