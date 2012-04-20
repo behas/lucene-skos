@@ -1,7 +1,10 @@
 package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import org.apache.lucene.analysis.TokenStream;
@@ -24,10 +27,12 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  */
 public final class SKOSLabelFilter extends SKOSFilter {
   
-  /* the size of the buffer used for multi-term prediction */
-  private int bufferSize = 1;
+  public static final int DEFAULT_BUFFER_SIZE = 1;
   
-  /* a list serving as token buffer between consumed and consuming stram */
+  /* the size of the buffer used for multi-term prediction */
+  private int bufferSize = DEFAULT_BUFFER_SIZE;
+  
+  /* a list serving as token buffer between consumed and consuming stream */
   private Queue<State> buffer = new LinkedList<State>();
   
   /**
@@ -141,6 +146,21 @@ public final class SKOSLabelFilter extends SKOSFilter {
   }
   
   /**
+   * Removes the specified term from the array, if it is contained
+   * 
+   * @param array
+   *          the array to be used
+   * @param label
+   *          the term to remove
+   * @return
+   */
+  private String[] removeTermInArray(String[] array, String term) {
+    List<String> list = new ArrayList<String>(Arrays.asList(array));
+    list.removeAll(Arrays.asList(term));
+    return list.toArray(new String[0]);
+  }
+  
+  /**
    * Assumes that the given term is a textual token
    * 
    */
@@ -152,6 +172,13 @@ public final class SKOSLabelFilter extends SKOSFilter {
       String[] conceptURIs = engine.getConcepts(term);
       
       for (String conceptURI : conceptURIs) {
+        
+        String[] prefLabels = engine.getPrefLabels(conceptURI);
+        
+        /* Remove duplicated "term" in prefLabels */
+        prefLabels = removeTermInArray(prefLabels, term);
+        
+        pushLabelsToStack(prefLabels, SKOSType.PREF);
         
         String[] altLabels = engine.getAltLabels(conceptURI);
         pushLabelsToStack(altLabels, SKOSType.ALT);

@@ -48,7 +48,7 @@ public class SKOSAnalyzer extends Analyzer {
   /**
    * The size of the buffer used for multi-term prediction
    */
-  private int bufferSize = 1;
+  private int bufferSize = SKOSLabelFilter.DEFAULT_BUFFER_SIZE;
   
   /**
    * Instantiates the SKOSAnalyzer for a given skosFile and expansionType
@@ -62,14 +62,13 @@ public class SKOSAnalyzer extends Analyzer {
    */
   public SKOSAnalyzer(String skosFile, ExpansionType expansionType)
       throws IOException {
-    
-    this.skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
-    
-    this.expansionType = expansionType;
+    this(skosFile, expansionType, SKOSLabelFilter.DEFAULT_BUFFER_SIZE,
+        (String[]) null);
   }
   
   /**
-   * Instantiates the SKOSAnalyzer for a given skosFile and expansionType
+   * Instantiates the SKOSAnalyzer for a given skosFile, expansionType and
+   * bufferSize
    * 
    * @param skosFile
    *          the SKOS file to be used
@@ -81,10 +80,31 @@ public class SKOSAnalyzer extends Analyzer {
    * @throws IOException
    *           if the skosFile cannot be loaded
    */
-  public SKOSAnalyzer(String skosFile, ExpansionType expansionType, int bufferSize)
-      throws IOException {
+  public SKOSAnalyzer(String skosFile, ExpansionType expansionType,
+      int bufferSize) throws IOException {
+    this(skosFile, expansionType, bufferSize, (String[]) null);
+  }
+  
+  /**
+   * Instantiates the SKOSAnalyzer for a given skosFile, expansionType,
+   * bufferSize and languages
+   * 
+   * @param skosFile
+   *          the SKOS file to be used
+   * @param expansionType
+   *          URI or LABEL expansion
+   * @param bufferSize
+   *          the length of the longest pref-label to consider (needed for
+   *          mult-term expansion)
+   * @param languages
+   *          the languages to consider
+   * @throws IOException
+   *           if the skosFile cannot be loaded
+   */
+  public SKOSAnalyzer(String skosFile, ExpansionType expansionType,
+      int bufferSize, String... languages) throws IOException {
     
-    skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
+    skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, languages);
     
     this.expansionType = expansionType;
     
