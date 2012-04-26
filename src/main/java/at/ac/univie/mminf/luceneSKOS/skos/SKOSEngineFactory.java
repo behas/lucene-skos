@@ -55,7 +55,7 @@ public class SKOSEngineFactory {
    *          the skos file
    * @param languages
    *          the languages to be considered
-   * @return
+   * @return SKOSEngine
    * @throws IOException
    */
   public static SKOSEngine getSKOSEngine(String filenameOrURI,

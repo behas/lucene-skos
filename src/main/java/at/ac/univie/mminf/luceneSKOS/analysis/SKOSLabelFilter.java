@@ -111,7 +111,7 @@ public final class SKOSLabelFilter extends SKOSFilter {
   }
   
   /**
-   * Converts the first x=noTokens states in the queue to a concated token
+   * Converts the first x=noTokens states in the queue to a concatenated token
    * string separated by white spaces
    * 
    * @param noTokens

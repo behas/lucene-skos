@@ -52,7 +52,7 @@ public interface SKOSAttribute extends Attribute {
   /**
    * Returns the SKOS type
    * 
-   * @return
+   * @return SKOSType
    */
   public SKOSType getSKOSType();
   

@@ -7,7 +7,7 @@ import jena.schemagen;
  * corresponding Java classes.
  * 
  * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * @auhtor Niko Popitsch <niko.popitsch@univie.ac.at>
+ * @author Niko Popitsch <niko.popitsch@univie.ac.at>
  * 
  */
 public class SchemaGenerator {

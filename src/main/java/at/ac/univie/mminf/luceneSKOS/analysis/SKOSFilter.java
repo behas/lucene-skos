@@ -51,8 +51,6 @@ public abstract class SKOSFilter extends TokenFilter {
    *          the TokenStream
    * @param engine
    *          the engine delivering skos concepts
-   * @param limit
-   *          prediction
    */
   public SKOSFilter(TokenStream in, SKOSEngine engine) {
     super(in);
