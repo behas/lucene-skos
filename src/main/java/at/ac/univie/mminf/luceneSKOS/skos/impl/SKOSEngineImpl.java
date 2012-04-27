@@ -68,6 +68,9 @@ public class SKOSEngineImpl implements SKOSEngine {
   private static final String FIELD_ALT_LABEL = "alt";
   private static final String FIELD_BROADER = "broader";
   private static final String FIELD_NARROWER = "narrower";
+  private static final String FIELD_BROADER_TRANSITIVE = "broaderTransitive";
+  private static final String FIELD_NARROWER_TRANSITIVE = "narrowerTransitive";
+  private static final String FIELD_RELATED = "related";
   
   /**
    * The input SKOS model
@@ -201,6 +204,19 @@ public class SKOSEngineImpl implements SKOSEngine {
   /*
    * (non-Javadoc)
    * 
+   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedConcepts(java
+   * .lang.String)
+   */
+  @Override
+  public String[] getRelatedConcepts(String conceptURI) throws IOException {
+    
+    return readConceptFieldValues(conceptURI, FIELD_RELATED);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
    * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderConcepts(java
    * .lang.String)
    */
@@ -221,6 +237,63 @@ public class SKOSEngineImpl implements SKOSEngine {
   public String[] getNarrowerConcepts(String conceptURI) throws IOException {
     
     return readConceptFieldValues(conceptURI, FIELD_NARROWER);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveConcepts
+   * (java .lang.String)
+   */
+  @Override
+  public String[] getBroaderTransitiveConcepts(String conceptURI)
+      throws IOException {
+    
+    return readConceptFieldValues(conceptURI, FIELD_BROADER_TRANSITIVE);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveConcepts
+   * (java .lang.String)
+   */
+  @Override
+  public String[] getNarrowerTransitiveConcepts(String conceptURI)
+      throws IOException {
+    
+    return readConceptFieldValues(conceptURI, FIELD_NARROWER_TRANSITIVE);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedLabels(java.lang
+   * .String)
+   */
+  @Override
+  public String[] getRelatedLabels(String conceptURI) throws IOException {
+    
+    List<String> relatedLabels = new ArrayList<String>();
+    
+    String[] relatedConcepts = getRelatedConcepts(conceptURI);
+    
+    for (String brConceptURI : relatedConcepts) {
+      String[] relPrefLabels = getPrefLabels(brConceptURI);
+      relatedLabels.addAll(Arrays.asList(relPrefLabels));
+      
+      String[] relAltLabels = getAltLabels(brConceptURI);
+      relatedLabels.addAll(Arrays.asList(relAltLabels));
+      
+    }
+    
+    return relatedLabels.toArray(new String[0]);
     
   }
   
@@ -263,6 +336,61 @@ public class SKOSEngineImpl implements SKOSEngine {
     List<String> narrowerLabels = new ArrayList<String>();
     
     String[] narrowerConcepts = getNarrowerConcepts(conceptURI);
+    
+    for (String nrConceptURI : narrowerConcepts) {
+      String[] nrPrefLabels = getPrefLabels(nrConceptURI);
+      narrowerLabels.addAll(Arrays.asList(nrPrefLabels));
+      
+      String[] nrAltLabels = getAltLabels(nrConceptURI);
+      narrowerLabels.addAll(Arrays.asList(nrAltLabels));
+    }
+    
+    return narrowerLabels.toArray(new String[0]);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveLabels
+   * (java.lang .String)
+   */
+  @Override
+  public String[] getBroaderTransitiveLabels(String conceptURI)
+      throws IOException {
+    
+    List<String> broaderLabels = new ArrayList<String>();
+    
+    String[] broaderConcepts = getBroaderTransitiveConcepts(conceptURI);
+    
+    for (String brConceptURI : broaderConcepts) {
+      String[] brPrefLabels = getPrefLabels(brConceptURI);
+      broaderLabels.addAll(Arrays.asList(brPrefLabels));
+      
+      String[] brAltLabels = getAltLabels(brConceptURI);
+      broaderLabels.addAll(Arrays.asList(brAltLabels));
+      
+    }
+    
+    return broaderLabels.toArray(new String[0]);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveLabels
+   * (java. lang.String)
+   */
+  @Override
+  public String[] getNarrowerTransitiveLabels(String conceptURI)
+      throws IOException {
+    
+    List<String> narrowerLabels = new ArrayList<String>();
+    
+    String[] narrowerConcepts = getNarrowerTransitiveConcepts(conceptURI);
     
     for (String nrConceptURI : narrowerConcepts) {
       String[] nrPrefLabels = getPrefLabels(nrConceptURI);
@@ -509,6 +637,76 @@ public class SKOSEngineImpl implements SKOSEngine {
           nc.getURI(), StringField.TYPE_STORED);
       
       conceptDoc.add(narrowerConceptField);
+      
+    }
+    
+    // store the URIs of the broader transitive concepts
+    stmt_iter = skos_concept.listProperties(SKOS.broaderTransitive);
+    while (stmt_iter.hasNext()) {
+      
+      RDFNode broaderConcept = stmt_iter.nextStatement().getObject();
+      
+      if (!broaderConcept.canAs(Resource.class)) {
+        System.err
+            .println("Error when indexing broader transitive relationship of concept "
+                + skos_concept.getURI() + " .");
+        continue;
+      }
+      
+      Resource bc = broaderConcept.as(Resource.class);
+      
+      Field broaderConceptField = new Field(
+          SKOSEngineImpl.FIELD_BROADER_TRANSITIVE, bc.getURI(),
+          StringField.TYPE_STORED);
+      
+      conceptDoc.add(broaderConceptField);
+      
+    }
+    
+    // store the URIs of the narrower transitive concepts
+    stmt_iter = skos_concept.listProperties(SKOS.narrowerTransitive);
+    while (stmt_iter.hasNext()) {
+      
+      RDFNode narrowerConcept = stmt_iter.nextStatement().getObject();
+      
+      if (!narrowerConcept.canAs(Resource.class)) {
+        System.err
+            .println("Error when indexing narrower transitive relationship of concept "
+                + skos_concept.getURI() + " .");
+        continue;
+        
+      }
+      
+      Resource nc = narrowerConcept.as(Resource.class);
+      
+      Field narrowerConceptField = new Field(
+          SKOSEngineImpl.FIELD_NARROWER_TRANSITIVE, nc.getURI(),
+          StringField.TYPE_STORED);
+      
+      conceptDoc.add(narrowerConceptField);
+      
+    }
+    
+    // store the URIs of the related concepts
+    stmt_iter = skos_concept.listProperties(SKOS.related);
+    while (stmt_iter.hasNext()) {
+      
+      RDFNode relatedConcept = stmt_iter.nextStatement().getObject();
+      
+      if (!relatedConcept.canAs(Resource.class)) {
+        System.err
+            .println("Error when indexing related relationship of concept "
+                + skos_concept.getURI() + " .");
+        continue;
+        
+      }
+      
+      Resource nc = relatedConcept.as(Resource.class);
+      
+      Field relatedConceptField = new Field(SKOSEngineImpl.FIELD_RELATED,
+          nc.getURI(), StringField.TYPE_STORED);
+      
+      conceptDoc.add(relatedConceptField);
       
     }
     

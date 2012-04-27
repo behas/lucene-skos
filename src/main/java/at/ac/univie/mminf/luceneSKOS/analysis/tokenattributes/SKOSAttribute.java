@@ -22,7 +22,7 @@ public interface SKOSAttribute extends Attribute {
    */
   public static enum SKOSType {
     
-    PREF, ALT, HIDDEN, BROADER, NARROWER;
+    PREF, ALT, HIDDEN, BROADER, NARROWER, BROADER_TRANSITIVE, NARROWER_TRANSITIVE, RELATED;
     
     public static SKOSType fromInteger(int x) {
       switch (x) {
@@ -36,6 +36,12 @@ public interface SKOSAttribute extends Attribute {
           return BROADER;
         case 4:
           return NARROWER;
+        case 5:
+          return BROADER_TRANSITIVE;
+        case 6:
+          return NARROWER_TRANSITIVE;
+        case 7:
+          return RELATED;
       }
       return null;
     }

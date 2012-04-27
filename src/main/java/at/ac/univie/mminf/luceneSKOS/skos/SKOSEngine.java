@@ -30,6 +30,24 @@ public interface SKOSEngine {
   String[] getAltLabels(String conceptURI) throws IOException;
   
   /**
+   * Returns the related labels (related) for a given concept URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws IOException
+   */
+  String[] getRelatedLabels(String conceptURI) throws IOException;
+  
+  /**
+   * Returns the URIs of all related concepts for a given concept URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws Exception
+   */
+  String[] getRelatedConcepts(String conceptURI) throws IOException;
+  
+  /**
    * Returns the URIs of all broader concepts for a given concept URI
    * 
    * @param conceptURI
@@ -66,6 +84,45 @@ public interface SKOSEngine {
    * @throws IOException
    */
   String[] getNarrowerLabels(String conceptURI) throws IOException;
+  
+  /**
+   * Returns the URIs of all broader transitive concepts for a given concept URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws Exception
+   */
+  String[] getBroaderTransitiveConcepts(String conceptURI) throws IOException;
+  
+  /**
+   * Returns the URIs of all narrower transitive concepts for a given concept
+   * URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws Exception
+   */
+  String[] getNarrowerTransitiveConcepts(String conceptURI) throws IOException;
+  
+  /**
+   * Returns the labels (prefLabel + altLabel) of ALL broader transitive
+   * concepts for a given concept URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws IOException
+   */
+  String[] getBroaderTransitiveLabels(String conceptURI) throws IOException;
+  
+  /**
+   * Returns the labels (prefLabel + altLabel) of ALL narrower transitive
+   * concepts for a given URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws IOException
+   */
+  String[] getNarrowerTransitiveLabels(String conceptURI) throws IOException;
   
   /**
    * Returns all concepts (URIs) matching a given preferred label

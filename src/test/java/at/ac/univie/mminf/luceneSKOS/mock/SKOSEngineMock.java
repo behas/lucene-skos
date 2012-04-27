@@ -165,6 +165,23 @@ public class SKOSEngineMock implements SKOSEngine {
   /*
    * (non-Javadoc)
    * 
+   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedConcepts(java
+   * .lang.String)
+   */
+  @Override
+  public String[] getRelatedConcepts(String conceptURI) throws IOException {
+    
+    List<String> related = conceptMap.get(conceptURI).get(SKOSType.RELATED);
+    
+    if (related != null) return related.toArray(new String[0]);
+    
+    return null;
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
    * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderConcepts(java
    * .lang.String)
    */
@@ -197,6 +214,75 @@ public class SKOSEngineMock implements SKOSEngine {
     }
     
     return null;
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveConcepts
+   * (java .lang.String)
+   */
+  @Override
+  public String[] getBroaderTransitiveConcepts(String conceptURI)
+      throws IOException {
+    
+    List<String> broader = conceptMap.get(conceptURI).get(
+        SKOSType.BROADER_TRANSITIVE);
+    
+    if (broader != null) return broader.toArray(new String[0]);
+    
+    return null;
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveConcepts
+   * (java .lang.String)
+   */
+  @Override
+  public String[] getNarrowerTransitiveConcepts(String conceptURI)
+      throws IOException {
+    
+    List<String> narrower = conceptMap.get(conceptURI).get(
+        SKOSType.NARROWER_TRANSITIVE);
+    
+    if (narrower != null) return narrower.toArray(new String[0]);
+    
+    return null;
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedLabels(java.lang
+   * .String)
+   */
+  @Override
+  public String[] getRelatedLabels(String conceptURI) throws IOException {
+    
+    String[] relatedConcepts = getRelatedConcepts(conceptURI);
+    
+    if (relatedConcepts == null) return null;
+    
+    List<String> relatedLabels = new ArrayList<String>();
+    
+    for (String relatedConcept : relatedConcepts) {
+      
+      String[] prefLabels = getPrefLabels(relatedConcept);
+      if (prefLabels != null) relatedLabels.addAll(Arrays.asList(prefLabels));
+      String[] altLabels = getAltLabels(relatedConcept);
+      if (altLabels != null) relatedLabels.addAll(Arrays.asList(altLabels));
+      
+    }
+    
+    return relatedLabels.toArray(new String[0]);
     
   }
   
@@ -262,6 +348,66 @@ public class SKOSEngineMock implements SKOSEngine {
       if (altLabels != null) {
         narrowerLabels.addAll(Arrays.asList(altLabels));
       }
+      
+    }
+    
+    return narrowerLabels.toArray(new String[0]);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveLabels
+   * (java.lang .String)
+   */
+  @Override
+  public String[] getBroaderTransitiveLabels(String conceptURI)
+      throws IOException {
+    
+    String[] broaderConcepts = getBroaderTransitiveConcepts(conceptURI);
+    
+    if (broaderConcepts == null) return null;
+    
+    List<String> broaderLabels = new ArrayList<String>();
+    
+    for (String broaderConcept : broaderConcepts) {
+      
+      String[] prefLabels = getPrefLabels(broaderConcept);
+      if (prefLabels != null) broaderLabels.addAll(Arrays.asList(prefLabels));
+      String[] altLabels = getAltLabels(broaderConcept);
+      if (altLabels != null) broaderLabels.addAll(Arrays.asList(altLabels));
+      
+    }
+    
+    return broaderLabels.toArray(new String[0]);
+    
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveLabels
+   * (java. lang.String)
+   */
+  @Override
+  public String[] getNarrowerTransitiveLabels(String conceptURI)
+      throws IOException {
+    
+    String[] narrowerConcepts = getNarrowerTransitiveConcepts(conceptURI);
+    
+    if (narrowerConcepts == null) return null;
+    
+    List<String> narrowerLabels = new ArrayList<String>();
+    
+    for (String narrowerConcept : narrowerConcepts) {
+      
+      String[] prefLabels = getPrefLabels(narrowerConcept);
+      if (prefLabels != null) narrowerLabels.addAll(Arrays.asList(prefLabels));
+      String[] altLabels = getAltLabels(narrowerConcept);
+      if (altLabels != null) narrowerLabels.addAll(Arrays.asList(altLabels));
       
     }
     

@@ -79,6 +79,14 @@ public final class SKOSURIFilter extends SKOSFilter {
       String[] narrowerLabels = engine.getNarrowerLabels(term);
       pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
       
+      String[] broaderTransitiveLabels = engine
+          .getBroaderTransitiveLabels(term);
+      pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADER_TRANSITIVE);
+      
+      String[] narrowerTransitiveLabels = engine
+          .getNarrowerTransitiveLabels(term);
+      pushLabelsToStack(narrowerTransitiveLabels, SKOSType.NARROWER_TRANSITIVE);
+      
     } catch (Exception e) {
       System.err
           .println("Error when accessing SKOS Engine.\n" + e.getMessage());

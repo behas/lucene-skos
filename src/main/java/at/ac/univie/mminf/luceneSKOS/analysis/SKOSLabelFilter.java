@@ -189,6 +189,15 @@ public final class SKOSLabelFilter extends SKOSFilter {
         String[] narrowerLabels = engine.getNarrowerLabels(conceptURI);
         pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
         
+        String[] broaderTransitiveLabels = engine
+            .getBroaderTransitiveLabels(conceptURI);
+        pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADER_TRANSITIVE);
+        
+        String[] narrowerTransitiveLabels = engine
+            .getNarrowerTransitiveLabels(conceptURI);
+        pushLabelsToStack(narrowerTransitiveLabels,
+            SKOSType.NARROWER_TRANSITIVE);
+        
       }
       
     } catch (Exception e) {
