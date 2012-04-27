@@ -21,6 +21,8 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -291,8 +293,12 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     AllDocCollector collector = new AllDocCollector();
     
-    searcher.search(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
-        queryString)), collector);
+    BooleanQuery query1 = new BooleanQuery();
+    query1.add(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
+        queryString)), BooleanClause.Occur.SHOULD);
+    query1.add(new TermQuery(new Term(SKOSEngineImpl.FIELD_ALT_LABEL,
+        queryString)), BooleanClause.Occur.SHOULD);
+    searcher.search(query1, collector);
     
     for (Integer hit : collector.getDocs()) {
       
