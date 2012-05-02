@@ -66,7 +66,7 @@ public class LabelbasedTermExpansionTest extends AbstractTermExpansionTest {
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
     
     /* ExpansionType.URI->the field to be analyzed (expanded) contains URIs */
-    Analyzer skosAnalyzer = new SKOSAnalyzer(skosFile, ExpansionType.LABEL);
+    Analyzer skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosFile, ExpansionType.LABEL);
     
     /* Define different analyzers for different fields */
     Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();

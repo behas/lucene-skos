@@ -33,7 +33,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     super.setUp();
     
-    skosAnalyzer = new SKOSAnalyzer(skosEngine, ExpansionType.URI);
+    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine, ExpansionType.URI);
     
     writer = new IndexWriter(directory, new IndexWriterConfig(
         Version.LUCENE_40, skosAnalyzer));
@@ -134,7 +134,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     String text = "http://example.com/concept/1";
     
-    skosAnalyzer = new SKOSAnalyzer(skosEngine, ExpansionType.URI);
+    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine, ExpansionType.URI);
     
     AnalyzerUtils.displayTokensWithFullDetails(skosAnalyzer, text);
     // AnalyzerUtils.displayTokensWithPositions(synonymAnalyzer, text);
