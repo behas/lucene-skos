@@ -37,6 +37,8 @@ import org.apache.lucene.util.Version;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOS;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 
+import com.hp.hpl.jena.ontology.AnnotationProperty;
+import com.hp.hpl.jena.ontology.ObjectProperty;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -58,6 +60,35 @@ import com.hp.hpl.jena.vocabulary.RDF;
  * 
  */
 public class SKOSEngineImpl implements SKOSEngine {
+  
+  /** Records the total number of matches */
+  public static class AllDocCollector extends Collector {
+    List<Integer> docs = new ArrayList<Integer>();
+    int base;
+    
+    @Override
+    public boolean acceptsDocsOutOfOrder() {
+      return true;
+    }
+    
+    @Override
+    public void collect(int doc) throws IOException {
+      doc += base;
+      docs.add(doc);
+    }
+    
+    public List<Integer> getDocs() {
+      return docs;
+    }
+    
+    @Override
+    public void setNextReader(AtomicReaderContext context) throws IOException {
+      base = context.docBase;
+    }
+    
+    @Override
+    public void setScorer(Scorer scorer) throws IOException {}
+  }
   
   /*
    * Static fields used in the Lucene Index
@@ -97,20 +128,8 @@ public class SKOSEngineImpl implements SKOSEngine {
    * The analyzer used during indexing of / querying for concepts
    * 
    * SimpleAnalyzer = LetterTokenizer + LowerCaseFilter
-   * 
    */
   private Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
-  
-  /**
-   * Constructor for all label-languages
-   * 
-   * @param filenameOrURI
-   *          the name of the skos file to be loaded
-   * @throws IOException
-   */
-  public SKOSEngineImpl(String filenameOrURI) throws IOException {
-    this(filenameOrURI, (String[]) null);
-  }
   
   /**
    * This constructor loads the SKOS model from a given InputStream using the
@@ -140,6 +159,17 @@ public class SKOSEngineImpl implements SKOSEngine {
     indexSKOSModel();
     
     searcher = new IndexSearcher(DirectoryReader.open(indexDir));
+  }
+  
+  /**
+   * Constructor for all label-languages
+   * 
+   * @param filenameOrURI
+   *          the name of the skos file to be loaded
+   * @throws IOException
+   */
+  public SKOSEngineImpl(String filenameOrURI) throws IOException {
+    this(filenameOrURI, (String[]) null);
   }
   
   /**
@@ -174,299 +204,210 @@ public class SKOSEngineImpl implements SKOSEngine {
     searcher = new IndexSearcher(DirectoryReader.open(indexDir));
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getPrefLabel(java.lang.
-   * String)
+  /**
+   * Creates lucene documents from SKOS concept. In order to allow language
+   * restrictions, one document per language is created.
    */
-  @Override
-  public String[] getPrefLabels(String conceptURI) throws IOException {
-    return readConceptFieldValues(conceptURI, FIELD_PREF_LABEL);
+  private Document createDocumentsFromConcept(Resource skos_concept) {
+    Document conceptDoc = new Document();
+    
+    String conceptURI = skos_concept.getURI();
+    Field uriField = new Field(FIELD_URI, conceptURI, StringField.TYPE_STORED);
+    conceptDoc.add(uriField);
+    
+    // store the preferred lexical labels
+    indexAnnotation(skos_concept, conceptDoc, SKOS.prefLabel, FIELD_PREF_LABEL);
+    
+    // store the alternative lexical labels
+    indexAnnotation(skos_concept, conceptDoc, SKOS.altLabel, FIELD_ALT_LABEL);
+    
+    // store the URIs of the broader concepts
+    indexObject(skos_concept, conceptDoc, SKOS.broader, FIELD_BROADER);
+    
+    // store the URIs of the broader transitive concepts
+    indexObject(skos_concept, conceptDoc, SKOS.broaderTransitive,
+        FIELD_BROADER_TRANSITIVE);
+    
+    // store the URIs of the narrower concepts
+    indexObject(skos_concept, conceptDoc, SKOS.narrower, FIELD_NARROWER);
+    
+    // store the URIs of the narrower transitive concepts
+    indexObject(skos_concept, conceptDoc, SKOS.narrowerTransitive,
+        FIELD_NARROWER_TRANSITIVE);
+    
+    // store the URIs of the related concepts
+    indexObject(skos_concept, conceptDoc, SKOS.related, FIELD_RELATED);
+    
+    return conceptDoc;
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getAltLabels(java.lang.
-   * String)
-   */
   @Override
   public String[] getAltLabels(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_ALT_LABEL);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedConcepts(java
-   * .lang.String)
-   */
   @Override
-  public String[] getRelatedConcepts(String conceptURI) throws IOException {
-    return readConceptFieldValues(conceptURI, FIELD_RELATED);
+  public String[] getAltTerms(String prefLabel) throws IOException {
+    List<String> result = new ArrayList<String>();
+    
+    // convert the query to lower-case
+    String queryString = prefLabel.toLowerCase();
+    
+    try {
+      String[] conceptURIs = getConcepts(queryString);
+      
+      for (String conceptURI : conceptURIs) {
+        String[] labels = getAltLabels(conceptURI);
+        if (labels != null) for (String label : labels)
+          result.add(label);
+      }
+    } catch (Exception e) {
+      System.err
+          .println("Error when accessing SKOS Engine.\n" + e.getMessage());
+    }
+    
+    return result.toArray(new String[0]);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderConcepts(java
-   * .lang.String)
-   */
   @Override
   public String[] getBroaderConcepts(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_BROADER);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerConcepts(java
-   * .lang.String)
-   */
   @Override
-  public String[] getNarrowerConcepts(String conceptURI) throws IOException {
-    return readConceptFieldValues(conceptURI, FIELD_NARROWER);
+  public String[] getBroaderLabels(String conceptURI) throws IOException {
+    return getLabels(conceptURI, FIELD_BROADER);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveConcepts
-   * (java .lang.String)
-   */
   @Override
   public String[] getBroaderTransitiveConcepts(String conceptURI)
       throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_BROADER_TRANSITIVE);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveConcepts
-   * (java .lang.String)
-   */
-  @Override
-  public String[] getNarrowerTransitiveConcepts(String conceptURI)
-      throws IOException {
-    return readConceptFieldValues(conceptURI, FIELD_NARROWER_TRANSITIVE);
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedLabels(java.lang
-   * .String)
-   */
-  @Override
-  public String[] getRelatedLabels(String conceptURI) throws IOException {
-    List<String> relatedLabels = new ArrayList<String>();
-    
-    String[] relatedConcepts = getRelatedConcepts(conceptURI);
-    
-    for (String brConceptURI : relatedConcepts) {
-      String[] relPrefLabels = getPrefLabels(brConceptURI);
-      relatedLabels.addAll(Arrays.asList(relPrefLabels));
-      
-      String[] relAltLabels = getAltLabels(brConceptURI);
-      relatedLabels.addAll(Arrays.asList(relAltLabels));
-      
-    }
-    
-    return relatedLabels.toArray(new String[0]);
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderLabels(java.lang
-   * .String)
-   */
-  @Override
-  public String[] getBroaderLabels(String conceptURI) throws IOException {
-    List<String> broaderLabels = new ArrayList<String>();
-    
-    String[] broaderConcepts = getBroaderConcepts(conceptURI);
-    
-    for (String brConceptURI : broaderConcepts) {
-      String[] brPrefLabels = getPrefLabels(brConceptURI);
-      broaderLabels.addAll(Arrays.asList(brPrefLabels));
-      
-      String[] brAltLabels = getAltLabels(brConceptURI);
-      broaderLabels.addAll(Arrays.asList(brAltLabels));
-      
-    }
-    
-    return broaderLabels.toArray(new String[0]);
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerLabels(java.
-   * lang.String)
-   */
-  @Override
-  public String[] getNarrowerLabels(String conceptURI) throws IOException {
-    List<String> narrowerLabels = new ArrayList<String>();
-    
-    String[] narrowerConcepts = getNarrowerConcepts(conceptURI);
-    
-    for (String nrConceptURI : narrowerConcepts) {
-      String[] nrPrefLabels = getPrefLabels(nrConceptURI);
-      narrowerLabels.addAll(Arrays.asList(nrPrefLabels));
-      
-      String[] nrAltLabels = getAltLabels(nrConceptURI);
-      narrowerLabels.addAll(Arrays.asList(nrAltLabels));
-    }
-    
-    return narrowerLabels.toArray(new String[0]);
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveLabels
-   * (java.lang .String)
-   */
   @Override
   public String[] getBroaderTransitiveLabels(String conceptURI)
       throws IOException {
-    List<String> broaderLabels = new ArrayList<String>();
-    
-    String[] broaderConcepts = getBroaderTransitiveConcepts(conceptURI);
-    
-    for (String brConceptURI : broaderConcepts) {
-      String[] brPrefLabels = getPrefLabels(brConceptURI);
-      broaderLabels.addAll(Arrays.asList(brPrefLabels));
-      
-      String[] brAltLabels = getAltLabels(brConceptURI);
-      broaderLabels.addAll(Arrays.asList(brAltLabels));
-      
-    }
-    
-    return broaderLabels.toArray(new String[0]);
+    return getLabels(conceptURI, FIELD_BROADER_TRANSITIVE);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveLabels
-   * (java. lang.String)
-   */
-  @Override
-  public String[] getNarrowerTransitiveLabels(String conceptURI)
-      throws IOException {
-    List<String> narrowerLabels = new ArrayList<String>();
-    
-    String[] narrowerConcepts = getNarrowerTransitiveConcepts(conceptURI);
-    
-    for (String nrConceptURI : narrowerConcepts) {
-      String[] nrPrefLabels = getPrefLabels(nrConceptURI);
-      narrowerLabels.addAll(Arrays.asList(nrPrefLabels));
-      
-      String[] nrAltLabels = getAltLabels(nrConceptURI);
-      narrowerLabels.addAll(Arrays.asList(nrAltLabels));
-    }
-    
-    return narrowerLabels.toArray(new String[0]);
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getConcepts(java.lang.String
-   * )
-   */
   @Override
   public String[] getConcepts(String prefLabel) throws IOException {
+    List<String> concepts = new ArrayList<String>();
     
     // convert the query to lower-case
     String queryString = prefLabel.toLowerCase();
     
-    List<String> concepts = new ArrayList<String>();
-    
     AllDocCollector collector = new AllDocCollector();
     
-    DisjunctionMaxQuery query1 = new DisjunctionMaxQuery(0.0f);
-    query1.add(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
-        queryString)));
-    query1.add(new TermQuery(new Term(SKOSEngineImpl.FIELD_ALT_LABEL,
-        queryString)));
-    searcher.search(query1, collector);
+    DisjunctionMaxQuery query = new DisjunctionMaxQuery(0.0f);
+    query.add(new TermQuery(new Term(FIELD_PREF_LABEL, queryString)));
+    query.add(new TermQuery(new Term(FIELD_ALT_LABEL, queryString)));
+    searcher.search(query, collector);
     
     for (Integer hit : collector.getDocs()) {
       Document doc = searcher.doc(hit);
-      String conceptURI = doc.getValues(SKOSEngineImpl.FIELD_URI)[0];
+      String conceptURI = doc.getValues(FIELD_URI)[0];
       concepts.add(conceptURI);
     }
     
     return concepts.toArray(new String[0]);
   }
   
-  @Override
-  public String[] getAltTerms(String prefLabel) throws IOException {
+  private String[] getLabels(String conceptURI, String field)
+      throws IOException {
+    List<String> labels = new ArrayList<String>();
+    String[] concepts = readConceptFieldValues(conceptURI, field);
     
-    // convert the query to lower-case
-    String queryString = prefLabel.toLowerCase();
-    
-    List<String> synList = new ArrayList<String>();
-    
-    AllDocCollector collector = new AllDocCollector();
-    
-    searcher.search(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
-        queryString)), collector);
-    
-    for (Integer hit : collector.getDocs()) {
-      Document doc = searcher.doc(hit);
+    for (String aConceptURI : concepts) {
+      String[] prefLabels = getPrefLabels(aConceptURI);
+      labels.addAll(Arrays.asList(prefLabels));
       
-      String[] values = doc.getValues(SKOSEngineImpl.FIELD_ALT_LABEL);
-      
-      for (String syn : values) {
-        synList.add(syn);
-      }
-      
+      String[] altLabels = getAltLabels(aConceptURI);
+      labels.addAll(Arrays.asList(altLabels));
     }
     
-    return synList.toArray(new String[0]);
+    return labels.toArray(new String[0]);
   }
   
-  /**
-   * Returns the values of a given field for a given concept
-   * 
-   * @param conceptURI
-   * @param field
-   * @return
-   * @throws IOException
-   */
-  private String[] readConceptFieldValues(String conceptURI, String field)
+  @Override
+  public String[] getNarrowerConcepts(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, FIELD_NARROWER);
+  }
+  
+  @Override
+  public String[] getNarrowerLabels(String conceptURI) throws IOException {
+    return getLabels(conceptURI, FIELD_NARROWER);
+  }
+  
+  @Override
+  public String[] getNarrowerTransitiveConcepts(String conceptURI)
       throws IOException {
-    
-    Query query = new TermQuery(new Term(SKOSEngineImpl.FIELD_URI, conceptURI));
-    
-    TopDocs docs = searcher.search(query, 1);
-    
-    ScoreDoc[] results = docs.scoreDocs;
-    
-    if (results.length != 1) {
-      System.out.println("Unknonwn concept " + conceptURI);
-      return null;
+    return readConceptFieldValues(conceptURI, FIELD_NARROWER_TRANSITIVE);
+  }
+  
+  @Override
+  public String[] getNarrowerTransitiveLabels(String conceptURI)
+      throws IOException {
+    return getLabels(conceptURI, FIELD_NARROWER_TRANSITIVE);
+  }
+  
+  @Override
+  public String[] getPrefLabels(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, FIELD_PREF_LABEL);
+  }
+  
+  @Override
+  public String[] getRelatedConcepts(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, FIELD_RELATED);
+  }
+  
+  @Override
+  public String[] getRelatedLabels(String conceptURI) throws IOException {
+    return getLabels(conceptURI, FIELD_RELATED);
+  }
+  
+  private void indexAnnotation(Resource skos_concept, Document conceptDoc,
+      AnnotationProperty property, String field) {
+    StmtIterator stmt_iter = skos_concept.listProperties(property);
+    while (stmt_iter.hasNext()) {
+      Literal labelLiteral = stmt_iter.nextStatement().getObject()
+          .as(Literal.class);
+      String label = labelLiteral.getLexicalForm();
+      String labelLang = labelLiteral.getLanguage();
+      
+      if (this.languages != null && !this.languages.contains(labelLang)) {
+        continue;
+      }
+      
+      // converting label to lower-case
+      label = label.toLowerCase();
+      
+      Field labelField = new Field(field, label, StringField.TYPE_STORED);
+      
+      conceptDoc.add(labelField);
     }
-    
-    Document conceptDoc = searcher.doc(results[0].doc);
-    
-    String[] fieldValues = conceptDoc.getValues(field);
-    
-    return fieldValues;
-    
+  }
+  
+  private void indexObject(Resource skos_concept, Document conceptDoc,
+      ObjectProperty property, String field) {
+    StmtIterator stmt_iter = skos_concept.listProperties(property);
+    while (stmt_iter.hasNext()) {
+      RDFNode concept = stmt_iter.nextStatement().getObject();
+      
+      if (!concept.canAs(Resource.class)) {
+        System.err.println("Error when indexing relationship of concept "
+            + skos_concept.getURI() + " .");
+        continue;
+      }
+      
+      Resource bc = concept.as(Resource.class);
+      
+      Field conceptField = new Field(field, bc.getURI(),
+          StringField.TYPE_STORED);
+      
+      conceptDoc.add(conceptField);
+    }
   }
   
   /**
@@ -476,11 +417,10 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   private void indexSKOSModel() throws IOException {
     IndexWriterConfig cfg = new IndexWriterConfig(Version.LUCENE_40, analyzer);
-    
     IndexWriter writer = new IndexWriter(indexDir, cfg);
+    writer.getConfig().setRAMBufferSizeMB(48);
     
     /* iterate SKOS concepts, create Lucene docs and add them to the index */
-    
     ResIterator concept_iter = skosModel.listResourcesWithProperty(RDF.type,
         SKOS.Concept);
     while (concept_iter.hasNext()) {
@@ -496,200 +436,24 @@ public class SKOSEngineImpl implements SKOSEngine {
     writer.close();
   }
   
-  /**
-   * Creates lucene documents from SKOS concept. In order to allow language
-   * restrictions, one document per language is created.
-   * 
-   * @param skos_concept
-   * @return
-   */
-  private Document createDocumentsFromConcept(Resource skos_concept) {
-    Document conceptDoc = new Document();
+  /** Returns the values of a given field for a given concept */
+  private String[] readConceptFieldValues(String conceptURI, String field)
+      throws IOException {
     
-    String conceptURI = skos_concept.getURI();
+    Query query = new TermQuery(new Term(FIELD_URI, conceptURI));
     
-    Field uriField = new Field(SKOSEngineImpl.FIELD_URI, conceptURI,
-        StringField.TYPE_STORED);
-    conceptDoc.add(uriField);
+    TopDocs docs = searcher.search(query, 1);
     
-    // index the preferred lexical labels
-    StmtIterator stmt_iter = skos_concept.listProperties(SKOS.prefLabel);
-    while (stmt_iter.hasNext()) {
-      Literal prefLabelLiteral = stmt_iter.nextStatement().getObject()
-          .as(Literal.class);
-      String prefLabel = prefLabelLiteral.getLexicalForm();
-      String labelLang = prefLabelLiteral.getLanguage();
-      
-      if (this.languages != null && !this.languages.contains(labelLang)) {
-        continue;
-      }
-      
-      // converting label to lower-case
-      prefLabel = prefLabel.toLowerCase();
-      
-      Field prefLabelField = new Field(SKOSEngineImpl.FIELD_PREF_LABEL,
-          prefLabel, StringField.TYPE_STORED);
-      
-      conceptDoc.add(prefLabelField);
+    ScoreDoc[] results = docs.scoreDocs;
+    
+    if (results.length != 1) {
+      System.out.println("Unknown concept " + conceptURI);
+      return null;
     }
     
-    // store the alternative lexical labels
-    stmt_iter = skos_concept.listProperties(SKOS.altLabel);
-    while (stmt_iter.hasNext()) {
-      Literal altLabelLiteral = stmt_iter.nextStatement().getObject()
-          .as(Literal.class);
-      String altLabel = altLabelLiteral.getLexicalForm();
-      String labelLang = altLabelLiteral.getLanguage();
-      
-      // converting label to lower-case
-      altLabel = altLabel.toLowerCase();
-      
-      if (this.languages != null && !this.languages.contains(labelLang)) {
-        continue;
-      }
-      
-      Field altLabelField = new Field(SKOSEngineImpl.FIELD_ALT_LABEL, altLabel,
-          StringField.TYPE_STORED);
-      
-      conceptDoc.add(altLabelField);
-    }
+    Document conceptDoc = searcher.doc(results[0].doc);
     
-    // store the URIs of the broader concepts
-    stmt_iter = skos_concept.listProperties(SKOS.broader);
-    while (stmt_iter.hasNext()) {
-      RDFNode broaderConcept = stmt_iter.nextStatement().getObject();
-      
-      if (!broaderConcept.canAs(Resource.class)) {
-        System.err
-            .println("Error when indexing broader relationship of concept "
-                + skos_concept.getURI() + " .");
-        continue;
-      }
-      
-      Resource bc = broaderConcept.as(Resource.class);
-      
-      Field broaderConceptField = new Field(SKOSEngineImpl.FIELD_BROADER,
-          bc.getURI(), StringField.TYPE_STORED);
-      
-      conceptDoc.add(broaderConceptField);
-    }
-    
-    // store the URIs of the narrower concepts
-    stmt_iter = skos_concept.listProperties(SKOS.narrower);
-    while (stmt_iter.hasNext()) {
-      RDFNode narrowerConcept = stmt_iter.nextStatement().getObject();
-      
-      if (!narrowerConcept.canAs(Resource.class)) {
-        System.err
-            .println("Error when indexing narrower relationship of concept "
-                + skos_concept.getURI() + " .");
-        continue;
-      }
-      
-      Resource nc = narrowerConcept.as(Resource.class);
-      
-      Field narrowerConceptField = new Field(SKOSEngineImpl.FIELD_NARROWER,
-          nc.getURI(), StringField.TYPE_STORED);
-      
-      conceptDoc.add(narrowerConceptField);
-    }
-    
-    // store the URIs of the broader transitive concepts
-    stmt_iter = skos_concept.listProperties(SKOS.broaderTransitive);
-    while (stmt_iter.hasNext()) {
-      RDFNode broaderConcept = stmt_iter.nextStatement().getObject();
-      
-      if (!broaderConcept.canAs(Resource.class)) {
-        System.err
-            .println("Error when indexing broader transitive relationship of concept "
-                + skos_concept.getURI() + " .");
-        continue;
-      }
-      
-      Resource bc = broaderConcept.as(Resource.class);
-      
-      Field broaderConceptField = new Field(
-          SKOSEngineImpl.FIELD_BROADER_TRANSITIVE, bc.getURI(),
-          StringField.TYPE_STORED);
-      
-      conceptDoc.add(broaderConceptField);
-    }
-    
-    // store the URIs of the narrower transitive concepts
-    stmt_iter = skos_concept.listProperties(SKOS.narrowerTransitive);
-    while (stmt_iter.hasNext()) {
-      RDFNode narrowerConcept = stmt_iter.nextStatement().getObject();
-      
-      if (!narrowerConcept.canAs(Resource.class)) {
-        System.err
-            .println("Error when indexing narrower transitive relationship of concept "
-                + skos_concept.getURI() + " .");
-        continue;
-      }
-      
-      Resource nc = narrowerConcept.as(Resource.class);
-      
-      Field narrowerConceptField = new Field(
-          SKOSEngineImpl.FIELD_NARROWER_TRANSITIVE, nc.getURI(),
-          StringField.TYPE_STORED);
-      
-      conceptDoc.add(narrowerConceptField);
-    }
-    
-    // store the URIs of the related concepts
-    stmt_iter = skos_concept.listProperties(SKOS.related);
-    while (stmt_iter.hasNext()) {
-      RDFNode relatedConcept = stmt_iter.nextStatement().getObject();
-      
-      if (!relatedConcept.canAs(Resource.class)) {
-        System.err
-            .println("Error when indexing related relationship of concept "
-                + skos_concept.getURI() + " .");
-        continue;
-      }
-      
-      Resource nc = relatedConcept.as(Resource.class);
-      
-      Field relatedConceptField = new Field(SKOSEngineImpl.FIELD_RELATED,
-          nc.getURI(), StringField.TYPE_STORED);
-      
-      conceptDoc.add(relatedConceptField);
-    }
-    
-    return conceptDoc;
-  }
-  
-  /**
-   * Records the total number of matches
-   * 
-   * @author haslhofer
-   * 
-   */
-  public static class AllDocCollector extends Collector {
-    List<Integer> docs = new ArrayList<Integer>();
-    int base;
-    
-    @Override
-    public boolean acceptsDocsOutOfOrder() {
-      return true;
-    }
-    
-    @Override
-    public void setScorer(Scorer scorer) throws IOException {}
-    
-    @Override
-    public void collect(int doc) throws IOException {
-      doc += base;
-      docs.add(doc);
-    }
-    
-    public List<Integer> getDocs() {
-      return docs;
-    }
-    
-    @Override
-    public void setNextReader(AtomicReaderContext context) throws IOException {
-      base = context.docBase;
-    }
+    String[] fieldValues = conceptDoc.getValues(field);
+    return fieldValues;
   }
 }

@@ -69,362 +69,144 @@ public class SKOSEngineMock implements SKOSEngine {
         }
         
       }
-      
     }
-    
+  }
+  
+  /** Returns the number of (whitespace separated) terms contained in a label */
+  private int countLabelTerms(String label) {
+    return label.split(" ").length;
   }
   
   @Override
-  public String[] getConcepts(String prefLabel) throws IOException {
-    
-    prefLabel = prefLabel.toLowerCase();
-    
-    List<String> conceptURIs = new ArrayList<String>();
-    
-    for (String conceptURI : conceptMap.keySet()) {
-      
-      Map<SKOSType,List<String>> entryMap = conceptMap.get(conceptURI);
-      
-      List<String> prefLabels = entryMap.get(SKOSType.PREF);
-      
-      if (prefLabels != null) {
-        if (prefLabels.contains(prefLabel)) {
-          conceptURIs.add(conceptURI);
-        }
-      }
-      
-    }
-    
-    return conceptURIs.toArray(new String[0]);
+  public String[] getAltLabels(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, SKOSType.ALT);
   }
   
   @Override
   public String[] getAltTerms(String prefLabel) throws IOException {
-    
-    prefLabel = prefLabel.toLowerCase();
-    
     List<String> altTerms = new ArrayList<String>();
     
-    String[] conceptURIs = getConcepts(prefLabel);
+    // convert the query to lower-case
+    String queryString = prefLabel = prefLabel.toLowerCase();
+    
+    String[] conceptURIs = getConcepts(queryString);
     
     if (conceptURIs == null) {
       return null;
     }
     
     for (String conceptURI : conceptURIs) {
-      
       String[] alt = getAltLabels(conceptURI);
       if (alt != null) {
         altTerms.addAll(Arrays.asList(alt));
       }
-      
     }
     
     return altTerms.toArray(new String[0]);
-    
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getPrefLabel(java.lang.
-   * String)
-   */
-  @Override
-  public String[] getPrefLabels(String conceptURI) throws IOException {
-    
-    List<String> prefLabels = conceptMap.get(conceptURI).get(SKOSType.PREF);
-    
-    if (prefLabels != null) {
-      return prefLabels.toArray(new String[0]);
-    }
-    
-    return null;
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getAltLabels(java.lang.
-   * String)
-   */
-  @Override
-  public String[] getAltLabels(String conceptURI) throws IOException {
-    
-    List<String> altLabels = conceptMap.get(conceptURI).get(SKOSType.ALT);
-    
-    if (altLabels != null) {
-      return altLabels.toArray(new String[0]);
-    }
-    
-    return null;
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedConcepts(java
-   * .lang.String)
-   */
-  @Override
-  public String[] getRelatedConcepts(String conceptURI) throws IOException {
-    
-    List<String> related = conceptMap.get(conceptURI).get(SKOSType.RELATED);
-    
-    if (related != null) return related.toArray(new String[0]);
-    
-    return null;
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderConcepts(java
-   * .lang.String)
-   */
   @Override
   public String[] getBroaderConcepts(String conceptURI) throws IOException {
-    
-    List<String> broader = conceptMap.get(conceptURI).get(SKOSType.BROADER);
-    
-    if (broader != null) {
-      return broader.toArray(new String[0]);
-    }
-    
-    return null;
-    
+    return readConceptFieldValues(conceptURI, SKOSType.BROADER);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerConcepts(java
-   * .lang.String)
-   */
   @Override
-  public String[] getNarrowerConcepts(String conceptURI) throws IOException {
-    
-    List<String> narrower = conceptMap.get(conceptURI).get(SKOSType.NARROWER);
-    
-    if (narrower != null) {
-      return narrower.toArray(new String[0]);
-    }
-    
-    return null;
-    
+  public String[] getBroaderLabels(String conceptURI) throws IOException {
+    return getLabels(conceptURI, SKOSType.BROADER);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveConcepts
-   * (java .lang.String)
-   */
   @Override
   public String[] getBroaderTransitiveConcepts(String conceptURI)
       throws IOException {
-    
-    List<String> broader = conceptMap.get(conceptURI).get(
-        SKOSType.BROADER_TRANSITIVE);
-    
-    if (broader != null) return broader.toArray(new String[0]);
-    
-    return null;
-    
+    return readConceptFieldValues(conceptURI, SKOSType.BROADER_TRANSITIVE);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveConcepts
-   * (java .lang.String)
-   */
-  @Override
-  public String[] getNarrowerTransitiveConcepts(String conceptURI)
-      throws IOException {
-    
-    List<String> narrower = conceptMap.get(conceptURI).get(
-        SKOSType.NARROWER_TRANSITIVE);
-    
-    if (narrower != null) return narrower.toArray(new String[0]);
-    
-    return null;
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getRelatedLabels(java.lang
-   * .String)
-   */
-  @Override
-  public String[] getRelatedLabels(String conceptURI) throws IOException {
-    
-    String[] relatedConcepts = getRelatedConcepts(conceptURI);
-    
-    if (relatedConcepts == null) return null;
-    
-    List<String> relatedLabels = new ArrayList<String>();
-    
-    for (String relatedConcept : relatedConcepts) {
-      
-      String[] prefLabels = getPrefLabels(relatedConcept);
-      if (prefLabels != null) relatedLabels.addAll(Arrays.asList(prefLabels));
-      String[] altLabels = getAltLabels(relatedConcept);
-      if (altLabels != null) relatedLabels.addAll(Arrays.asList(altLabels));
-      
-    }
-    
-    return relatedLabels.toArray(new String[0]);
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderLabels(java.lang
-   * .String)
-   */
-  @Override
-  public String[] getBroaderLabels(String conceptURI) throws IOException {
-    
-    String[] broaderConcepts = getBroaderConcepts(conceptURI);
-    
-    if (broaderConcepts == null) {
-      return null;
-    }
-    
-    List<String> broaderLabels = new ArrayList<String>();
-    
-    for (String broaderConcept : broaderConcepts) {
-      
-      String[] prefLabels = getPrefLabels(broaderConcept);
-      if (prefLabels != null) {
-        broaderLabels.addAll(Arrays.asList(prefLabels));
-      }
-      String[] altLabels = getAltLabels(broaderConcept);
-      if (altLabels != null) {
-        broaderLabels.addAll(Arrays.asList(altLabels));
-      }
-      
-    }
-    
-    return broaderLabels.toArray(new String[0]);
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerLabels(java.
-   * lang.String)
-   */
-  @Override
-  public String[] getNarrowerLabels(String conceptURI) throws IOException {
-    
-    String[] narrowerConcepts = getNarrowerConcepts(conceptURI);
-    
-    if (narrowerConcepts == null) {
-      return null;
-    }
-    
-    List<String> narrowerLabels = new ArrayList<String>();
-    
-    for (String narrowerConcept : narrowerConcepts) {
-      
-      String[] prefLabels = getPrefLabels(narrowerConcept);
-      if (prefLabels != null) {
-        narrowerLabels.addAll(Arrays.asList(prefLabels));
-      }
-      String[] altLabels = getAltLabels(narrowerConcept);
-      if (altLabels != null) {
-        narrowerLabels.addAll(Arrays.asList(altLabels));
-      }
-      
-    }
-    
-    return narrowerLabels.toArray(new String[0]);
-    
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getBroaderTransitiveLabels
-   * (java.lang .String)
-   */
   @Override
   public String[] getBroaderTransitiveLabels(String conceptURI)
       throws IOException {
-    
-    String[] broaderConcepts = getBroaderTransitiveConcepts(conceptURI);
-    
-    if (broaderConcepts == null) return null;
-    
-    List<String> broaderLabels = new ArrayList<String>();
-    
-    for (String broaderConcept : broaderConcepts) {
-      
-      String[] prefLabels = getPrefLabels(broaderConcept);
-      if (prefLabels != null) broaderLabels.addAll(Arrays.asList(prefLabels));
-      String[] altLabels = getAltLabels(broaderConcept);
-      if (altLabels != null) broaderLabels.addAll(Arrays.asList(altLabels));
-      
-    }
-    
-    return broaderLabels.toArray(new String[0]);
-    
+    return getLabels(conceptURI, SKOSType.BROADER_TRANSITIVE);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine#getNarrowerTransitiveLabels
-   * (java. lang.String)
-   */
+  @Override
+  public String[] getConcepts(String prefLabel) throws IOException {
+    prefLabel = prefLabel.toLowerCase();
+    
+    List<String> conceptURIs = new ArrayList<String>();
+    
+    for (String conceptURI : conceptMap.keySet()) {
+      Map<SKOSType,List<String>> entryMap = conceptMap.get(conceptURI);
+      
+      List<String> prefLabels = entryMap.get(SKOSType.PREF);
+      
+      if (prefLabels != null && prefLabels.contains(prefLabel)) conceptURIs
+          .add(conceptURI);
+    }
+    
+    return conceptURIs.toArray(new String[0]);
+  }
+  
+  private String[] getLabels(String conceptURI, SKOSType type)
+      throws IOException {
+    String[] concepts = readConceptFieldValues(conceptURI, type);
+    
+    if (concepts == null) return null;
+    
+    List<String> labels = new ArrayList<String>();
+    
+    for (String aConcept : concepts) {
+      String[] prefLabels = getPrefLabels(aConcept);
+      if (prefLabels != null) labels.addAll(Arrays.asList(prefLabels));
+      String[] altLabels = getAltLabels(aConcept);
+      if (altLabels != null) labels.addAll(Arrays.asList(altLabels));
+    }
+    
+    return labels.toArray(new String[0]);
+  }
+  
+  @Override
+  public String[] getNarrowerConcepts(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, SKOSType.NARROWER);
+  }
+  
+  @Override
+  public String[] getNarrowerLabels(String conceptURI) throws IOException {
+    return getLabels(conceptURI, SKOSType.NARROWER);
+  }
+  
+  @Override
+  public String[] getNarrowerTransitiveConcepts(String conceptURI)
+      throws IOException {
+    return readConceptFieldValues(conceptURI, SKOSType.NARROWER_TRANSITIVE);
+  }
+  
   @Override
   public String[] getNarrowerTransitiveLabels(String conceptURI)
       throws IOException {
-    
-    String[] narrowerConcepts = getNarrowerTransitiveConcepts(conceptURI);
-    
-    if (narrowerConcepts == null) return null;
-    
-    List<String> narrowerLabels = new ArrayList<String>();
-    
-    for (String narrowerConcept : narrowerConcepts) {
-      
-      String[] prefLabels = getPrefLabels(narrowerConcept);
-      if (prefLabels != null) narrowerLabels.addAll(Arrays.asList(prefLabels));
-      String[] altLabels = getAltLabels(narrowerConcept);
-      if (altLabels != null) narrowerLabels.addAll(Arrays.asList(altLabels));
-      
-    }
-    
-    return narrowerLabels.toArray(new String[0]);
-    
+    return getLabels(conceptURI, SKOSType.NARROWER_TRANSITIVE);
   }
   
-  /**
-   * Returns the number of (whitespace separated) terms contained in a label
-   * 
-   * @param label
-   * @return
-   */
-  private int countLabelTerms(String label) {
-    
-    return label.split(" ").length;
-    
+  @Override
+  public String[] getPrefLabels(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, SKOSType.PREF);
   }
   
+  @Override
+  public String[] getRelatedConcepts(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, SKOSType.RELATED);
+  }
+  
+  @Override
+  public String[] getRelatedLabels(String conceptURI) throws IOException {
+    return getLabels(conceptURI, SKOSType.RELATED);
+  }
+  
+  /** Returns the values of a given field for a given concept */
+  private String[] readConceptFieldValues(String conceptURI, SKOSType type)
+      throws IOException {
+    List<String> labels = conceptMap.get(conceptURI).get(type);
+    
+    if (labels != null) return labels.toArray(new String[0]);
+    
+    return null;
+  }
 }
