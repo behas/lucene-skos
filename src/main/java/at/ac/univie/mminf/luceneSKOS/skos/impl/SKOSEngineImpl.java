@@ -21,9 +21,8 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -421,25 +420,20 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     AllDocCollector collector = new AllDocCollector();
     
-    BooleanQuery query1 = new BooleanQuery();
+    DisjunctionMaxQuery query1 = new DisjunctionMaxQuery(0.0f);
     query1.add(new TermQuery(new Term(SKOSEngineImpl.FIELD_PREF_LABEL,
-        queryString)), BooleanClause.Occur.SHOULD);
+        queryString)));
     query1.add(new TermQuery(new Term(SKOSEngineImpl.FIELD_ALT_LABEL,
-        queryString)), BooleanClause.Occur.SHOULD);
+        queryString)));
     searcher.search(query1, collector);
     
     for (Integer hit : collector.getDocs()) {
-      
       Document doc = searcher.doc(hit);
-      
       String conceptURI = doc.getValues(SKOSEngineImpl.FIELD_URI)[0];
-      
       concepts.add(conceptURI);
-      
     }
     
     return concepts.toArray(new String[0]);
-    
   }
   
   @Override
@@ -721,7 +715,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    * 
    */
   public static class AllDocCollector extends Collector {
-    
     List<Integer> docs = new ArrayList<Integer>();
     int base;
     
@@ -747,7 +740,5 @@ public class SKOSEngineImpl implements SKOSEngine {
     public void setNextReader(AtomicReaderContext context) throws IOException {
       base = context.docBase;
     }
-    
   }
-  
 }
