@@ -36,33 +36,4 @@ public class SKOSAttributeImpl extends AttributeImpl implements SKOSAttribute {
   public String toString() {
     return st.toString();
   }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((st == null) ? 0 : st.hashCode());
-    return result;
-  }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    SKOSAttributeImpl other = (SKOSAttributeImpl) obj;
-    if (st != other.st) return false;
-    return true;
-  }
-  
 }

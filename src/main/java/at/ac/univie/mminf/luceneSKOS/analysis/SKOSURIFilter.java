@@ -39,9 +39,7 @@ public final class SKOSURIFilter extends SKOSFilter {
     
     /* there are expanded terms for the given token */
     if (termStack.size() > 0) {
-      
       processTermOnStack();
-      
       return true;
     }
     
@@ -56,17 +54,13 @@ public final class SKOSURIFilter extends SKOSFilter {
     }
     
     return true;
-    
   }
   
   /**
    * Assumes that the given term is a concept URI
    */
-  // @Override
   public boolean addTermsToStack(String term) throws IOException {
-    
     try {
-      
       String[] prefLabels = engine.getPrefLabels(term);
       pushLabelsToStack(prefLabels, SKOSType.PREF);
       
@@ -98,5 +92,4 @@ public final class SKOSURIFilter extends SKOSFilter {
     
     return true;
   }
-  
 }

@@ -49,11 +49,8 @@ public final class SKOSLabelFilter extends SKOSFilter {
    *          mult-term expansion)
    */
   public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine, int bufferSize) {
-    
     super(in, skosEngine);
-    
     this.bufferSize = bufferSize;
-    
   }
   
   /**
@@ -61,7 +58,6 @@ public final class SKOSLabelFilter extends SKOSFilter {
    */
   @Override
   public boolean incrementToken() throws IOException {
-    
     /* there are expanded terms for the given token */
     if (termStack.size() > 0) {
       processTermOnStack();
@@ -88,13 +84,10 @@ public final class SKOSLabelFilter extends SKOSFilter {
     buffer.remove();
     
     return true;
-    
   }
   
   private boolean addAliasesToStack() throws IOException {
-    
     for (int i = buffer.size(); i > 0; i--) {
-      
       String inputTokens = bufferToString(i);
       
       if (addTermsToStack(inputTokens)) {
@@ -113,47 +106,26 @@ public final class SKOSLabelFilter extends SKOSFilter {
   /**
    * Converts the first x=noTokens states in the queue to a concatenated token
    * string separated by white spaces
-   * 
-   * @param noTokens
-   * @return
    */
   private String bufferToString(int noTokens) {
-    
     State entered = captureState();
     
     State[] bufferedStates = buffer.toArray(new State[0]);
     
     StringBuilder sb = new StringBuilder();
-    
-    for (int i = 0; i < noTokens; i++) {
-      
+    sb.append(termAtt.toString());
+    restoreState(bufferedStates[0]);
+    for (int i = 1; i < noTokens; i++) {
       restoreState(bufferedStates[i]);
-      
-      sb.append(termAtt.toString());
-      sb.append(" ");
-    }
-    
-    String result = sb.toString();
-    
-    if (result.endsWith(" ")) {
-      result = result.substring(0, result.length() - 1);
+      sb.append(" " + termAtt.toString());
     }
     
     restoreState(entered);
     
-    return result;
-    
+    return sb.toString();
   }
   
-  /**
-   * Removes the specified term from the array, if it is contained
-   * 
-   * @param array
-   *          the array to be used
-   * @param label
-   *          the term to remove
-   * @return
-   */
+  /** Removes the specified term from the array, if it is contained */
   private String[] removeTermInArray(String[] array, String term) {
     List<String> list = new ArrayList<String>(Arrays.asList(array));
     list.removeAll(Arrays.asList(term));
@@ -164,15 +136,11 @@ public final class SKOSLabelFilter extends SKOSFilter {
    * Assumes that the given term is a textual token
    * 
    */
-  // @Override
   public boolean addTermsToStack(String term) throws IOException {
-    
     try {
-      
       String[] conceptURIs = engine.getConcepts(term);
       
       for (String conceptURI : conceptURIs) {
-        
         String[] prefLabels = engine.getPrefLabels(conceptURI);
         
         /* Remove duplicated "term" in prefLabels */
@@ -197,9 +165,7 @@ public final class SKOSLabelFilter extends SKOSFilter {
             .getNarrowerTransitiveLabels(conceptURI);
         pushLabelsToStack(narrowerTransitiveLabels,
             SKOSType.NARROWER_TRANSITIVE);
-        
       }
-      
     } catch (Exception e) {
       System.err
           .println("Error when accessing SKOS Engine.\n" + e.getMessage());
@@ -212,9 +178,6 @@ public final class SKOSLabelFilter extends SKOSFilter {
     return true;
   }
   
-  /**
-   * used for testing
-   */
   public int getBufferSize() {
     return this.bufferSize;
   }

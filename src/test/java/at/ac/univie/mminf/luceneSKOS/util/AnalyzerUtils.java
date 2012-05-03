@@ -87,13 +87,13 @@ public class AnalyzerUtils {
       Payload pl = payload.getPayload();
       
       if (pl != null) {
-        System.out.print("[" + term.toString() + ":" + offset.startOffset() + "->"
-            + offset.endOffset() + ":" + type.type() + ":"
+        System.out.print("[" + term.toString() + ":" + offset.startOffset()
+            + "->" + offset.endOffset() + ":" + type.type() + ":"
             + new String(pl.getData()) + "] ");
         
       } else {
-        System.out.print("[" + term.toString() + ":" + offset.startOffset() + "->"
-            + offset.endOffset() + ":" + type.type() + "] ");
+        System.out.print("[" + term.toString() + ":" + offset.startOffset()
+            + "->" + offset.endOffset() + ":" + type.type() + "] ");
         
       }
       

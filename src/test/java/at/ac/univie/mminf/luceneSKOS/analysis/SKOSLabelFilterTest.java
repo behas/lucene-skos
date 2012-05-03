@@ -38,7 +38,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     super.setUp();
     
-    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine, ExpansionType.LABEL);
+    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine,
+        ExpansionType.LABEL);
     
     writer = new IndexWriter(directory, new IndexWriterConfig(
         Version.LUCENE_40, skosAnalyzer));

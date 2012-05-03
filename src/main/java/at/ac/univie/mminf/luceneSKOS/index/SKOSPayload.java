@@ -16,34 +16,24 @@ import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOS
 public class SKOSPayload extends Payload {
   
   public SKOSPayload(SKOSAttribute skosAtt) {
-    
     super();
-    
     int attr = skosAtt.getSKOSType().ordinal();
-    
     byte[] pl = new byte[] {(byte) attr};
-    
     super.setData(pl);
-    
   }
   
   public SKOSAttribute getSKOSAttribute() {
-    
     if (super.data.length == 0) {
       System.err.println("Error no SKOS Attribute available");
       return null;
     }
     
     byte[] payload = super.getData();
-    
     return getSKOSAttribute(payload);
-    
   }
   
   public static SKOSAttribute getSKOSAttribute(byte[] payload) {
-    
     int attr = payload[0];
-    
     SKOSType skosType = SKOSType.fromInteger(attr);
     
     if (skosType == null) {
@@ -52,9 +42,6 @@ public class SKOSPayload extends Payload {
     
     SKOSAttribute skosAttribute = new SKOSAttributeImpl();
     skosAttribute.setSKOSType(skosType);
-    
     return skosAttribute;
-    
   }
-  
 }

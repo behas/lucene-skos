@@ -182,9 +182,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getPrefLabels(String conceptURI) throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_PREF_LABEL);
-    
   }
   
   /*
@@ -195,9 +193,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getAltLabels(String conceptURI) throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_ALT_LABEL);
-    
   }
   
   /*
@@ -208,9 +204,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getRelatedConcepts(String conceptURI) throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_RELATED);
-    
   }
   
   /*
@@ -221,9 +215,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getBroaderConcepts(String conceptURI) throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_BROADER);
-    
   }
   
   /*
@@ -234,9 +226,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getNarrowerConcepts(String conceptURI) throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_NARROWER);
-    
   }
   
   /*
@@ -249,9 +239,7 @@ public class SKOSEngineImpl implements SKOSEngine {
   @Override
   public String[] getBroaderTransitiveConcepts(String conceptURI)
       throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_BROADER_TRANSITIVE);
-    
   }
   
   /*
@@ -264,9 +252,7 @@ public class SKOSEngineImpl implements SKOSEngine {
   @Override
   public String[] getNarrowerTransitiveConcepts(String conceptURI)
       throws IOException {
-    
     return readConceptFieldValues(conceptURI, FIELD_NARROWER_TRANSITIVE);
-    
   }
   
   /*
@@ -278,7 +264,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getRelatedLabels(String conceptURI) throws IOException {
-    
     List<String> relatedLabels = new ArrayList<String>();
     
     String[] relatedConcepts = getRelatedConcepts(conceptURI);
@@ -293,7 +278,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return relatedLabels.toArray(new String[0]);
-    
   }
   
   /*
@@ -305,7 +289,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getBroaderLabels(String conceptURI) throws IOException {
-    
     List<String> broaderLabels = new ArrayList<String>();
     
     String[] broaderConcepts = getBroaderConcepts(conceptURI);
@@ -320,7 +303,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return broaderLabels.toArray(new String[0]);
-    
   }
   
   /*
@@ -331,7 +313,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   @Override
   public String[] getNarrowerLabels(String conceptURI) throws IOException {
-    
     List<String> narrowerLabels = new ArrayList<String>();
     
     String[] narrowerConcepts = getNarrowerConcepts(conceptURI);
@@ -345,7 +326,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return narrowerLabels.toArray(new String[0]);
-    
   }
   
   /*
@@ -358,7 +338,6 @@ public class SKOSEngineImpl implements SKOSEngine {
   @Override
   public String[] getBroaderTransitiveLabels(String conceptURI)
       throws IOException {
-    
     List<String> broaderLabels = new ArrayList<String>();
     
     String[] broaderConcepts = getBroaderTransitiveConcepts(conceptURI);
@@ -373,7 +352,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return broaderLabels.toArray(new String[0]);
-    
   }
   
   /*
@@ -386,7 +364,6 @@ public class SKOSEngineImpl implements SKOSEngine {
   @Override
   public String[] getNarrowerTransitiveLabels(String conceptURI)
       throws IOException {
-    
     List<String> narrowerLabels = new ArrayList<String>();
     
     String[] narrowerConcepts = getNarrowerTransitiveConcepts(conceptURI);
@@ -400,7 +377,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return narrowerLabels.toArray(new String[0]);
-    
   }
   
   /*
@@ -450,7 +426,6 @@ public class SKOSEngineImpl implements SKOSEngine {
         queryString)), collector);
     
     for (Integer hit : collector.getDocs()) {
-      
       Document doc = searcher.doc(hit);
       
       String[] values = doc.getValues(SKOSEngineImpl.FIELD_ALT_LABEL);
@@ -462,7 +437,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     return synList.toArray(new String[0]);
-    
   }
   
   /**
@@ -501,7 +475,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    * @throws IOException
    */
   private void indexSKOSModel() throws IOException {
-    
     IndexWriterConfig cfg = new IndexWriterConfig(Version.LUCENE_40, analyzer);
     
     IndexWriter writer = new IndexWriter(indexDir, cfg);
@@ -511,7 +484,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     ResIterator concept_iter = skosModel.listResourcesWithProperty(RDF.type,
         SKOS.Concept);
     while (concept_iter.hasNext()) {
-      
       Resource skos_concept = concept_iter.next();
       
       Document concept_doc = createDocumentsFromConcept(skos_concept);
@@ -519,11 +491,9 @@ public class SKOSEngineImpl implements SKOSEngine {
       // System.out.println("Adding document to index " + concept_doc);
       
       writer.addDocument(concept_doc);
-      
     }
     
     writer.close();
-    
   }
   
   /**
@@ -534,7 +504,6 @@ public class SKOSEngineImpl implements SKOSEngine {
    * @return
    */
   private Document createDocumentsFromConcept(Resource skos_concept) {
-    
     Document conceptDoc = new Document();
     
     String conceptURI = skos_concept.getURI();
@@ -546,7 +515,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     // index the preferred lexical labels
     StmtIterator stmt_iter = skos_concept.listProperties(SKOS.prefLabel);
     while (stmt_iter.hasNext()) {
-      
       Literal prefLabelLiteral = stmt_iter.nextStatement().getObject()
           .as(Literal.class);
       String prefLabel = prefLabelLiteral.getLexicalForm();
@@ -563,13 +531,11 @@ public class SKOSEngineImpl implements SKOSEngine {
           prefLabel, StringField.TYPE_STORED);
       
       conceptDoc.add(prefLabelField);
-      
     }
     
     // store the alternative lexical labels
     stmt_iter = skos_concept.listProperties(SKOS.altLabel);
     while (stmt_iter.hasNext()) {
-      
       Literal altLabelLiteral = stmt_iter.nextStatement().getObject()
           .as(Literal.class);
       String altLabel = altLabelLiteral.getLexicalForm();
@@ -586,13 +552,11 @@ public class SKOSEngineImpl implements SKOSEngine {
           StringField.TYPE_STORED);
       
       conceptDoc.add(altLabelField);
-      
     }
     
     // store the URIs of the broader concepts
     stmt_iter = skos_concept.listProperties(SKOS.broader);
     while (stmt_iter.hasNext()) {
-      
       RDFNode broaderConcept = stmt_iter.nextStatement().getObject();
       
       if (!broaderConcept.canAs(Resource.class)) {
@@ -608,13 +572,11 @@ public class SKOSEngineImpl implements SKOSEngine {
           bc.getURI(), StringField.TYPE_STORED);
       
       conceptDoc.add(broaderConceptField);
-      
     }
     
     // store the URIs of the narrower concepts
     stmt_iter = skos_concept.listProperties(SKOS.narrower);
     while (stmt_iter.hasNext()) {
-      
       RDFNode narrowerConcept = stmt_iter.nextStatement().getObject();
       
       if (!narrowerConcept.canAs(Resource.class)) {
@@ -622,7 +584,6 @@ public class SKOSEngineImpl implements SKOSEngine {
             .println("Error when indexing narrower relationship of concept "
                 + skos_concept.getURI() + " .");
         continue;
-        
       }
       
       Resource nc = narrowerConcept.as(Resource.class);
@@ -631,13 +592,11 @@ public class SKOSEngineImpl implements SKOSEngine {
           nc.getURI(), StringField.TYPE_STORED);
       
       conceptDoc.add(narrowerConceptField);
-      
     }
     
     // store the URIs of the broader transitive concepts
     stmt_iter = skos_concept.listProperties(SKOS.broaderTransitive);
     while (stmt_iter.hasNext()) {
-      
       RDFNode broaderConcept = stmt_iter.nextStatement().getObject();
       
       if (!broaderConcept.canAs(Resource.class)) {
@@ -654,13 +613,11 @@ public class SKOSEngineImpl implements SKOSEngine {
           StringField.TYPE_STORED);
       
       conceptDoc.add(broaderConceptField);
-      
     }
     
     // store the URIs of the narrower transitive concepts
     stmt_iter = skos_concept.listProperties(SKOS.narrowerTransitive);
     while (stmt_iter.hasNext()) {
-      
       RDFNode narrowerConcept = stmt_iter.nextStatement().getObject();
       
       if (!narrowerConcept.canAs(Resource.class)) {
@@ -668,7 +625,6 @@ public class SKOSEngineImpl implements SKOSEngine {
             .println("Error when indexing narrower transitive relationship of concept "
                 + skos_concept.getURI() + " .");
         continue;
-        
       }
       
       Resource nc = narrowerConcept.as(Resource.class);
@@ -678,13 +634,11 @@ public class SKOSEngineImpl implements SKOSEngine {
           StringField.TYPE_STORED);
       
       conceptDoc.add(narrowerConceptField);
-      
     }
     
     // store the URIs of the related concepts
     stmt_iter = skos_concept.listProperties(SKOS.related);
     while (stmt_iter.hasNext()) {
-      
       RDFNode relatedConcept = stmt_iter.nextStatement().getObject();
       
       if (!relatedConcept.canAs(Resource.class)) {
@@ -692,7 +646,6 @@ public class SKOSEngineImpl implements SKOSEngine {
             .println("Error when indexing related relationship of concept "
                 + skos_concept.getURI() + " .");
         continue;
-        
       }
       
       Resource nc = relatedConcept.as(Resource.class);
@@ -701,11 +654,9 @@ public class SKOSEngineImpl implements SKOSEngine {
           nc.getURI(), StringField.TYPE_STORED);
       
       conceptDoc.add(relatedConceptField);
-      
     }
     
     return conceptDoc;
-    
   }
   
   /**

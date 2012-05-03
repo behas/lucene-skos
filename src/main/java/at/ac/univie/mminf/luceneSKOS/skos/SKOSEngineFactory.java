@@ -24,9 +24,7 @@ public class SKOSEngineFactory {
    */
   public static SKOSEngine getSKOSEngine(String filenameOrURI)
       throws IOException {
-    
     return new SKOSEngineImpl(filenameOrURI);
-    
   }
   
   /**
@@ -42,7 +40,6 @@ public class SKOSEngineFactory {
    */
   public static SKOSEngine getSKOSEngine(InputStream inputStream, String lang)
       throws IOException {
-    
     return new SKOSEngineImpl(inputStream, lang);
   }
   
@@ -60,9 +57,6 @@ public class SKOSEngineFactory {
    */
   public static SKOSEngine getSKOSEngine(String filenameOrURI,
       String... languages) throws IOException {
-    
     return new SKOSEngineImpl(filenameOrURI, languages);
-    
   }
-  
 }

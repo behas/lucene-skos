@@ -136,7 +136,7 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       src.setMaxTokenLength(maxTokenLength);
       TokenStream tok = new StandardFilter(Version.LUCENE_40, src);
       tok = new StopFilter(Version.LUCENE_40, stdFilter,
-              StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+          StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       tok = new SKOSLabelFilter(tok, skosEngine, bufferSize);
       tok = new LowerCaseFilter(Version.LUCENE_40, tok);
       tok = new StopFilter(Version.LUCENE_40, tok, stopwords);

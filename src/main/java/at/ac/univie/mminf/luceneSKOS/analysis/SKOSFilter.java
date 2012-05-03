@@ -76,7 +76,6 @@ public abstract class SKOSFilter extends TokenFilter {
    * stack
    */
   protected void processTermOnStack() {
-    
     ExpandedTerm expandedTerm = termStack.pop();
     
     String term = expandedTerm.getTerm();
@@ -110,7 +109,6 @@ public abstract class SKOSFilter extends TokenFilter {
      * index
      */
     payloadAtt.setPayload(new SKOSPayload(skosAtt));
-    
   }
   
   /**
@@ -153,39 +151,5 @@ public abstract class SKOSFilter extends TokenFilter {
     protected SKOSType getTermType() {
       return this.termType;
     }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((term == null) ? 0 : term.hashCode());
-      result = prime * result + ((termType == null) ? 0 : termType.hashCode());
-      return result;
-    }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
-      ExpandedTerm other = (ExpandedTerm) obj;
-      if (term == null) {
-        if (other.term != null) return false;
-      } else if (!term.equals(other.term)) return false;
-      if (termType != other.termType) return false;
-      return true;
-    }
-    
   }
-  
 }

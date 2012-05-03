@@ -3,10 +3,10 @@ package at.ac.univie.mminf.luceneSKOS.solr;
 import java.io.IOException;
 
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.solr.analysis.BaseTokenFilterFactory;
 import org.apache.lucene.analysis.util.ResourceLoader;
-import org.apache.solr.core.SolrResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
+import org.apache.solr.analysis.BaseTokenFilterFactory;
+import org.apache.solr.core.SolrResourceLoader;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSLabelFilter;
@@ -32,10 +32,8 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
   
   private SKOSEngine skosEngine;
   
-
   @Override
   public void inform(ResourceLoader loader) {
-    
     SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
     
     skosFile = args.get("skosFile");
@@ -51,15 +49,12 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
         + (bufferSizeString != null ? bufferSizeString : "Default")
         + " language: " + (languageString != null ? languageString : "All"));
     
-    if (skosFile == null || expansionTypeString == null)
-      throw new IllegalArgumentException(
+    if (skosFile == null || expansionTypeString == null) throw new IllegalArgumentException(
         "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
     
     try {
-      
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
-          || skosFile.endsWith(".ttl"))
-        skosEngine = SKOSEngineFactory
+          || skosFile.endsWith(".ttl")) skosEngine = SKOSEngineFactory
           .getSKOSEngine(solrLoader.getConfigDir() + skosFile,
               languageString != null ? languageString.split(" ") : null);
       else throw new IOException(
@@ -98,5 +93,4 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
     }
     
   }
-  
 }
