@@ -60,7 +60,7 @@ public interface SKOSTypeAttribute extends Attribute {
   /**
    * Sets this Token's SKOSType.
    * 
-   * @param st
+   * @param skosType
    */
-  public void setSKOSType(SKOSType st);
+  public void setSKOSType(SKOSType skosType);
 }
