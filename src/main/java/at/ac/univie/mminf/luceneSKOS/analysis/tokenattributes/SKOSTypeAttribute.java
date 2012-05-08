@@ -12,7 +12,7 @@ import org.apache.lucene.util.Attribute;
  * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
  * 
  */
-public interface SKOSAttribute extends Attribute {
+public interface SKOSTypeAttribute extends Attribute {
   
   /**
    * An enumeration of supported SKOS concept types
@@ -24,8 +24,11 @@ public interface SKOSAttribute extends Attribute {
     
     PREF, ALT, HIDDEN, BROADER, NARROWER, BROADER_TRANSITIVE, NARROWER_TRANSITIVE, RELATED;
     
-    public static SKOSType fromInteger(int x) {
-      switch (x) {
+    /**
+     * Returns the SKOSType given the ordinal.
+     */
+    public static SKOSType fromInteger(int ordinal) {
+      switch (ordinal) {
         case 0:
           return PREF;
         case 1:
@@ -45,15 +48,7 @@ public interface SKOSAttribute extends Attribute {
       }
       return null;
     }
-    
   }
-  
-  /**
-   * Sets the SKOS type
-   * 
-   * @param sl
-   */
-  public void setSKOSType(SKOSType sl);
   
   /**
    * Returns the SKOS type
@@ -62,4 +57,10 @@ public interface SKOSAttribute extends Attribute {
    */
   public SKOSType getSKOSType();
   
+  /**
+   * Sets this Token's SKOSType.
+   * 
+   * @param st
+   */
+  public void setSKOSType(SKOSType st);
 }

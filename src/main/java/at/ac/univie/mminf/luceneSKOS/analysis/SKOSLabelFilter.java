@@ -9,7 +9,7 @@ import java.util.Queue;
 
 import org.apache.lucene.analysis.TokenStream;
 
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 
 /**

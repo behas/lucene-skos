@@ -2,9 +2,9 @@ package at.ac.univie.mminf.luceneSKOS.index;
 
 import org.apache.lucene.index.Payload;
 
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute;
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttributeImpl;
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttributeImpl;
 
 /**
  * Encodes a given SKOSAttribute as term payload simply by converting the
@@ -13,16 +13,16 @@ import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOS
  * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
  * 
  */
-public class SKOSPayload extends Payload {
+public class SKOSTypePayload extends Payload {
   
-  public SKOSPayload(SKOSAttribute skosAtt) {
+  public SKOSTypePayload(SKOSTypeAttribute skosAtt) {
     super();
     int attr = skosAtt.getSKOSType().ordinal();
     byte[] pl = new byte[] {(byte) attr};
     super.setData(pl);
   }
   
-  public SKOSAttribute getSKOSAttribute() {
+  public SKOSTypeAttribute getSKOSAttribute() {
     if (super.data.length == 0) {
       System.err.println("Error no SKOS Attribute available");
       return null;
@@ -32,7 +32,7 @@ public class SKOSPayload extends Payload {
     return getSKOSAttribute(payload);
   }
   
-  public static SKOSAttribute getSKOSAttribute(byte[] payload) {
+  public static SKOSTypeAttribute getSKOSAttribute(byte[] payload) {
     int attr = payload[0];
     SKOSType skosType = SKOSType.fromInteger(attr);
     
@@ -40,7 +40,7 @@ public class SKOSPayload extends Payload {
       return null;
     }
     
-    SKOSAttribute skosAttribute = new SKOSAttributeImpl();
+    SKOSTypeAttribute skosAttribute = new SKOSTypeAttributeImpl();
     skosAttribute.setSKOSType(skosType);
     return skosAttribute;
   }

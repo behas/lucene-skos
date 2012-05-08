@@ -10,9 +10,9 @@ import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
 
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute;
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSAttribute.SKOSType;
-import at.ac.univie.mminf.luceneSKOS.index.SKOSPayload;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.index.SKOSTypePayload;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 
 /**
@@ -42,7 +42,7 @@ public abstract class SKOSFilter extends TokenFilter {
   protected final PayloadAttribute payloadAtt;
   
   /* the SKOS-specific attribute attached to a term */
-  protected final SKOSAttribute skosAtt;
+  protected final SKOSTypeAttribute skosAtt;
   
   /**
    * Constructor
@@ -108,7 +108,7 @@ public abstract class SKOSFilter extends TokenFilter {
      * converts the SKOS Attribute to a payload, which is propagated to the
      * index
      */
-    payloadAtt.setPayload(new SKOSPayload(skosAtt));
+    payloadAtt.setPayload(new SKOSTypePayload(skosAtt));
   }
   
   /**
