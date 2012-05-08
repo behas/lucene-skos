@@ -9,7 +9,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
@@ -93,8 +93,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     searcher = new IndexSearcher(DirectoryReader.open(writer, false));
     
-    Query query = new QueryParser(Version.LUCENE_40, "content", skosAnalyzer)
-        .parse("\"fox jumps\"");
+    Query query = new StandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
+        "content");
     
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
@@ -102,8 +102,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
         .getClass().getName());
     
-    query = new QueryParser(Version.LUCENE_40, "content", new StandardAnalyzer(
-        Version.LUCENE_40)).parse("\"fox jumps\"");
+    query = new StandardQueryParser(new StandardAnalyzer(Version.LUCENE_40))
+        .parse("\"fox jumps\"", "content");
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
     Assert.assertEquals("content:\"fox jumps\"", query.toString());
@@ -123,10 +123,10 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     searcher = new IndexSearcher(DirectoryReader.open(writer, false));
     
-    QueryParser parser = new QueryParser(Version.LUCENE_40, "content",
-        new SimpleAnalyzer(Version.LUCENE_40));
+    StandardQueryParser parser = new StandardQueryParser(new SimpleAnalyzer(
+        Version.LUCENE_40));
     
-    Query query = parser.parse("united nations");
+    Query query = parser.parse("united nations", "content");
     
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
