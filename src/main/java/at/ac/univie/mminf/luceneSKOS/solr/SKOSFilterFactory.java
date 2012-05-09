@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
-import org.apache.solr.analysis.BaseTokenFilterFactory;
+import org.apache.lucene.analysis.util.TokenFilterFactory;
 import org.apache.solr.core.SolrResourceLoader;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
@@ -21,7 +21,7 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
  * @author Martin Kysel <martin.kysel@univie.ac.at>
  * 
  */
-public class SKOSFilterFactory extends BaseTokenFilterFactory implements
+public class SKOSFilterFactory extends TokenFilterFactory implements
     ResourceLoaderAware {
   
   private String skosFile;
