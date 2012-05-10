@@ -8,6 +8,7 @@ import org.apache.lucene.analysis.core.KeywordTokenizer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.core.StopFilter;
+import org.apache.lucene.analysis.miscellaneous.RemoveDuplicatesTokenFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -140,6 +141,7 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       tok = new SKOSLabelFilter(tok, skosEngine, bufferSize);
       tok = new LowerCaseFilter(Version.LUCENE_40, tok);
       tok = new StopFilter(Version.LUCENE_40, tok, stopwords);
+      tok = new RemoveDuplicatesTokenFilter(tok);
       return new TokenStreamComponents(src, tok) {
         @Override
         protected void reset(final Reader reader) throws IOException {
