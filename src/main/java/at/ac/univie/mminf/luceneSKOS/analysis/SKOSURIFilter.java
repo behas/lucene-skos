@@ -26,9 +26,10 @@ public final class SKOSURIFilter extends SKOSFilter {
    * 
    * @param in
    * @param skosEngine
+   * @param types
    */
-  public SKOSURIFilter(TokenStream in, SKOSEngine skosEngine) {
-    super(in, skosEngine);
+  public SKOSURIFilter(TokenStream in, SKOSEngine skosEngine, SKOSType... types) {
+    super(in, skosEngine, types);
   }
   
   /**
@@ -61,26 +62,32 @@ public final class SKOSURIFilter extends SKOSFilter {
    */
   public boolean addTermsToStack(String term) throws IOException {
     try {
-      String[] prefLabels = engine.getPrefLabels(term);
-      pushLabelsToStack(prefLabels, SKOSType.PREF);
-      
-      String[] altLabels = engine.getAltLabels(term);
-      pushLabelsToStack(altLabels, SKOSType.ALT);
-      
-      String[] broaderLabels = engine.getBroaderLabels(term);
-      pushLabelsToStack(broaderLabels, SKOSType.BROADER);
-      
-      String[] narrowerLabels = engine.getNarrowerLabels(term);
-      pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
-      
-      String[] broaderTransitiveLabels = engine
-          .getBroaderTransitiveLabels(term);
-      pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADER_TRANSITIVE);
-      
-      String[] narrowerTransitiveLabels = engine
-          .getNarrowerTransitiveLabels(term);
-      pushLabelsToStack(narrowerTransitiveLabels, SKOSType.NARROWER_TRANSITIVE);
-      
+      if (types.contains(SKOSType.PREF)) {
+        String[] prefLabels = engine.getPrefLabels(term);
+        pushLabelsToStack(prefLabels, SKOSType.PREF);
+      }
+      if (types.contains(SKOSType.ALT)) {
+        String[] altLabels = engine.getAltLabels(term);
+        pushLabelsToStack(altLabels, SKOSType.ALT);
+      }
+      if (types.contains(SKOSType.BROADER)) {
+        String[] broaderLabels = engine.getBroaderLabels(term);
+        pushLabelsToStack(broaderLabels, SKOSType.BROADER);
+      }
+      if (types.contains(SKOSType.BROADERTRANSITIVE)) {
+        String[] broaderTransitiveLabels = engine
+            .getBroaderTransitiveLabels(term);
+        pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADERTRANSITIVE);
+      }
+      if (types.contains(SKOSType.NARROWER)) {
+        String[] narrowerLabels = engine.getNarrowerLabels(term);
+        pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
+      }
+      if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
+        String[] narrowerTransitiveLabels = engine
+            .getNarrowerTransitiveLabels(term);
+        pushLabelsToStack(narrowerTransitiveLabels, SKOSType.NARROWERTRANSITIVE);
+      }
     } catch (Exception e) {
       System.err
           .println("Error when accessing SKOS Engine.\n" + e.getMessage());

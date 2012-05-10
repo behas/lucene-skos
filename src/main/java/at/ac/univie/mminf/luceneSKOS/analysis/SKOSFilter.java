@@ -1,7 +1,10 @@
 package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
@@ -29,6 +32,9 @@ public abstract class SKOSFilter extends TokenFilter {
   /* an engine delivering SKOS concepts */
   protected SKOSEngine engine;
   
+  /* the skos types to expand to */
+  protected Set<SKOSType> types;
+  
   /* provides access to the the term attributes */
   protected AttributeSource.State current;
   
@@ -51,16 +57,22 @@ public abstract class SKOSFilter extends TokenFilter {
    *          the TokenStream
    * @param engine
    *          the engine delivering skos concepts
+   * @param type
+   *          the skos types to expand to
    */
-  public SKOSFilter(TokenStream in, SKOSEngine engine) {
+  public SKOSFilter(TokenStream in, SKOSEngine engine, SKOSType... types) {
     super(in);
     termStack = new Stack<ExpandedTerm>();
     this.engine = engine;
+    
+    if (types != null) this.types = new TreeSet<SKOSType>(Arrays.asList(types));
+    else this.types = new TreeSet<SKOSType>(Arrays.asList(new SKOSType[] {
+        SKOSType.PREF, SKOSType.ALT}));
+    
     this.termAtt = addAttribute(CharTermAttribute.class);
     this.posIncrAtt = addAttribute(PositionIncrementAttribute.class);
     this.payloadAtt = addAttribute(PayloadAttribute.class);
-    this.skosAtt = addAttribute(SKOSAttribute.class);
-    
+    this.skosAtt = addAttribute(SKOSTypeAttribute.class);
   }
   
   /**

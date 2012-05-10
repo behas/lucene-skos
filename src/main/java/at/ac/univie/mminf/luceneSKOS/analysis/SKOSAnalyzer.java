@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.util.Version;
 
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 
@@ -37,6 +38,14 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
   public static final ExpansionType DEFAULT_EXPANSION_TYPE = ExpansionType.LABEL;
   
   private ExpansionType expansionType = DEFAULT_EXPANSION_TYPE;
+  
+  /** Default skos types to expand to */
+  public static final SKOSType[] DEFAULT_SKOS_TYPES = new SKOSType[] {
+      SKOSType.PREF, SKOSType.ALT, SKOSType.BROADER,
+      SKOSType.BROADERTRANSITIVE, SKOSType.NARROWER,
+      SKOSType.NARROWERTRANSITIVE};
+  
+  private SKOSType[] types = DEFAULT_SKOS_TYPES;
   
   /** A SKOS Engine instance */
   private SKOSEngine skosEngine;
@@ -128,7 +137,7 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       Reader reader) {
     if (expansionType.equals(ExpansionType.URI)) {
       final KeywordTokenizer src = new KeywordTokenizer(reader);
-      TokenStream tok = new SKOSURIFilter(src, skosEngine);
+      TokenStream tok = new SKOSURIFilter(src, skosEngine, types);
       tok = new LowerCaseFilter(matchVersion, tok);
       return new TokenStreamComponents(src, tok);
     } else {
@@ -137,7 +146,7 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       TokenStream tok = new StandardFilter(matchVersion, src);
       // prior to this we get the classic behavior, standardfilter does it for
       // us.
-      tok = new SKOSLabelFilter(tok, skosEngine, bufferSize);
+      tok = new SKOSLabelFilter(tok, skosEngine, bufferSize, types);
       tok = new LowerCaseFilter(matchVersion, tok);
       tok = new StopFilter(matchVersion, tok, stopwords);
       tok = new RemoveDuplicatesTokenFilter(tok);

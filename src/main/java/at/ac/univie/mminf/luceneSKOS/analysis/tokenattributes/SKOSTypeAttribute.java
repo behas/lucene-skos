@@ -22,7 +22,7 @@ public interface SKOSTypeAttribute extends Attribute {
    */
   public static enum SKOSType {
     
-    PREF, ALT, HIDDEN, BROADER, NARROWER, BROADER_TRANSITIVE, NARROWER_TRANSITIVE, RELATED;
+    PREF, ALT, HIDDEN, BROADER, NARROWER, BROADERTRANSITIVE, NARROWERTRANSITIVE, RELATED;
     
     /**
      * Returns the SKOSType given the ordinal.
@@ -40,9 +40,9 @@ public interface SKOSTypeAttribute extends Attribute {
         case 4:
           return NARROWER;
         case 5:
-          return BROADER_TRANSITIVE;
+          return BROADERTRANSITIVE;
         case 6:
-          return NARROWER_TRANSITIVE;
+          return NARROWERTRANSITIVE;
         case 7:
           return RELATED;
       }

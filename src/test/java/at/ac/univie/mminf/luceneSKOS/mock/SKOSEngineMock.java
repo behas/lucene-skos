@@ -118,13 +118,13 @@ public class SKOSEngineMock implements SKOSEngine {
   @Override
   public String[] getBroaderTransitiveConcepts(String conceptURI)
       throws IOException {
-    return readConceptFieldValues(conceptURI, SKOSType.BROADER_TRANSITIVE);
+    return readConceptFieldValues(conceptURI, SKOSType.BROADERTRANSITIVE);
   }
   
   @Override
   public String[] getBroaderTransitiveLabels(String conceptURI)
       throws IOException {
-    return getLabels(conceptURI, SKOSType.BROADER_TRANSITIVE);
+    return getLabels(conceptURI, SKOSType.BROADERTRANSITIVE);
   }
   
   @Override
@@ -176,13 +176,13 @@ public class SKOSEngineMock implements SKOSEngine {
   @Override
   public String[] getNarrowerTransitiveConcepts(String conceptURI)
       throws IOException {
-    return readConceptFieldValues(conceptURI, SKOSType.NARROWER_TRANSITIVE);
+    return readConceptFieldValues(conceptURI, SKOSType.NARROWERTRANSITIVE);
   }
   
   @Override
   public String[] getNarrowerTransitiveLabels(String conceptURI)
       throws IOException {
-    return getLabels(conceptURI, SKOSType.NARROWER_TRANSITIVE);
+    return getLabels(conceptURI, SKOSType.NARROWERTRANSITIVE);
   }
   
   @Override

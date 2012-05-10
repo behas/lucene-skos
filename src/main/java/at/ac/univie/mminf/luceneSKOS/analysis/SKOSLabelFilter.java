@@ -1,10 +1,7 @@
 package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 import org.apache.lucene.analysis.TokenStream;
@@ -47,9 +44,12 @@ public final class SKOSLabelFilter extends SKOSFilter {
    * @param bufferSize
    *          the length of the longest pref-label to consider (needed for
    *          mult-term expansion)
+   * @param types
+   *          the skos types to expand to
    */
-  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine, int bufferSize) {
-    super(in, skosEngine);
+  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine, int bufferSize,
+      SKOSType... types) {
+    super(in, skosEngine, types);
     this.bufferSize = bufferSize;
   }
   
@@ -125,13 +125,6 @@ public final class SKOSLabelFilter extends SKOSFilter {
     return sb.toString();
   }
   
-  /** Removes the specified term from the array, if it is contained */
-  private String[] removeTermInArray(String[] array, String term) {
-    List<String> list = new ArrayList<String>(Arrays.asList(array));
-    list.removeAll(Arrays.asList(term));
-    return list.toArray(new String[0]);
-  }
-  
   /**
    * Assumes that the given term is a textual token
    * 
@@ -141,30 +134,33 @@ public final class SKOSLabelFilter extends SKOSFilter {
       String[] conceptURIs = engine.getConcepts(term);
       
       for (String conceptURI : conceptURIs) {
-        String[] prefLabels = engine.getPrefLabels(conceptURI);
-        
-        /* Remove duplicated "term" in prefLabels */
-        prefLabels = removeTermInArray(prefLabels, term);
-        
-        pushLabelsToStack(prefLabels, SKOSType.PREF);
-        
-        String[] altLabels = engine.getAltLabels(conceptURI);
-        pushLabelsToStack(altLabels, SKOSType.ALT);
-        
-        String[] broaderLabels = engine.getBroaderLabels(conceptURI);
-        pushLabelsToStack(broaderLabels, SKOSType.BROADER);
-        
-        String[] narrowerLabels = engine.getNarrowerLabels(conceptURI);
-        pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
-        
-        String[] broaderTransitiveLabels = engine
-            .getBroaderTransitiveLabels(conceptURI);
-        pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADER_TRANSITIVE);
-        
-        String[] narrowerTransitiveLabels = engine
-            .getNarrowerTransitiveLabels(conceptURI);
-        pushLabelsToStack(narrowerTransitiveLabels,
-            SKOSType.NARROWER_TRANSITIVE);
+        if (types.contains(SKOSType.PREF)) {
+          String[] prefLabels = engine.getPrefLabels(conceptURI);
+          pushLabelsToStack(prefLabels, SKOSType.PREF);
+        }
+        if (types.contains(SKOSType.ALT)) {
+          String[] altLabels = engine.getAltLabels(conceptURI);
+          pushLabelsToStack(altLabels, SKOSType.ALT);
+        }
+        if (types.contains(SKOSType.BROADER)) {
+          String[] broaderLabels = engine.getBroaderLabels(conceptURI);
+          pushLabelsToStack(broaderLabels, SKOSType.BROADER);
+        }
+        if (types.contains(SKOSType.BROADERTRANSITIVE)) {
+          String[] broaderTransitiveLabels = engine
+              .getBroaderTransitiveLabels(conceptURI);
+          pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADERTRANSITIVE);
+        }
+        if (types.contains(SKOSType.NARROWER)) {
+          String[] narrowerLabels = engine.getNarrowerLabels(conceptURI);
+          pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
+        }
+        if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
+          String[] narrowerTransitiveLabels = engine
+              .getNarrowerTransitiveLabels(conceptURI);
+          pushLabelsToStack(narrowerTransitiveLabels,
+              SKOSType.NARROWERTRANSITIVE);
+        }
       }
     } catch (Exception e) {
       System.err

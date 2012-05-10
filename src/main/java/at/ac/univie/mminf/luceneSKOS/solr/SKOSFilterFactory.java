@@ -1,6 +1,8 @@
 package at.ac.univie.mminf.luceneSKOS.solr;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.ResourceLoader;
@@ -11,6 +13,7 @@ import org.apache.solr.core.SolrResourceLoader;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSLabelFilter;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSURIFilter;
+import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 
@@ -30,6 +33,8 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
   
   private int bufferSize;
   
+  private SKOSType[] type;
+  
   private SKOSEngine skosEngine;
   
   @Override
@@ -44,10 +49,13 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
     
     String languageString = args.get("language");
     
+    String typeString = args.get("type");
+    
     System.out.println("Passed argument: " + skosFile + " Type: "
         + expansionTypeString + " bufferSize: "
         + (bufferSizeString != null ? bufferSizeString : "Default")
-        + " language: " + (languageString != null ? languageString : "All"));
+        + " language: " + (languageString != null ? languageString : "All")
+        + " type: " + (typeString != null ? typeString : "Default"));
     
     if (skosFile == null || expansionTypeString == null) throw new IllegalArgumentException(
         "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
@@ -80,13 +88,22 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
       else throw new IllegalArgumentException(
           "The property 'bufferSize' must be a positive (smallish) integer");
     }
+    
+    if (typeString != null) {
+      List<SKOSType> sts = new ArrayList<SKOSType>();
+      for (String s : typeString.split(" ")) {
+        SKOSType st = SKOSType.valueOf(s.toUpperCase());
+        if (st != null) sts.add(st);
+      }
+      type = sts.toArray(new SKOSType[0]);
+    }
   }
   
   @Override
   public TokenStream create(TokenStream input) {
     
     if (expansionType.equals(ExpansionType.LABEL)) {
-      return new SKOSLabelFilter(input, skosEngine, bufferSize);
+      return new SKOSLabelFilter(input, skosEngine, bufferSize, type);
       
     } else {
       return new SKOSURIFilter(input, skosEngine);
