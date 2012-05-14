@@ -117,6 +117,14 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
         expansionType, bufferSize, languages);
   }
   
+  public SKOSType[] getTypes() {
+    return types;
+  }
+  
+  public void setTypes(SKOSType... types) {
+    this.types = types;
+  }
+  
   /**
    * Set maximum allowed token length. If a token is seen that exceeds this
    * length then it is discarded. This setting only takes effect the next time
