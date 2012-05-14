@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
@@ -47,9 +48,9 @@ public final class SKOSLabelFilter extends SKOSFilter {
    * @param types
    *          the skos types to expand to
    */
-  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine, int bufferSize,
-      SKOSType... types) {
-    super(in, skosEngine, types);
+  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine,
+      Analyzer analyzer, int bufferSize, SKOSType... types) {
+    super(in, skosEngine, analyzer, types);
     this.bufferSize = bufferSize;
   }
   

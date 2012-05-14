@@ -9,6 +9,7 @@ import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.miscellaneous.RemoveDuplicatesTokenFilter;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -137,7 +138,8 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       Reader reader) {
     if (expansionType.equals(ExpansionType.URI)) {
       final KeywordTokenizer src = new KeywordTokenizer(reader);
-      TokenStream tok = new SKOSURIFilter(src, skosEngine, types);
+      TokenStream tok = new SKOSURIFilter(src, skosEngine,
+          new StandardAnalyzer(matchVersion), types);
       tok = new LowerCaseFilter(matchVersion, tok);
       return new TokenStreamComponents(src, tok);
     } else {
@@ -146,7 +148,8 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       TokenStream tok = new StandardFilter(matchVersion, src);
       // prior to this we get the classic behavior, standardfilter does it for
       // us.
-      tok = new SKOSLabelFilter(tok, skosEngine, bufferSize, types);
+      tok = new SKOSLabelFilter(tok, skosEngine, new StandardAnalyzer(
+          matchVersion), bufferSize, types);
       tok = new LowerCaseFilter(matchVersion, tok);
       tok = new StopFilter(matchVersion, tok, stopwords);
       tok = new RemoveDuplicatesTokenFilter(tok);

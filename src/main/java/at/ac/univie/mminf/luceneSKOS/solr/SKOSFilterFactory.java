@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
+import org.apache.lucene.util.Version;
 import org.apache.solr.core.SolrResourceLoader;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
@@ -103,10 +105,12 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
   public TokenStream create(TokenStream input) {
     
     if (expansionType.equals(ExpansionType.LABEL)) {
-      return new SKOSLabelFilter(input, skosEngine, bufferSize, type);
+      return new SKOSLabelFilter(input, skosEngine, new StandardAnalyzer(
+          Version.LUCENE_40), bufferSize, type);
       
     } else {
-      return new SKOSURIFilter(input, skosEngine);
+      return new SKOSURIFilter(input, skosEngine, new StandardAnalyzer(
+          Version.LUCENE_40));
     }
     
   }

@@ -1,17 +1,20 @@
 package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
+import org.apache.lucene.util.CharsRef;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute;
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
@@ -50,6 +53,9 @@ public abstract class SKOSFilter extends TokenFilter {
   /* the SKOS-specific attribute attached to a term */
   protected final SKOSTypeAttribute skosAtt;
   
+  /* the analyzer to use when parsing */
+  protected final Analyzer analyzer;
+  
   /**
    * Constructor
    * 
@@ -60,10 +66,12 @@ public abstract class SKOSFilter extends TokenFilter {
    * @param type
    *          the skos types to expand to
    */
-  public SKOSFilter(TokenStream in, SKOSEngine engine, SKOSType... types) {
+  public SKOSFilter(TokenStream in, SKOSEngine engine, Analyzer analyzer,
+      SKOSType... types) {
     super(in);
     termStack = new Stack<ExpandedTerm>();
     this.engine = engine;
+    this.analyzer = analyzer;
     
     if (types != null) this.types = new TreeSet<SKOSType>(Arrays.asList(types));
     else this.types = new TreeSet<SKOSType>(Arrays.asList(new SKOSType[] {
@@ -86,13 +94,17 @@ public abstract class SKOSFilter extends TokenFilter {
   /**
    * Replaces the current term (attributes) with term (attributes) from the
    * stack
+   * 
+   * @throws IOException
    */
-  protected void processTermOnStack() {
+  protected void processTermOnStack() throws IOException {
     ExpandedTerm expandedTerm = termStack.pop();
     
     String term = expandedTerm.getTerm();
     
     SKOSType termType = expandedTerm.getTermType();
+    
+    String sTerm = analyze(analyzer, term, new CharsRef()).toString();
     
     /*
      * copies the values of all attribute implementations from this state into
@@ -103,7 +115,7 @@ public abstract class SKOSFilter extends TokenFilter {
     /*
      * Adds the expanded term to the term buffer
      */
-    termAtt.setEmpty().append(term);
+    termAtt.setEmpty().append(sTerm);
     
     /*
      * set position increment to zero to put multiple terms into the same
@@ -121,6 +133,43 @@ public abstract class SKOSFilter extends TokenFilter {
      * index
      */
     payloadAtt.setPayload(new SKOSTypePayload(skosAtt));
+  }
+  
+  /* Snipped from Solr's SynonymMap */
+  public static CharsRef analyze(Analyzer analyzer, String text, CharsRef reuse)
+      throws IOException {
+    TokenStream ts = analyzer.tokenStream("", new StringReader(text));
+    CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
+    // PositionIncrementAttribute posIncAtt =
+    // ts.addAttribute(PositionIncrementAttribute.class);
+    ts.reset();
+    reuse.length = 0;
+    while (ts.incrementToken()) {
+      int length = termAtt.length();
+      if (length == 0) {
+        throw new IllegalArgumentException("term: " + text
+            + " analyzed to a zero-length token");
+      }
+      // if (posIncAtt.getPositionIncrement() != 1) {
+      // throw new IllegalArgumentException("term: " + text +
+      // " analyzed to a token with posinc != 1");
+      // }
+      reuse.grow(reuse.length + length + 1); /* current + word + separator */
+      int end = reuse.offset + reuse.length;
+      if (reuse.length > 0) {
+        reuse.chars[end++] = 32; // space
+        reuse.length++;
+      }
+      System.arraycopy(termAtt.buffer(), 0, reuse.chars, end, length);
+      reuse.length += length;
+    }
+    ts.end();
+    ts.close();
+    if (reuse.length == 0) {
+      throw new IllegalArgumentException("term: " + text
+          + " was completely eliminated by analyzer");
+    }
+    return reuse;
   }
   
   /**

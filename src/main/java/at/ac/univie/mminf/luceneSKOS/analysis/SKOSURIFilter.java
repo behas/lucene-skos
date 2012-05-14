@@ -2,6 +2,7 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
@@ -28,8 +29,9 @@ public final class SKOSURIFilter extends SKOSFilter {
    * @param skosEngine
    * @param types
    */
-  public SKOSURIFilter(TokenStream in, SKOSEngine skosEngine, SKOSType... types) {
-    super(in, skosEngine, types);
+  public SKOSURIFilter(TokenStream in, SKOSEngine skosEngine,
+      Analyzer analyzer, SKOSType... types) {
+    super(in, skosEngine, analyzer, types);
   }
   
   /**
