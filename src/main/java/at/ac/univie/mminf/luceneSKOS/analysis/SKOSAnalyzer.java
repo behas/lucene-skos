@@ -87,7 +87,8 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       String skosFile, ExpansionType expansionType, int bufferSize,
       String... languages) throws IOException {
     super(matchVersion, stopWords);
-    this.skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, languages);
+    this.skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion, skosFile,
+        languages);
     this.expansionType = expansionType;
     this.bufferSize = bufferSize;
   }

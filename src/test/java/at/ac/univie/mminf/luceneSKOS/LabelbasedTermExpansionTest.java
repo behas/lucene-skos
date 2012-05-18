@@ -20,7 +20,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -66,18 +65,18 @@ public class LabelbasedTermExpansionTest extends AbstractTermExpansionTest {
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
     
     /* ExpansionType.URI->the field to be analyzed (expanded) contains URIs */
-    Analyzer skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosFile,
+    Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile,
         ExpansionType.LABEL);
     
     /* Define different analyzers for different fields */
     Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
     analyzerPerField.put("subject", skosAnalyzer);
     PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(
-        new SimpleAnalyzer(Version.LUCENE_40), analyzerPerField);
+        new SimpleAnalyzer(matchVersion), analyzerPerField);
     
     /* setting up a writer with a default (simple) analyzer */
     writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(
-        Version.LUCENE_40, indexAnalyzer));
+        matchVersion, indexAnalyzer));
     
     /* adding the document to the index */
     writer.addDocument(doc);

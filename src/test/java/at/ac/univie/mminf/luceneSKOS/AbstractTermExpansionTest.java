@@ -27,6 +27,8 @@ import org.junit.Test;
  */
 public abstract class AbstractTermExpansionTest {
   
+  protected final Version matchVersion = Version.LUCENE_40;
+  
   protected IndexSearcher searcher;
   
   protected IndexWriter writer;

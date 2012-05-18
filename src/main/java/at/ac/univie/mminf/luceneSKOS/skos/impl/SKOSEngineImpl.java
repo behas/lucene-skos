@@ -90,6 +90,8 @@ public class SKOSEngineImpl implements SKOSEngine {
     public void setScorer(Scorer scorer) throws IOException {}
   }
   
+  protected final Version matchVersion;
+  
   /*
    * Static fields used in the Lucene Index
    */
@@ -129,7 +131,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    * 
    * SimpleAnalyzer = LetterTokenizer + LowerCaseFilter
    */
-  private Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
+  private final Analyzer analyzer;
   
   /**
    * This constructor loads the SKOS model from a given InputStream using the
@@ -143,12 +145,16 @@ public class SKOSEngineImpl implements SKOSEngine {
    * @throws IOException
    *           if the model cannot be loaded
    */
-  public SKOSEngineImpl(InputStream inputStream, String lang)
-      throws IOException {
+  public SKOSEngineImpl(final Version version, InputStream inputStream,
+      String lang) throws IOException {
     
     if (!(lang.equals("N3") || lang.equals("RDF/XML") || lang.equals("TURTLE"))) {
       throw new IOException("Invalid RDF serialization format");
     }
+    
+    matchVersion = version;
+    
+    analyzer = new SimpleAnalyzer(matchVersion);
     
     skosModel = ModelFactory.createDefaultModel();
     
@@ -168,8 +174,9 @@ public class SKOSEngineImpl implements SKOSEngine {
    *          the name of the skos file to be loaded
    * @throws IOException
    */
-  public SKOSEngineImpl(String filenameOrURI) throws IOException {
-    this(filenameOrURI, (String[]) null);
+  public SKOSEngineImpl(final Version version, String filenameOrURI)
+      throws IOException {
+    this(version, filenameOrURI, (String[]) null);
   }
   
   /**
@@ -181,8 +188,11 @@ public class SKOSEngineImpl implements SKOSEngine {
    * @param filenameOrURI
    * @throws IOException
    */
-  public SKOSEngineImpl(String filenameOrURI, String... languages)
-      throws IOException {
+  public SKOSEngineImpl(final Version version, String filenameOrURI,
+      String... languages) throws IOException {
+    matchVersion = version;
+    analyzer = new SimpleAnalyzer(matchVersion);
+    
     String langSig = "";
     if (languages != null) {
       this.languages = new TreeSet<String>(Arrays.asList(languages));
@@ -416,7 +426,7 @@ public class SKOSEngineImpl implements SKOSEngine {
    * @throws IOException
    */
   private void indexSKOSModel() throws IOException {
-    IndexWriterConfig cfg = new IndexWriterConfig(Version.LUCENE_40, analyzer);
+    IndexWriterConfig cfg = new IndexWriterConfig(matchVersion, analyzer);
     IndexWriter writer = new IndexWriter(indexDir, cfg);
     writer.getConfig().setRAMBufferSizeMB(48);
     

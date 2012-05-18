@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 /**
@@ -14,12 +15,15 @@ import org.junit.Test;
  */
 public class SKOSEngineTest {
   
+  protected final Version matchVersion = Version.LUCENE_40;
+  
   @Test
   public void testSimpleSKOSSamplesRDFXML() throws Exception {
     
     String skosFile = "src/test/resources/skos_samples/simple_test_skos.rdf";
     
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
+    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion,
+        skosFile);
     
     Assert.assertEquals(2, skosEngine.getAltTerms("quick").length);
     
@@ -32,7 +36,8 @@ public class SKOSEngineTest {
     
     String skosFile = "src/test/resources/skos_samples/simple_test_skos.rdf";
     
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
+    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion,
+        skosFile);
     
     Assert.assertEquals(2, skosEngine.getAltTerms("quick").length);
     
@@ -45,7 +50,8 @@ public class SKOSEngineTest {
     
     String skosFile = "src/test/resources/skos_samples/skos_spec_samples.n3";
     
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
+    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion,
+        skosFile);
     
     Assert.assertEquals(3, skosEngine.getAltTerms("animals").length);
     
@@ -59,7 +65,8 @@ public class SKOSEngineTest {
     
     String skosFile = "src/test/resources/skos_samples/skos_spec_samples.n3";
     
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "en");
+    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion,
+        skosFile, "en");
     
     String[] altTerms = skosEngine.getAltTerms("animals");
     
@@ -76,7 +83,8 @@ public class SKOSEngineTest {
     
     String conceptURI = "http://www.ukat.org.uk/thesaurus/concept/859";
     
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile);
+    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion,
+        skosFile);
     
     // testing pref-labels
     String[] prefLabel = skosEngine.getPrefLabels(conceptURI);

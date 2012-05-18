@@ -11,7 +11,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.util.Version;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,11 +32,10 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     super.setUp();
     
-    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine,
-        ExpansionType.URI);
+    skosAnalyzer = new SKOSAnalyzer(matchVersion, skosEngine, ExpansionType.URI);
     
-    writer = new IndexWriter(directory, new IndexWriterConfig(
-        Version.LUCENE_40, skosAnalyzer));
+    writer = new IndexWriter(directory, new IndexWriterConfig(matchVersion,
+        skosAnalyzer));
     
   }
   
@@ -135,8 +133,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     String text = "http://example.com/concept/1";
     
-    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine,
-        ExpansionType.URI);
+    skosAnalyzer = new SKOSAnalyzer(matchVersion, skosEngine, ExpansionType.URI);
     
     AnalyzerUtils.displayTokensWithFullDetails(skosAnalyzer, text);
     // AnalyzerUtils.displayTokensWithPositions(synonymAnalyzer, text);

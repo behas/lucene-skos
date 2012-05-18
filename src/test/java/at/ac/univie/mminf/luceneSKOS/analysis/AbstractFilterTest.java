@@ -4,6 +4,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 import org.junit.After;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
@@ -16,6 +17,8 @@ import at.ac.univie.mminf.luceneSKOS.mock.SKOSEngineMock;
  * 
  */
 public abstract class AbstractFilterTest {
+  
+  protected final Version matchVersion = Version.LUCENE_40;
   
   protected IndexSearcher searcher;
   

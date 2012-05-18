@@ -3,6 +3,8 @@ package at.ac.univie.mminf.luceneSKOS.skos;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.lucene.util.Version;
+
 import at.ac.univie.mminf.luceneSKOS.skos.impl.SKOSEngineImpl;
 
 /**
@@ -22,9 +24,9 @@ public class SKOSEngineFactory {
    * @return a new SKOSEngine instance
    * @throws IOException
    */
-  public static SKOSEngine getSKOSEngine(String filenameOrURI)
-      throws IOException {
-    return new SKOSEngineImpl(filenameOrURI);
+  public static SKOSEngine getSKOSEngine(final Version version,
+      String filenameOrURI) throws IOException {
+    return new SKOSEngineImpl(version, filenameOrURI);
   }
   
   /**
@@ -38,9 +40,9 @@ public class SKOSEngineFactory {
    * @return a new SKOSEngine instance
    * @throws IOException
    */
-  public static SKOSEngine getSKOSEngine(InputStream inputStream, String lang)
-      throws IOException {
-    return new SKOSEngineImpl(inputStream, lang);
+  public static SKOSEngine getSKOSEngine(final Version version,
+      InputStream inputStream, String lang) throws IOException {
+    return new SKOSEngineImpl(version, inputStream, lang);
   }
   
   /**
@@ -55,8 +57,8 @@ public class SKOSEngineFactory {
    * @return SKOSEngine
    * @throws IOException
    */
-  public static SKOSEngine getSKOSEngine(String filenameOrURI,
-      String... languages) throws IOException {
-    return new SKOSEngineImpl(filenameOrURI, languages);
+  public static SKOSEngine getSKOSEngine(final Version version,
+      String filenameOrURI, String... languages) throws IOException {
+    return new SKOSEngineImpl(version, filenameOrURI, languages);
   }
 }

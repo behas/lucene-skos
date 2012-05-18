@@ -14,7 +14,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.Version;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,11 +37,11 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     super.setUp();
     
-    skosAnalyzer = new SKOSAnalyzer(Version.LUCENE_40, skosEngine,
+    skosAnalyzer = new SKOSAnalyzer(matchVersion, skosEngine,
         ExpansionType.LABEL);
     
-    writer = new IndexWriter(directory, new IndexWriterConfig(
-        Version.LUCENE_40, skosAnalyzer));
+    writer = new IndexWriter(directory, new IndexWriterConfig(matchVersion,
+        skosAnalyzer));
     
   }
   
@@ -102,8 +101,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
         .getClass().getName());
     
-    query = new StandardQueryParser(new StandardAnalyzer(Version.LUCENE_40))
-        .parse("\"fox jumps\"", "content");
+    query = new StandardQueryParser(new StandardAnalyzer(matchVersion)).parse(
+        "\"fox jumps\"", "content");
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
     Assert.assertEquals("content:\"fox jumps\"", query.toString());
@@ -124,7 +123,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     searcher = new IndexSearcher(DirectoryReader.open(writer, false));
     
     StandardQueryParser parser = new StandardQueryParser(new SimpleAnalyzer(
-        Version.LUCENE_40));
+        matchVersion));
     
     Query query = parser.parse("united nations", "content");
     

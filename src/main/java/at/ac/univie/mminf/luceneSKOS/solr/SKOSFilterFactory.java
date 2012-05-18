@@ -3,13 +3,13 @@ package at.ac.univie.mminf.luceneSKOS.solr;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
-import org.apache.lucene.util.Version;
 import org.apache.solr.core.SolrResourceLoader;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
@@ -40,6 +40,12 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
   private SKOSEngine skosEngine;
   
   @Override
+  public void init(Map<String,String> args) {
+    super.init(args);
+    assureMatchVersion();
+  }
+  
+  @Override
   public void inform(ResourceLoader loader) {
     SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
     
@@ -65,8 +71,9 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
     try {
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
           || skosFile.endsWith(".ttl")) skosEngine = SKOSEngineFactory
-          .getSKOSEngine(solrLoader.getConfigDir() + skosFile,
-              languageString != null ? languageString.split(" ") : null);
+          .getSKOSEngine(luceneMatchVersion, solrLoader.getConfigDir()
+              + skosFile, languageString != null ? languageString.split(" ")
+              : null);
       else throw new IOException(
           "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
       
@@ -106,11 +113,11 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
     
     if (expansionType.equals(ExpansionType.LABEL)) {
       return new SKOSLabelFilter(input, skosEngine, new StandardAnalyzer(
-          Version.LUCENE_40), bufferSize, type);
+          luceneMatchVersion), bufferSize, type);
       
     } else {
       return new SKOSURIFilter(input, skosEngine, new StandardAnalyzer(
-          Version.LUCENE_40));
+          luceneMatchVersion));
     }
     
   }
