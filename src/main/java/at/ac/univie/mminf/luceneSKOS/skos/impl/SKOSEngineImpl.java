@@ -98,6 +98,7 @@ public class SKOSEngineImpl implements SKOSEngine {
   private static final String FIELD_URI = "uri";
   private static final String FIELD_PREF_LABEL = "pref";
   private static final String FIELD_ALT_LABEL = "alt";
+  private static final String FIELD_HIDDEN_LABEL = "hidden";
   private static final String FIELD_BROADER = "broader";
   private static final String FIELD_NARROWER = "narrower";
   private static final String FIELD_BROADER_TRANSITIVE = "broaderTransitive";
@@ -231,6 +232,10 @@ public class SKOSEngineImpl implements SKOSEngine {
     // store the alternative lexical labels
     indexAnnotation(skos_concept, conceptDoc, SKOS.altLabel, FIELD_ALT_LABEL);
     
+    // store the hidden lexical labels
+    indexAnnotation(skos_concept, conceptDoc, SKOS.hiddenLabel,
+        FIELD_HIDDEN_LABEL);
+    
     // store the URIs of the broader concepts
     indexObject(skos_concept, conceptDoc, SKOS.broader, FIELD_BROADER);
     
@@ -280,6 +285,11 @@ public class SKOSEngineImpl implements SKOSEngine {
   }
   
   @Override
+  public String[] getHiddenLabels(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, FIELD_HIDDEN_LABEL);
+  }
+  
+  @Override
   public String[] getBroaderConcepts(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_BROADER);
   }
@@ -313,6 +323,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     DisjunctionMaxQuery query = new DisjunctionMaxQuery(0.0f);
     query.add(new TermQuery(new Term(FIELD_PREF_LABEL, queryString)));
     query.add(new TermQuery(new Term(FIELD_ALT_LABEL, queryString)));
+    query.add(new TermQuery(new Term(FIELD_HIDDEN_LABEL, queryString)));
     searcher.search(query, collector);
     
     for (Integer hit : collector.getDocs()) {

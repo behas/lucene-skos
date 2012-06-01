@@ -143,6 +143,10 @@ public final class SKOSLabelFilter extends SKOSFilter {
           String[] altLabels = engine.getAltLabels(conceptURI);
           pushLabelsToStack(altLabels, SKOSType.ALT);
         }
+        if (types.contains(SKOSType.HIDDEN)) {
+          String[] hiddenLabels = engine.getHiddenLabels(conceptURI);
+          pushLabelsToStack(hiddenLabels, SKOSType.HIDDEN);
+        }
         if (types.contains(SKOSType.BROADER)) {
           String[] broaderLabels = engine.getBroaderLabels(conceptURI);
           pushLabelsToStack(broaderLabels, SKOSType.BROADER);

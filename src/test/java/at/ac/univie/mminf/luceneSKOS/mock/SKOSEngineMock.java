@@ -106,6 +106,11 @@ public class SKOSEngineMock implements SKOSEngine {
   }
   
   @Override
+  public String[] getHiddenLabels(String conceptURI) throws IOException {
+    return readConceptFieldValues(conceptURI, SKOSType.HIDDEN);
+  }
+  
+  @Override
   public String[] getBroaderConcepts(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, SKOSType.BROADER);
   }

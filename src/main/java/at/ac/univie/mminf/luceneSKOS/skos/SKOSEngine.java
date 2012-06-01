@@ -30,6 +30,15 @@ public interface SKOSEngine {
   String[] getAltLabels(String conceptURI) throws IOException;
   
   /**
+   * Returns the hidden labels (hiddenLabel) for a given concept URI
+   * 
+   * @param conceptURI
+   * @return String[]
+   * @throws IOException
+   */
+  String[] getHiddenLabels(String conceptURI) throws IOException;
+  
+  /**
    * Returns the related labels (related) for a given concept URI
    * 
    * @param conceptURI
