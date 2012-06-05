@@ -104,7 +104,14 @@ public abstract class SKOSFilter extends TokenFilter {
     
     SKOSType termType = expandedTerm.getTermType();
     
-    String sTerm = analyze(analyzer, term, new CharsRef()).toString();
+    String sTerm = "";
+    
+    try {
+      sTerm = analyze(analyzer, term, new CharsRef()).toString();
+    } catch (IllegalArgumentException e) {
+      // skip this term
+      return;
+    }
     
     /*
      * copies the values of all attribute implementations from this state into
