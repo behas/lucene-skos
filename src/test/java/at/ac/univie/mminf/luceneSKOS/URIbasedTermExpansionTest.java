@@ -59,9 +59,10 @@ public class URIbasedTermExpansionTest extends AbstractTermExpansionTest {
             + "The spear was mainly a thrusting weapon, but could also be thrown. "
             + "It was the principal weapon of the auxiliary soldier... "
             + "(second - fourth century, Arbeia Roman Fort).",
-        TextField.TYPE_UNSTORED));
+        TextField.TYPE_NOT_STORED));
     doc.add(new Field("subject",
-        "http://www.ukat.org.uk/thesaurus/concept/859", TextField.TYPE_UNSTORED));
+        "http://www.ukat.org.uk/thesaurus/concept/859",
+        TextField.TYPE_NOT_STORED));
     
     /* setting up the SKOS analyzer */
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";

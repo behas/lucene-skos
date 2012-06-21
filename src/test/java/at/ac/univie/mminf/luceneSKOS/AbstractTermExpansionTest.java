@@ -64,8 +64,8 @@ public abstract class AbstractTermExpansionTest {
             + "The spear was mainly a thrusting weapon, but could also be thrown. "
             + "It was the principal weapon of the auxiliary soldier... "
             + "(second - fourth century, Arbeia Roman Fort).",
-        TextField.TYPE_UNSTORED));
-    doc.add(new Field("subject", "weapons", TextField.TYPE_UNSTORED));
+        TextField.TYPE_NOT_STORED));
+    doc.add(new Field("subject", "weapons", TextField.TYPE_NOT_STORED));
     
     /* setting up a writer with a default (simple) analyzer */
     writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(

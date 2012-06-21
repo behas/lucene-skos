@@ -70,7 +70,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
-        TextField.TYPE_UNSTORED));
+        TextField.TYPE_NOT_STORED));
     
     writer.addDocument(doc);
     
