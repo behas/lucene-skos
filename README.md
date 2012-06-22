@@ -1,4 +1,4 @@
-# lucene-SKOS: A SKOS analyzer module for Apache Lucene and Solr
+# A SKOS analyzer module for Apache Lucene and Solr
 
 ## What is SKOS?
 
