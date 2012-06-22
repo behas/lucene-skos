@@ -12,9 +12,9 @@ lucene-SKOS is an analyzer module for [Apache Lucene](http://lucene.apache.org/j
 
 The module supports the following use cases:
 
- * UC1: Expansion of URI terms to SKOS labels]: URI-references to SKOS concepts in given Lucene documents are expanded by the labels behind those concepts.
+ * [UC 1](https://github.com/behas/lucene-SKOS/wiki/UseCases): Expansion of URI terms to SKOS labels]: URI-references to SKOS concepts in given Lucene documents are expanded by the labels behind those concepts.
 
- * UC2: Expansion of text terms to SKOS labels]: Labels in given Lucene documents, which are defined as preferred concept labels in a given SKOS vocabulary, are expanded by additional labels defined in that vocabulary.
+ * [UC2](https://github.com/behas/lucene-SKOS/wiki/UseCases): Expansion of text terms to SKOS labels]: Labels in given Lucene documents, which are defined as preferred concept labels in a given SKOS vocabulary, are expanded by additional labels defined in that vocabulary.
 
 ## Installation and Usage
 
