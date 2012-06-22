@@ -31,7 +31,7 @@ Download and unzip an archive from the [download area](https://code.google.com/p
 
 ### Installation from Source
 
-Make sure you have [http://maven.apache.org/ Apache Maven] installed. Verify this as follows:
+Make sure you have [Apache Maven](http://maven.apache.org/) installed. Verify this as follows:
 
     mvn --version
 
