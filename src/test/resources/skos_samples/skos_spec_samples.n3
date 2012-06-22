@@ -1,0 +1,29 @@
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos:	<http://www.w3.org/2004/02/skos/core#> .
+@prefix ex:		<http://www.example.com/> .
+
+ex:animals rdf:type skos:Concept ;
+	skos:prefLabel "animals"@en , "animaux"@fr ;
+	skos:altLabel "creatures"@en , "créatures"@fr , "bêtes"@fr ; 
+	skos:hiddenLabel "betes"@fr ;
+	skos:narrower ex:mammals .
+
+ex:fao rdf:type skos:Concept ;
+	skos:prefLabel "Food and Agriculture Organization"@en ;
+	skos:altLabel "FAO"@en .
+	
+ex:rocks rdf:type skos:Concept ;
+	skos:prefLabel "rocks"@en ;
+	skos:altLabel "basalt"@en , "granite"@en , "slate"@en .
+	
+ex:mammals rdf:type skos:Concept;
+	skos:prefLabel "mammals"@en ;
+	skos:broader ex:animals .
+	
+ex:birds rdf:type skos:Concept ;
+	skos:prefLabel "birds"@en ;
+ 	skos:related ex:ornithology .
+
+ex:ornithology rdf:type skos:Concept ;
+	skos:prefLabel "ornithology"@en .

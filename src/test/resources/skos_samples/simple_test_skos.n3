@@ -1,0 +1,33 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/4>
+      a       skos:Concept ;
+      skos:altLabel "sluggish" , "apathic" ;
+      skos:prefLabel "lazy" .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/2>
+      a       skos:Concept ;
+      skos:altLabel "leaps" , "hops" ;
+      skos:prefLabel "jumps" .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/1>
+      a       skos:Concept ;
+      skos:altLabel "speedy" , "fast" ;
+      skos:prefLabel "quick" .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/3>
+      a       skos:Concept ;
+      skos:altLabel "above" ;
+      skos:prefLabel "over" .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/6>
+      a       skos:Concept ;
+      skos:altLabel "UN" ;
+      skos:prefLabel "United Nations" .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/5>
+      a       skos:Concept ;
+      skos:altLabel "canine" , "pooch" ;
+      skos:prefLabel "dog" .

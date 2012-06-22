@@ -1,0 +1,43 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+
+    
+    <skos:Concept rdf:about="http://www.cs.univie.ac.at/thesaurus/concept/1">
+        <skos:prefLabel>quick</skos:prefLabel>
+        <skos:altLabel>fast</skos:altLabel>
+        <skos:altLabel>speedy</skos:altLabel>
+    </skos:Concept>
+    
+
+    <skos:Concept rdf:about="http://www.cs.univie.ac.at/thesaurus/concept/2">
+        <skos:prefLabel>jumps</skos:prefLabel>
+        <skos:altLabel>leaps</skos:altLabel>
+        <skos:altLabel>hops</skos:altLabel>
+    </skos:Concept>
+
+    <skos:Concept rdf:about="http://www.cs.univie.ac.at/thesaurus/concept/3">
+        <skos:prefLabel>over</skos:prefLabel>
+        <skos:altLabel>above</skos:altLabel>
+    </skos:Concept>
+
+    <skos:Concept rdf:about="http://www.cs.univie.ac.at/thesaurus/concept/4">
+        <skos:prefLabel>lazy</skos:prefLabel>
+        <skos:altLabel>apathic</skos:altLabel>
+        <skos:altLabel>sluggish</skos:altLabel>
+    </skos:Concept>
+
+    <skos:Concept rdf:about="http://www.cs.univie.ac.at/thesaurus/concept/5">
+        <skos:prefLabel>dog</skos:prefLabel>
+        <skos:altLabel>canine</skos:altLabel>
+        <skos:altLabel>pooch</skos:altLabel>
+    </skos:Concept>
+
+    <skos:Concept rdf:about="http://www.cs.univie.ac.at/thesaurus/concept/6">
+        <skos:prefLabel>United Nations</skos:prefLabel>
+        <skos:altLabel>UN</skos:altLabel>
+    </skos:Concept>
+    
+
+</rdf:RDF>   

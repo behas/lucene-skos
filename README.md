@@ -1,4 +1,250 @@
-lucene-SKOS
-===========
+# lucene-SKOS: A SKOS analyzer module for Apache Lucene and Solr
 
-A SKOS analyzer module for Apache Lucene and Solr
+## What is SKOS?
+
+The [Simple Knowledge Organization System (SKOS)](http://www.w3.org/2004/02/skos/) is a model for expressing the basis structure and content controlled vocabularies (classification schemes, thesauri, taxonomies, etc.). As an application of the [Resource Description Framework (RDF)](http://www.w3.org/RDF/), SKOS allows these vocabularies to be published as dereferencable resources on the Web, which makes them easily retrievable in re-usable in applications. SKOS plays a major role in the ongoing [Linked Data](http://linkeddata.org/) activities and has attracted attention in [several domains](http://www.w3.org/2006/07/SWD/SKOS/reference/20090315/implementation.html).
+
+## What is lucene-SKOS?
+
+lucene-SKOS is an analyzer module for [Apache Lucene](http://lucene.apache.org/java/docs/index.html) and [Solr](http://lucene.apache.org/solr/). It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/analysis/TokenFilter.html). A SKOS-aware [Similarity](http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/search/Similarity.html) implementation that considers the properties of SKOS concepts in ranking is planned for future releases.
+
+## Features
+
+The module supports the following use cases:
+
+ * UC1: Expansion of URI terms to SKOS labels]: URI-references to SKOS concepts in given Lucene documents are expanded by the labels behind those concepts.
+
+ * UC2: Expansion of text terms to SKOS labels]: Labels in given Lucene documents, which are defined as preferred concept labels in a given SKOS vocabulary, are expanded by additional labels defined in that vocabulary.
+
+## Installation and Usage
+
+The SKOS Analyzer Module can be used with [Apache Lucene](http://lucene.apache.org/java/) and [Solr](http://lucene.apache.org/solr/).
+
+
+### Using lucene-skos with Lucene
+
+You probably want to use the lucene-SKOS analyzer in an application that already uses Lucene. Therefore you must make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena](http://openjena.org/ )) are located in your classpath (= build path in Eclipse).
+
+### Binary Installation
+
+Download and unzip an archive from the [download area](https://code.google.com/p/lucene-skos/downloads/list) and copy all contained jars to your applications' classpath.
+
+### Installation from Source
+
+Make sure you have [http://maven.apache.org/ Apache Maven] installed. Verify this as follows:
+
+    mvn --version
+
+Check out the sources
+
+    git clone git://github.com/behas/lucene-SKOS.git
+
+Build and package the sources
+
+    cd lucene-SKOS
+    mvn package
+
+Choose an archive from the _target_ subdirectory and proceed as in the binary installation.
+
+    tar -xzf target/luceneSKOS-0.1-SNAPSHOT-bin-with-dependencies.tar.gz
+
+### Using lucene-SKOS with Solr
+
+Installing lucene-SKOS with Solr largely depends on how you deployed Solr in your environment. Here we describe how to use the plugin with a basic Solr installation.
+
+Follow the _Getting Started_ section of the [Solr Tutorial](http://lucene.apache.org/solr/tutorial.html) and make sure you can start up your Solr instance. Make sure _SOLR_HOME_ is set.
+
+    cd $SOLR_HOME/example
+    java -jar start.jar
+
+Stop Solr
+
+    CTRL-C
+
+Download or build the lucene-SKOS jar and its dependencies as described previously and extract the obtained archive.
+
+Create a folder _lib_ in your _SOLR_HOME_ directory. In the default installation $SOLR_HOME$ is ./apache-solr-x.x.x/example/solr
+
+    cd $SOLR_HOME
+    mkdir lib
+    cp lucene-skos-directory/*.jar $SOLR_HOME/lib
+
+Download an [example thesaurus](./docs/solr) and copy it to $SOLR_HOME/solr/conf 
+
+    cp lucene-skos-directory/docs/solr/ukat_examples.n3 $SOLR_HOME/conf/
+
+## UC1: URI-based term expansion
+
+The analyzer module can be used to expand references to SKOS concepts in given Lucene documents by the concepts' labels at indexing time. 
+
+### Using lucene-SKOS with Lucene
+
+Create a [Lucene Document](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
+
+    Document doc = new Document();
+    doc.add(new Field("title", "Spearhead", Field.Store.YES, Field.Index.ANALYZED));
+    doc.add(new Field("description",
+        "Roman iron spearhead. The spearhead was attached to one end of a wooden shaft..."
+                + "The spear was mainly a thrusting weapon, but could also be thrown. "
+                + "It was the principal weapon of the auxiliary soldier... "
+                + "(second - fourth century, Arbeia Roman Fort).", Field.Store.NO,
+        Field.Index.ANALYZED));
+    doc.add(new Field("subject", "http://www.ukat.org.uk/thesaurus/concept/859",
+        Field.Store.NO, Field.Index.ANALYZED));
+
+Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.URI* indicates that the analyzer should perform URI-based term expansion.
+
+    String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
+
+    Analyzer skosAnalyzer = new SKOSAnalyzer(skosFile, ExpansionType.URI);
+
+You might want to use different [Analyzers](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/analysis/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other field, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/analysis/SimpleAnalyzer.html) instance.
+
+    PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer());
+    indexAnalyzer.addAnalyzer("subject", skosAnalyzer);
+
+Set up a writer using the previously analyzer and add the document to the index.
+
+    IndexWriter = new IndexWriter(new RAMDirectory(), indexAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED);
+
+    writer.addDocument(doc);
+
+Now a search for *arms*, for instance, returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
+
+    BooleanQuery query1 = new BooleanQuery();
+    query1.add(new TermQuery(new Term("title", "arms")), BooleanClause.Occur.SHOULD);
+    query1.add(new TermQuery(new Term("description", "arms")), BooleanClause.Occur.SHOULD);
+    query1.add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
+
+    IndexSearcher = new IndexSearcher(writer.getReader());
+
+    TopDocs results = searcher.search(query1, 10);
+
+    Assert.assertEquals(1, results.totalHits);
+
+For the complete code, please check our [JUnit Test](https://code.google.com/p/lucene-skos/source/browse/trunk/src/test/java/at/ac/univie/mminf/luceneSKOS/URIbasedTermExpansionTest.java) in the SVN Repository
+
+### Using lucene-SKOS with Solr
+
+Create the following fieldType definition in Solr's schema.xml file located in $SOLR_HOME$/conf/schema.xml
+
+    <fieldType name="skosReference" class="solr.TextField"
+    positionIncrementGap="100">
+    <analyzer type="index">
+        <tokenizer class="solr.KeywordTokenizerFactory" />
+        <filter class="at.ac.univie.mminf.luceneSKOS.solr.SKOSFilterFactory"
+            skosFile="ukat_examples.n3" expansionType="URI" />
+    </analyzer>
+    <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory" />
+        <filter class="solr.LowerCaseFilterFactory" />
+    </analyzer>
+    </fieldType>
+
+...and apply it to the subject field:
+
+    <field name="subject" type="skosReference" indexed="true" stored="true" />
+
+ A complete, minimal _schema.xml_ configuration for the described use case is available [here]( https://code.google.com/p/lucene-skos/source/browse/trunk/docs/solr/schema.xml).
+
+Now you can add a sample document by following the instructions described in _Indexing Data_ section of the [Solr tutorial](http://lucene.apache.org/solr/tutorial.html). Here is a sample:
+
+    <add>
+        <doc>
+            <field name="id">record1</field>
+            <field name="title">Spearhead</field>
+            <field name="description">Roman iron spearhead. The spearhead was attached to one end of a wooden shaft.The spear was mainly a thrusting weapon, but could also be thrown. It was the principal weapon of the auxiliary soldier. (second - fourth century, Arbeia Roman Fort).</field>
+            <field name="subject">http://www.ukat.org.uk/thesaurus/concept/859</field>
+        </doc>
+    </add>
+
+Now a search for "arms" or "weapons" returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
+
+
+## UC2: Label-based term expansion
+
+The module can also be used to expand plain text labels in given fields by corresponding labels in given SKOS vocabularies.
+
+### Using lucene-SKOS with Lucene
+
+Similar to UC1 - _URI-based_term expansion UC1, we create a Lucene document containing the data to be indexed. The difference is that this record doesn't contain a reference to a SKOS concept in the subject field but a plain text label "weapons".
+
+    Document doc = new Document();
+    doc.add(new Field("title", "Spearhead", Field.Store.YES, Field.Index.ANALYZED));
+    doc.add(new Field("description",
+        "Roman iron spearhead. The spearhead was attached to one end of a wooden shaft..."
+                + "The spear was mainly a thrusting weapon, but could also be thrown. "
+                + "It was the principal weapon of the auxiliary soldier... "
+                + "(second - fourth century, Arbeia Roman Fort).", Field.Store.NO,
+        Field.Index.ANALYZED));
+    doc.add(new Field("subject", "weapons", Field.Store.NO, Field.Index.ANALYZED));
+
+Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.Label* indicates that the analyzer should perform Label-based term expansion.
+
+    String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
+
+    Analyzer skosAnalyzer = new SKOSAnalyzer(skosFile, ExpansionType.LABEL);
+
+As in the previous use case, we define a PerFieldAnalyzerWrapper instance and index the document.
+
+    PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer());
+    indexAnalyzer.addAnalyzer("subject", skosAnalyzer);
+
+    writer = new IndexWriter(new RAMDirectory(), indexAnalyzer,
+        IndexWriter.MaxFieldLength.UNLIMITED);
+
+    writer.addDocument(doc);
+
+Now a search for "arms", for instance, returns the indexed document in the result list because the label "weapons", which is define as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
+
+    BooleanQuery query1 = new BooleanQuery();
+    query1.add(new TermQuery(new Term("title", "arms")), BooleanClause.Occur.SHOULD);
+    query1.add(new TermQuery(new Term("description", "arms")), BooleanClause.Occur.SHOULD);
+    query1.add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
+
+    IndexSearcher = new IndexSearcher(writer.getReader());
+
+    TopDocs results = searcher.search(query1, 10);
+
+    Assert.assertEquals(1, results.totalHits);
+
+
+For the complete code, please check our [JUnit Test](https://code.google.com/p/lucene-skos/source/browse/trunk/src/test/java/at/ac/univie/mminf/luceneSKOS/LabelbasedTermExpansionTest.java).
+
+
+### Using lucene-SKOS with Solr
+
+Follow the instructions from the previous use case with the following differences:
+
+Introduce another fieldType...
+
+    <fieldType name="skosLabel" class="solr.TextField"
+    positionIncrementGap="100">
+    <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory" />
+        <filter class="solr.StandardFilterFactory" />
+        <filter class="at.ac.univie.mminf.luceneSKOS.solr.SKOSFilterFactory"
+            skosFile="ukat_examples.n3" expansionType="LABEL" />
+        <filter class="solr.LowerCaseFilterFactory" />
+    </analyzer>
+    <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory" />
+        <filter class="solr.LowerCaseFilterFactory" />
+    </analyzer>
+    </fieldType>
+
+...and set the _subject_ field to that type
+
+    <field name="subject" type="skosLabel" indexed="true"
+        stored="true" />
+
+Again, you can add a sample document such as the following and retrieve results for queries (e.g., arms) containing terms that are not explicitly contained in the indexed document.
+
+    <add>
+        <doc>
+            <field name="id">record2</field>
+            <field name="title">Spearhead</field>
+            <field name="description">Roman iron spearhead. The spearhead was attached to one end of a wooden shaft.The spear was mainly a thrusting weapon, but could also be thrown. It was the principal weapon of the auxiliary soldier. (second - fourth century, Arbeia Roman Fort).</field>
+            <field name="subject">Weapons</field>
+        </doc>
+    </add>

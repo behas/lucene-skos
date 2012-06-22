@@ -1,0 +1,23 @@
+@prefix skos: 	<http://www.w3.org/2004/02/skos/core#> .
+@prefix rdf: 	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: 	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ukat:   <http://www.ukat.org.uk/thesaurus/concept/> .
+
+ukat:859 rdf:type skos:Concept ;
+	skos:prefLabel "Weapons" ;
+	skos:altLabel "Armaments" ;
+	skos:altLabel "Arms" ;
+	skos:broader ukat:5060 ;
+	skos:narrower ukat:18874 ;
+	skos:narrower ukat:7630 .
+
+ukat:5060 rdf:type skos:Concept;
+	skos:prefLabel "Military equipment";
+	skos:altLabel "Defense equipment and supplies";
+	skos:altLabel "Ordnance".
+        
+ukat:18874 rdf:type skos:Concept;
+	skos:prefLabel "Ammunition".
+        
+ukat:7630 rdf:type skos:Concept;
+	skos:prefLabel "Artillery".
