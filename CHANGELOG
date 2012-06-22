@@ -1,0 +1,5 @@
+2010-08-13
+    RELEASE 0.1
+    
+    * Implemented URI-based term expansion for Lucene and Solr
+    * Implemented Label-based term expansion for Lucene and Solr
