@@ -13,32 +13,31 @@ import org.apache.lucene.util.Attribute;
  * 
  */
 public interface SKOSAttribute extends Attribute {
-
-	/**
-	 * An enumeration of supported SKOS concept types
-	 * 
-	 * @author haslhofer
-	 *
-	 */
-	public static enum SKOSType {
-
-		PREF, ALT, HIDDEN, BROADER, NARROWER;
-
-	}
-
-	/**
-	 * Sets the SKOS type
-	 * 
-	 * @param sl
-	 */
-	public void setSKOSType(SKOSType sl);
-	
-	/**
-	 * Returns the SKOS type
-	 * 
-	 * @return
-	 */
-	public SKOSType getSKOSType();
-
-
+  
+  /**
+   * An enumeration of supported SKOS concept types
+   * 
+   * @author haslhofer
+   * 
+   */
+  public static enum SKOSType {
+    
+    PREF, ALT, HIDDEN, BROADER, NARROWER;
+    
+  }
+  
+  /**
+   * Sets the SKOS type
+   * 
+   * @param sl
+   */
+  public void setSKOSType(SKOSType sl);
+  
+  /**
+   * Returns the SKOS type
+   * 
+   * @return
+   */
+  public SKOSType getSKOSType();
+  
 }
