@@ -208,7 +208,14 @@ public class SKOSEngineImpl implements SKOSEngine {
     // TODO: Generate also if source file is modified
     if (!dir.isDirectory()) {
       // load the skos model from the given file
-      skosModel = FileManager.get().loadModel(filenameOrURI);
+      FileManager fileManager = new FileManager();
+      
+      if (FilenameUtils.getExtension(filenameOrURI).equals("zip")) {
+        fileManager.addLocatorZip(filenameOrURI);
+        filenameOrURI = FilenameUtils.getBaseName(filenameOrURI);
+      }
+      
+      skosModel = fileManager.loadModel(filenameOrURI);
       
       indexSKOSModel();
     }

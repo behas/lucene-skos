@@ -70,13 +70,13 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
     
     try {
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
-          || skosFile.endsWith(".ttl")) {
+          || skosFile.endsWith(".ttl") || skosFile.endsWith(".zip")) {
         skosEngine = SKOSEngineFactory.getSKOSEngine(luceneMatchVersion,
             solrLoader.getConfigDir() + skosFile,
             languageString != null ? languageString.split(" ") : null);
       } else {
         throw new IOException(
-            "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
+            "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE) and .zip (ZIP)");
       }
       
     } catch (IOException e) {
