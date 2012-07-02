@@ -12,12 +12,10 @@ import java.util.TreeSet;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
@@ -81,8 +79,9 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     @Override
-    public void setNextReader(AtomicReaderContext context) throws IOException {
-      base = context.docBase;
+    public void setNextReader(IndexReader reader, int docBase)
+        throws IOException {
+      base = docBase;
     }
     
     @Override
@@ -166,7 +165,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     indexSKOSModel();
     
-    searcher = new IndexSearcher(DirectoryReader.open(indexDir));
+    searcher = new IndexSearcher(IndexReader.open(indexDir));
   }
   
   /**
@@ -220,7 +219,7 @@ public class SKOSEngineImpl implements SKOSEngine {
       indexSKOSModel();
     }
     
-    searcher = new IndexSearcher(DirectoryReader.open(indexDir));
+    searcher = new IndexSearcher(IndexReader.open(indexDir));
   }
   
   /**
@@ -231,7 +230,8 @@ public class SKOSEngineImpl implements SKOSEngine {
     Document conceptDoc = new Document();
     
     String conceptURI = skos_concept.getURI();
-    Field uriField = new Field(FIELD_URI, conceptURI, StringField.TYPE_STORED);
+    Field uriField = new Field(FIELD_URI, conceptURI, Field.Store.YES,
+        Field.Index.NOT_ANALYZED_NO_NORMS);
     conceptDoc.add(uriField);
     
     // store the preferred lexical labels
@@ -415,7 +415,8 @@ public class SKOSEngineImpl implements SKOSEngine {
       // converting label to lower-case
       label = label.toLowerCase();
       
-      Field labelField = new Field(field, label, StringField.TYPE_STORED);
+      Field labelField = new Field(field, label, Field.Store.YES,
+          Field.Index.NOT_ANALYZED);
       
       conceptDoc.add(labelField);
     }
@@ -435,8 +436,8 @@ public class SKOSEngineImpl implements SKOSEngine {
       
       Resource resource = concept.as(Resource.class);
       
-      Field conceptField = new Field(field, resource.getURI(),
-          StringField.TYPE_STORED);
+      Field conceptField = new Field(field, resource.getURI(), Field.Store.YES,
+          Field.Index.NO);
       
       conceptDoc.add(conceptField);
     }
@@ -487,4 +488,5 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     return conceptDoc.getValues(field);
   }
+  
 }

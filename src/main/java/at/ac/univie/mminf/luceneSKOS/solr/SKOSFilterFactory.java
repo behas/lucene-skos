@@ -7,10 +7,10 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.util.ResourceLoader;
-import org.apache.lucene.analysis.util.ResourceLoaderAware;
-import org.apache.lucene.analysis.util.TokenFilterFactory;
+import org.apache.solr.analysis.BaseTokenFilterFactory;
+import org.apache.solr.common.ResourceLoader;
 import org.apache.solr.core.SolrResourceLoader;
+import org.apache.solr.util.plugin.ResourceLoaderAware;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSLabelFilter;
@@ -26,7 +26,7 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
  * @author Martin Kysel <martin.kysel@univie.ac.at>
  * 
  */
-public class SKOSFilterFactory extends TokenFilterFactory implements
+public class SKOSFilterFactory extends BaseTokenFilterFactory implements
     ResourceLoaderAware {
   
   private ExpansionType expansionType;

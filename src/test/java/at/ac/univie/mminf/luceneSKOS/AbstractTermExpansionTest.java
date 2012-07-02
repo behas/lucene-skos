@@ -2,12 +2,11 @@ package at.ac.univie.mminf.luceneSKOS;
 
 import java.io.IOException;
 
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
@@ -31,7 +30,7 @@ import org.junit.Test;
  */
 public abstract class AbstractTermExpansionTest {
   
-  protected final Version matchVersion = Version.LUCENE_40;
+  protected final Version matchVersion = Version.LUCENE_36;
   
   protected IndexSearcher searcher;
   
@@ -64,19 +63,21 @@ public abstract class AbstractTermExpansionTest {
     
     /* defining the document to be indexed */
     Document doc = new Document();
-    doc.add(new Field("title", "Spearhead", TextField.TYPE_STORED));
+    doc.add(new Field("title", "Spearhead", Field.Store.YES,
+        Field.Index.ANALYZED));
     doc.add(new Field(
         "description",
         "Roman iron spearhead. The spearhead was attached to one end of a wooden shaft..."
             + "The spear was mainly a thrusting weapon, but could also be thrown. "
             + "It was the principal weapon of the auxiliary soldier... "
-            + "(second - fourth century, Arbeia Roman Fort).",
-        TextField.TYPE_NOT_STORED));
-    doc.add(new Field("subject", "weapons", TextField.TYPE_NOT_STORED));
+            + "(second - fourth century, Arbeia Roman Fort).", Field.Store.NO,
+        Field.Index.ANALYZED));
+    doc.add(new Field("subject", "weapons", Field.Store.NO,
+        Field.Index.ANALYZED));
     
     /* setting up a writer with a default (simple) analyzer */
     writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(
-        Version.LUCENE_40, new SimpleAnalyzer(Version.LUCENE_40)));
+        Version.LUCENE_36, new SimpleAnalyzer(Version.LUCENE_36)));
     
     /* adding the document to the index */
     writer.addDocument(doc);
@@ -91,7 +92,7 @@ public abstract class AbstractTermExpansionTest {
         BooleanClause.Occur.SHOULD);
     
     /* creating a new searcher */
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+    searcher = new IndexSearcher(IndexReader.open(writer, false));
     
     TopDocs results = searcher.search(query, 10);
     

@@ -7,6 +7,9 @@ import org.apache.lucene.util.AttributeImpl;
  */
 public class SKOSTypeAttributeImpl extends AttributeImpl implements
     SKOSTypeAttribute, Cloneable {
+  
+  private static final long serialVersionUID = 1L;
+  
   private SKOSType skosType;
   
   /**

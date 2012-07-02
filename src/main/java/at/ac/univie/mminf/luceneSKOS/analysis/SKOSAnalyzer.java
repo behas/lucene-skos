@@ -2,19 +2,19 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Set;
 
+import org.apache.lucene.analysis.KeywordTokenizer;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.StopAnalyzer;
+import org.apache.lucene.analysis.StopFilter;
+import org.apache.lucene.analysis.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.KeywordTokenizer;
-import org.apache.lucene.analysis.core.LowerCaseFilter;
-import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.apache.lucene.analysis.core.StopFilter;
-import org.apache.lucene.analysis.miscellaneous.RemoveDuplicatesTokenFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
-import org.apache.lucene.analysis.util.CharArraySet;
-import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.util.Version;
+import org.apache.solr.analysis.RemoveDuplicatesTokenFilter;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
@@ -63,9 +63,9 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
    * An unmodifiable set containing some common English words that are usually
    * not useful for searching.
    */
-  public static final CharArraySet STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+  public static final Set<?> STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
   
-  public SKOSAnalyzer(Version matchVersion, CharArraySet stopWords,
+  public SKOSAnalyzer(Version matchVersion, Set<?> stopWords,
       SKOSEngine skosEngine, ExpansionType expansionType) {
     super(matchVersion, stopWords);
     this.skosEngine = skosEngine;
@@ -83,9 +83,9 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
         expansionType);
   }
   
-  public SKOSAnalyzer(Version matchVersion, CharArraySet stopWords,
-      String skosFile, ExpansionType expansionType, int bufferSize,
-      String... languages) throws IOException {
+  public SKOSAnalyzer(Version matchVersion, Set<?> stopWords, String skosFile,
+      ExpansionType expansionType, int bufferSize, String... languages)
+      throws IOException {
     super(matchVersion, stopWords);
     this.skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion, skosFile,
         languages);
@@ -164,9 +164,9 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
       tok = new RemoveDuplicatesTokenFilter(tok);
       return new TokenStreamComponents(src, tok) {
         @Override
-        protected void reset(final Reader reader) throws IOException {
+        protected boolean reset(final Reader reader) throws IOException {
           src.setMaxTokenLength(maxTokenLength);
-          super.reset(reader);
+          return super.reset(reader);
         }
       };
     }

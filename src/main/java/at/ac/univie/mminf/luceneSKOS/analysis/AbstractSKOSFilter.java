@@ -10,16 +10,15 @@ import java.util.TreeSet;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
-import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.CharsRef;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute;
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.index.SKOSTypePayload;
 import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 
 /**
@@ -143,8 +142,7 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
      * converts the SKOS Attribute to a payload, which is propagated to the
      * index
      */
-    byte[] bytes = PayloadHelper.encodeInt(skosAtt.getSkosType().ordinal());
-    payloadAtt.setPayload(new BytesRef(bytes));
+    payloadAtt.setPayload(new SKOSTypePayload(skosAtt));
   }
   
   /* Snipped from Solr's SynonymMap */

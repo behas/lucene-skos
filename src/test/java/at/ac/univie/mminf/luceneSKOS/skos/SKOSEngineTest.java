@@ -16,7 +16,7 @@ import org.junit.Test;
  */
 public class SKOSEngineTest {
   
-  protected final Version matchVersion = Version.LUCENE_40;
+  protected final Version matchVersion = Version.LUCENE_36;
   
   @Test
   public void testSimpleSKOSSamplesRDFXML() throws IOException {

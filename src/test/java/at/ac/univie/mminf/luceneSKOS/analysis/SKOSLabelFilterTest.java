@@ -2,22 +2,22 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
 
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.Version;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,11 +54,11 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     Document doc = new Document();
     doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
+        Field.Store.YES, Field.Index.ANALYZED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+    searcher = new IndexSearcher(IndexReader.open(writer, false));
     
     TermQuery tq = new TermQuery(new Term("content", "hops"));
     
@@ -71,11 +71,11 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     Document doc = new Document();
     doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
+        Field.Store.YES, Field.Index.ANALYZED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+    searcher = new IndexSearcher(IndexReader.open(writer, false));
     
     PhraseQuery pq = new PhraseQuery();
     pq.add(new Term("content", "fox"));
@@ -86,18 +86,18 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void queryParserSearch() throws IOException, QueryNodeException {
+  public void queryParserSearch() throws IOException, ParseException {
     
     Document doc = new Document();
     doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
+        Field.Store.YES, Field.Index.ANALYZED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+    searcher = new IndexSearcher(IndexReader.open(writer, false));
     
-    Query query = new StandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
-        "content");
+    Query query = new QueryParser(Version.LUCENE_36, "content", skosAnalyzer)
+        .parse("\"fox jumps\"");
     
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
@@ -105,8 +105,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
         .getClass().getName());
     
-    query = new StandardQueryParser(new StandardAnalyzer(matchVersion)).parse(
-        "\"fox jumps\"", "content");
+    query = new QueryParser(Version.LUCENE_36, "content", new StandardAnalyzer(
+        Version.LUCENE_36)).parse("\"fox jumps\"");
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
     Assert.assertEquals("content:\"fox jumps\"", query.toString());
@@ -117,20 +117,20 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   
   @Test
   public void testTermQuery() throws CorruptIndexException, IOException,
-      QueryNodeException {
+      ParseException {
     
     Document doc = new Document();
     doc.add(new Field("content", "I work for the united nations",
-        TextField.TYPE_STORED));
+        Field.Store.YES, Field.Index.ANALYZED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+    searcher = new IndexSearcher(IndexReader.open(writer, false));
     
-    StandardQueryParser parser = new StandardQueryParser(new SimpleAnalyzer(
-        matchVersion));
+    QueryParser parser = new QueryParser(Version.LUCENE_36, "content",
+        new SimpleAnalyzer(Version.LUCENE_36));
     
-    Query query = parser.parse("united nations", "content");
+    Query query = parser.parse("united nations");
     
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
