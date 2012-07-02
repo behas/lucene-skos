@@ -28,7 +28,7 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * @author haslhofer
  * 
  */
-public abstract class SKOSFilter extends TokenFilter {
+public abstract class AbstractSKOSFilter extends TokenFilter {
   
   /* a stack holding the expanded terms for a token */
   protected Stack<ExpandedTerm> termStack;
@@ -60,23 +60,26 @@ public abstract class SKOSFilter extends TokenFilter {
   /**
    * Constructor
    * 
-   * @param in
+   * @param input
    *          the TokenStream
    * @param engine
    *          the engine delivering skos concepts
    * @param type
    *          the skos types to expand to
    */
-  public SKOSFilter(TokenStream in, SKOSEngine engine, Analyzer analyzer,
-      SKOSType... types) {
-    super(in);
+  public AbstractSKOSFilter(TokenStream input, SKOSEngine engine,
+      Analyzer analyzer, SKOSType... types) {
+    super(input);
     termStack = new Stack<ExpandedTerm>();
     this.engine = engine;
     this.analyzer = analyzer;
     
-    if (types != null) this.types = new TreeSet<SKOSType>(Arrays.asList(types));
-    else this.types = new TreeSet<SKOSType>(Arrays.asList(new SKOSType[] {
-        SKOSType.PREF, SKOSType.ALT}));
+    if (types != null) {
+      this.types = new TreeSet<SKOSType>(Arrays.asList(types));
+    } else {
+      this.types = new TreeSet<SKOSType>(Arrays.asList(new SKOSType[] {
+          SKOSType.PREF, SKOSType.ALT}));
+    }
     
     this.termAtt = addAttribute(CharTermAttribute.class);
     this.posIncrAtt = addAttribute(PositionIncrementAttribute.class);
@@ -134,13 +137,13 @@ public abstract class SKOSFilter extends TokenFilter {
     /*
      * sets the type of the expanded term (pref, alt, broader, narrower, etc.)
      */
-    skosAtt.setSKOSType(termType);
+    skosAtt.setSkosType(termType);
     
     /*
      * converts the SKOS Attribute to a payload, which is propagated to the
      * index
      */
-    byte[] bytes = PayloadHelper.encodeInt(skosAtt.getSKOSType().ordinal());
+    byte[] bytes = PayloadHelper.encodeInt(skosAtt.getSkosType().ordinal());
     payloadAtt.setPayload(new BytesRef(bytes));
   }
   
@@ -205,9 +208,9 @@ public abstract class SKOSFilter extends TokenFilter {
    */
   protected static class ExpandedTerm {
     
-    private String term;
+    private final String term;
     
-    private SKOSType termType;
+    private final SKOSType termType;
     
     protected ExpandedTerm(String term, SKOSType termType) {
       this.term = term;

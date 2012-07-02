@@ -29,8 +29,9 @@ public class AnalyzerUtils {
   public static void displayTokens(TokenStream stream) throws IOException {
     
     CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
-    while (stream.incrementToken())
+    while (stream.incrementToken()) {
       System.out.println("[" + term.toString() + "] ");
+    }
     
   }
   

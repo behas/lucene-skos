@@ -1,14 +1,18 @@
 package at.ac.univie.mminf.luceneSKOS.analysis;
 
+import java.io.IOException;
+
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
@@ -46,7 +50,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void termQuerySearch() throws Exception {
+  public void termQuerySearch() throws CorruptIndexException, IOException {
     
     Document doc = new Document();
     doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
@@ -63,7 +67,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void phraseQuerySearch() throws Exception {
+  public void phraseQuerySearch() throws CorruptIndexException, IOException {
     
     Document doc = new Document();
     doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
@@ -82,7 +86,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void queryParserSearch() throws Exception {
+  public void queryParserSearch() throws IOException, QueryNodeException {
     
     Document doc = new Document();
     doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
@@ -112,7 +116,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void testTermQuery() throws Exception {
+  public void testTermQuery() throws CorruptIndexException, IOException,
+      QueryNodeException {
     
     Document doc = new Document();
     doc.add(new Field("content", "I work for the united nations",
@@ -132,7 +137,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
   }
   
   // @Test
-  public void displayTokensWithLabelExpansion() throws Exception {
+  public void displayTokensWithLabelExpansion() throws IOException {
     
     String text = "The quick brown fox jumps over the lazy dog";
     

@@ -1,5 +1,6 @@
 package at.ac.univie.mminf.luceneSKOS.skos;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import junit.framework.Assert;
@@ -18,7 +19,7 @@ public class SKOSEngineTest {
   protected final Version matchVersion = Version.LUCENE_40;
   
   @Test
-  public void testSimpleSKOSSamplesRDFXML() throws Exception {
+  public void testSimpleSKOSSamplesRDFXML() throws IOException {
     
     String skosFile = "src/test/resources/skos_samples/simple_test_skos.rdf";
     
@@ -32,7 +33,7 @@ public class SKOSEngineTest {
   }
   
   @Test
-  public void testSimpleSKOSSamplesN3() throws Exception {
+  public void testSimpleSKOSSamplesN3() throws IOException {
     
     String skosFile = "src/test/resources/skos_samples/simple_test_skos.rdf";
     
@@ -46,7 +47,7 @@ public class SKOSEngineTest {
   }
   
   @Test
-  public void testSKOSSpecSamples() throws Exception {
+  public void testSKOSSpecSamples() throws IOException {
     
     String skosFile = "src/test/resources/skos_samples/skos_spec_samples.n3";
     
@@ -61,7 +62,7 @@ public class SKOSEngineTest {
   }
   
   @Test
-  public void testSKOSSpecSamplesWithLanguageRestriction() throws Exception {
+  public void testSKOSSpecSamplesWithLanguageRestriction() throws IOException {
     
     String skosFile = "src/test/resources/skos_samples/skos_spec_samples.n3";
     
@@ -77,7 +78,7 @@ public class SKOSEngineTest {
   }
   
   @Test
-  public void testUKATSamples() throws Exception {
+  public void testUKATSamples() throws IOException {
     
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
     

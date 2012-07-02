@@ -1,8 +1,11 @@
 package at.ac.univie.mminf.luceneSKOS.analysis;
 
+import java.io.IOException;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -40,7 +43,8 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void singleUriExpansionWithStoredField() throws Exception {
+  public void singleUriExpansionWithStoredField() throws CorruptIndexException,
+      IOException {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
@@ -66,7 +70,8 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void singleUriExpansionWithUnstoredField() throws Exception {
+  public void singleUriExpansionWithUnstoredField()
+      throws CorruptIndexException, IOException {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
@@ -90,7 +95,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
   }
   
   @Test
-  public void multipleURIExpansion() throws Exception {
+  public void multipleURIExpansion() throws CorruptIndexException, IOException {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
@@ -129,7 +134,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
   }
   
   // @Test
-  public void displayTokensWithURIExpansion() throws Exception {
+  public void displayTokensWithURIExpansion() throws IOException {
     
     String text = "http://example.com/concept/1";
     

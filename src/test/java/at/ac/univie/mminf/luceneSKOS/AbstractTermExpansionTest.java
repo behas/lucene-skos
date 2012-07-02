@@ -1,9 +1,12 @@
 package at.ac.univie.mminf.luceneSKOS;
 
+import java.io.IOException;
+
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -13,6 +16,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.After;
@@ -50,10 +54,13 @@ public abstract class AbstractTermExpansionTest {
    * A search for "arms" doesn't return that record because the term "arms" is
    * not explicitly contained in the record (document).
    * 
-   * @throws Exception
+   * @throws IOException
+   * @throws LockObtainFailedException
+   * @throws CorruptIndexException
    */
   @Test
-  public void noExpansion() throws Exception {
+  public void noExpansion() throws CorruptIndexException,
+      LockObtainFailedException, IOException {
     
     /* defining the document to be indexed */
     Document doc = new Document();

@@ -23,7 +23,7 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * @author Martin Kysel <martin.kysel@univie.ac.at>
  * 
  */
-public final class SKOSLabelFilter extends SKOSFilter {
+public final class SKOSLabelFilter extends AbstractSKOSFilter {
   
   public static final int DEFAULT_BUFFER_SIZE = 1;
   
@@ -38,7 +38,7 @@ public final class SKOSLabelFilter extends SKOSFilter {
    * the SKOS engine, and an integer indicating the maximum token length of the
    * preferred labels in the SKOS vocabulary.
    * 
-   * @param in
+   * @param input
    *          the consumed token stream
    * @param skosEngine
    *          the skos expansion engine
@@ -48,9 +48,9 @@ public final class SKOSLabelFilter extends SKOSFilter {
    * @param types
    *          the skos types to expand to
    */
-  public SKOSLabelFilter(TokenStream in, SKOSEngine skosEngine,
+  public SKOSLabelFilter(TokenStream input, SKOSEngine skosEngine,
       Analyzer analyzer, int bufferSize, SKOSType... types) {
-    super(in, skosEngine, analyzer, types);
+    super(input, skosEngine, analyzer, types);
     this.bufferSize = bufferSize;
   }
   
@@ -111,19 +111,19 @@ public final class SKOSLabelFilter extends SKOSFilter {
   private String bufferToString(int noTokens) {
     State entered = captureState();
     
-    State[] bufferedStates = buffer.toArray(new State[0]);
+    State[] bufferedStates = buffer.toArray(new State[buffer.size()]);
     
-    StringBuilder sb = new StringBuilder();
-    sb.append(termAtt.toString());
+    StringBuilder builder = new StringBuilder();
+    builder.append(termAtt.toString());
     restoreState(bufferedStates[0]);
     for (int i = 1; i < noTokens; i++) {
       restoreState(bufferedStates[i]);
-      sb.append(" " + termAtt.toString());
+      builder.append(" " + termAtt.toString());
     }
     
     restoreState(entered);
     
-    return sb.toString();
+    return builder.toString();
   }
   
   /**

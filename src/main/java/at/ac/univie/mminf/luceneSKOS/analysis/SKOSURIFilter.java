@@ -20,18 +20,18 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
  * 
  */
-public final class SKOSURIFilter extends SKOSFilter {
+public final class SKOSURIFilter extends AbstractSKOSFilter {
   
   /**
    * Constructor.
    * 
-   * @param in
+   * @param input
    * @param skosEngine
    * @param types
    */
-  public SKOSURIFilter(TokenStream in, SKOSEngine skosEngine,
+  public SKOSURIFilter(TokenStream input, SKOSEngine skosEngine,
       Analyzer analyzer, SKOSType... types) {
-    super(in, skosEngine, analyzer, types);
+    super(input, skosEngine, analyzer, types);
   }
   
   /**
@@ -47,7 +47,9 @@ public final class SKOSURIFilter extends SKOSFilter {
     }
     
     /* no more tokens on the consumed stream -> end of stream */
-    if (!input.incrementToken()) return false;
+    if (!input.incrementToken()) {
+      return false;
+    }
     
     /* check whether there are expanded terms for a given token */
     if (addTermsToStack(termAtt.toString())) {

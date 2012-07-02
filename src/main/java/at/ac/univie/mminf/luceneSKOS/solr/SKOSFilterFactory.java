@@ -29,8 +29,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 public class SKOSFilterFactory extends TokenFilterFactory implements
     ResourceLoaderAware {
   
-  private String skosFile;
-  
   private ExpansionType expansionType;
   
   private int bufferSize;
@@ -49,7 +47,7 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
   public void inform(ResourceLoader loader) {
     SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
     
-    skosFile = args.get("skosFile");
+    String skosFile = args.get("skosFile");
     
     String expansionTypeString = args.get("expansionType");
     
@@ -65,17 +63,21 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
         + " language: " + (languageString != null ? languageString : "All")
         + " type: " + (typeString != null ? typeString : "Default"));
     
-    if (skosFile == null || expansionTypeString == null) throw new IllegalArgumentException(
-        "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
+    if (skosFile == null || expansionTypeString == null) {
+      throw new IllegalArgumentException(
+          "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
+    }
     
     try {
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
-          || skosFile.endsWith(".ttl")) skosEngine = SKOSEngineFactory
-          .getSKOSEngine(luceneMatchVersion, solrLoader.getConfigDir()
-              + skosFile, languageString != null ? languageString.split(" ")
-              : null);
-      else throw new IOException(
-          "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
+          || skosFile.endsWith(".ttl")) {
+        skosEngine = SKOSEngineFactory.getSKOSEngine(luceneMatchVersion,
+            solrLoader.getConfigDir() + skosFile,
+            languageString != null ? languageString.split(" ") : null);
+      } else {
+        throw new IOException(
+            "Allowed file suffixes are: .n3 (N3), .rdf (RDF/XML), .ttl (TURTLE)");
+      }
       
     } catch (IOException e) {
       throw new RuntimeException("Could not instantiate SKOS engine", e);
@@ -92,19 +94,22 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
     }
     
     if (bufferSizeString != null) {
-      int bs = Integer.parseInt(bufferSizeString);
-      if (bs > 0) bufferSize = bs;
-      else throw new IllegalArgumentException(
-          "The property 'bufferSize' must be a positive (smallish) integer");
+      int bufferSize = Integer.parseInt(bufferSizeString);
+      if (bufferSize < 1) {
+        throw new IllegalArgumentException(
+            "The property 'bufferSize' must be a positive (smallish) integer");
+      }
     }
     
     if (typeString != null) {
-      List<SKOSType> sts = new ArrayList<SKOSType>();
+      List<SKOSType> types = new ArrayList<SKOSType>();
       for (String s : typeString.split(" ")) {
         SKOSType st = SKOSType.valueOf(s.toUpperCase());
-        if (st != null) sts.add(st);
+        if (st != null) {
+          types.add(st);
+        }
       }
-      type = sts.toArray(new SKOSType[0]);
+      type = types.toArray(new SKOSType[types.size()]);
     }
   }
   

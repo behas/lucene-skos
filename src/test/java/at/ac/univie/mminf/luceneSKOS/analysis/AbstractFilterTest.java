@@ -6,6 +6,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.After;
+import org.junit.Before;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.mock.SKOSEngineMock;
@@ -30,6 +31,7 @@ public abstract class AbstractFilterTest {
   
   protected Directory directory;
   
+  @Before
   protected void setUp() throws Exception {
     
     // adding some test data

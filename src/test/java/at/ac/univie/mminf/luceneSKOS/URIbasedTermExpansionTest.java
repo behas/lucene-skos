@@ -1,5 +1,6 @@
 package at.ac.univie.mminf.luceneSKOS;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,10 +46,10 @@ public class URIbasedTermExpansionTest extends AbstractTermExpansionTest {
    * A search for "arms" returns that record as a result because "arms" is
    * defined as an alternative label (altLabel) for the concept "weapons".
    * 
-   * @throws Exception
+   * @throws IOException
    */
   @Test
-  public void uriBasedTermExpansion() throws Exception {
+  public void uriBasedTermExpansion() throws IOException {
     
     /* defining the document to be indexed */
     Document doc = new Document();

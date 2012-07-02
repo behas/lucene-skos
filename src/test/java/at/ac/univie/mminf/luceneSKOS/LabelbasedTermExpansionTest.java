@@ -1,5 +1,6 @@
 package at.ac.univie.mminf.luceneSKOS;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,10 +45,10 @@ public class LabelbasedTermExpansionTest extends AbstractTermExpansionTest {
    * defined as an alternative label for "weapons", the term which is contained
    * in the subject field.
    * 
-   * @throws Exception
+   * @throws IOException
    */
   @Test
-  public void labelBasedTermExpansion() throws Exception {
+  public void labelBasedTermExpansion() throws IOException {
     
     /* defining the document to be indexed */
     Document doc = new Document();

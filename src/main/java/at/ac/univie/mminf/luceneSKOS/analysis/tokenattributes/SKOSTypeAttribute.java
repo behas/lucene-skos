@@ -45,8 +45,9 @@ public interface SKOSTypeAttribute extends Attribute {
           return NARROWERTRANSITIVE;
         case 7:
           return RELATED;
+        default:
+          return RELATED;
       }
-      return null;
     }
   }
   
@@ -55,12 +56,12 @@ public interface SKOSTypeAttribute extends Attribute {
    * 
    * @return SKOSType
    */
-  public SKOSType getSKOSType();
+  SKOSType getSkosType();
   
   /**
    * Sets this Token's SKOSType.
    * 
    * @param skosType
    */
-  public void setSKOSType(SKOSType skosType);
+  void setSkosType(SKOSType skosType);
 }

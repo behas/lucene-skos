@@ -63,8 +63,8 @@ public class SKOSEngineImpl implements SKOSEngine {
   
   /** Records the total number of matches */
   public static class AllDocCollector extends Collector {
-    List<Integer> docs = new ArrayList<Integer>();
-    int base;
+    private final List<Integer> docs = new ArrayList<Integer>();
+    private int base;
     
     @Override
     public boolean acceptsDocsOutOfOrder() {
@@ -73,8 +73,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     @Override
     public void collect(int doc) throws IOException {
-      doc += base;
-      docs.add(doc);
+      docs.add(doc + base);
     }
     
     public List<Integer> getDocs() {
@@ -87,7 +86,9 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     @Override
-    public void setScorer(Scorer scorer) throws IOException {}
+    public void setScorer(Scorer scorer) throws IOException {
+      // not needed
+    }
   }
   
   protected final Version matchVersion;
@@ -149,7 +150,7 @@ public class SKOSEngineImpl implements SKOSEngine {
   public SKOSEngineImpl(final Version version, InputStream inputStream,
       String lang) throws IOException {
     
-    if (!(lang.equals("N3") || lang.equals("RDF/XML") || lang.equals("TURTLE"))) {
+    if (!("N3".equals(lang) || "RDF/XML".equals(lang) || "TURTLE".equals(lang))) {
       throw new IOException("Invalid RDF serialization format");
     }
     
@@ -273,15 +274,18 @@ public class SKOSEngineImpl implements SKOSEngine {
       
       for (String conceptURI : conceptURIs) {
         String[] labels = getAltLabels(conceptURI);
-        if (labels != null) for (String label : labels)
-          result.add(label);
+        if (labels != null) {
+          for (String label : labels) {
+            result.add(label);
+          }
+        }
       }
     } catch (Exception e) {
       System.err
           .println("Error when accessing SKOS Engine.\n" + e.getMessage());
     }
     
-    return result.toArray(new String[0]);
+    return result.toArray(new String[result.size()]);
   }
   
   @Override
@@ -332,7 +336,7 @@ public class SKOSEngineImpl implements SKOSEngine {
       concepts.add(conceptURI);
     }
     
-    return concepts.toArray(new String[0]);
+    return concepts.toArray(new String[concepts.size()]);
   }
   
   private String[] getLabels(String conceptURI, String field)
@@ -348,7 +352,7 @@ public class SKOSEngineImpl implements SKOSEngine {
       labels.addAll(Arrays.asList(altLabels));
     }
     
-    return labels.toArray(new String[0]);
+    return labels.toArray(new String[labels.size()]);
   }
   
   @Override
@@ -422,9 +426,9 @@ public class SKOSEngineImpl implements SKOSEngine {
         continue;
       }
       
-      Resource bc = concept.as(Resource.class);
+      Resource resource = concept.as(Resource.class);
       
-      Field conceptField = new Field(field, bc.getURI(),
+      Field conceptField = new Field(field, resource.getURI(),
           StringField.TYPE_STORED);
       
       conceptDoc.add(conceptField);
@@ -474,7 +478,6 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     Document conceptDoc = searcher.doc(results[0].doc);
     
-    String[] fieldValues = conceptDoc.getValues(field);
-    return fieldValues;
+    return conceptDoc.getValues(field);
   }
 }

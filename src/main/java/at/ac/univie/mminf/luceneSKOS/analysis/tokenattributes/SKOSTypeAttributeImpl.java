@@ -12,12 +12,15 @@ public class SKOSTypeAttributeImpl extends AttributeImpl implements
   /**
    * Initialize this attribute with no SKOSType.
    */
-  public SKOSTypeAttributeImpl() {}
+  public SKOSTypeAttributeImpl() {
+    super();
+  }
   
   /**
    * Initialize this attribute with the given SKOSType.
    */
   public SKOSTypeAttributeImpl(SKOSType skosType) {
+    super();
     this.skosType = skosType;
   }
   
@@ -25,7 +28,7 @@ public class SKOSTypeAttributeImpl extends AttributeImpl implements
    * Returns this Token's SKOSType.
    */
   @Override
-  public SKOSType getSKOSType() {
+  public SKOSType getSkosType() {
     return skosType;
   }
   
@@ -33,7 +36,7 @@ public class SKOSTypeAttributeImpl extends AttributeImpl implements
    * Sets this Token's SKOSType.
    */
   @Override
-  public void setSKOSType(SKOSType skosType) {
+  public void setSkosType(SKOSType skosType) {
     this.skosType = skosType;
   }
   
@@ -49,9 +52,9 @@ public class SKOSTypeAttributeImpl extends AttributeImpl implements
     }
     
     if (other instanceof SKOSTypeAttribute) {
-      final SKOSTypeAttributeImpl o = (SKOSTypeAttributeImpl) other;
-      return (this.skosType == null ? o.skosType == null : this.skosType
-          .equals(o.skosType));
+      final SKOSTypeAttributeImpl otherImpl = (SKOSTypeAttributeImpl) other;
+      return (this.skosType == null ? otherImpl.skosType == null
+          : this.skosType.equals(otherImpl.skosType));
     }
     
     return false;
@@ -64,7 +67,7 @@ public class SKOSTypeAttributeImpl extends AttributeImpl implements
   
   @Override
   public void copyTo(AttributeImpl target) {
-    SKOSTypeAttribute t = (SKOSTypeAttribute) target;
-    t.setSKOSType(skosType);
+    SKOSTypeAttribute type = (SKOSTypeAttribute) target;
+    type.setSkosType(skosType);
   }
 }
