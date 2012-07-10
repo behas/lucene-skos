@@ -248,3 +248,7 @@ Again, you can add a sample document such as the following and retrieve results 
             <field name="subject">Weapons</field>
         </doc>
     </add>
+    
+### HELP!?
+
+Try to reach us in the #lucene-SKOS IRC channel, or write an email to the authors.
