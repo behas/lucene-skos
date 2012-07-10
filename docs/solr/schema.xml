@@ -56,7 +56,7 @@
 				<tokenizer class="solr.StandardTokenizerFactory" />
 				<filter class="solr.StandardFilterFactory" />
 				<filter class="at.ac.univie.mminf.luceneSKOS.solr.SKOSFilterFactory"
-					skosFile="ukat_examples.n3" expansionType="LABEL" />
+					skosFile="ukat_examples.n3" expansionType="LABEL" bufferSize="2" language="en"/>
 				<filter class="solr.LowerCaseFilterFactory" />
 			</analyzer>
 			<analyzer type="query">
@@ -70,7 +70,7 @@
 			<analyzer type="index">
 				<tokenizer class="solr.KeywordTokenizerFactory" />
 				<filter class="at.ac.univie.mminf.luceneSKOS.solr.SKOSFilterFactory"
-					skosFile="ukat_examples.n3" expansionType="URI" />
+					skosFile="ukat_examples.n3" expansionType="URI" language="en"/>
 			</analyzer>
 			<analyzer type="query">
 				<tokenizer class="solr.StandardTokenizerFactory" />

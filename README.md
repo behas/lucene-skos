@@ -2,11 +2,11 @@
 
 ## What is SKOS?
 
-The [Simple Knowledge Organization System (SKOS)](http://www.w3.org/2004/02/skos/) is a model for expressing the basis structure and content controlled vocabularies (classification schemes, thesauri, taxonomies, etc.). As an application of the [Resource Description Framework (RDF)](http://www.w3.org/RDF/), SKOS allows these vocabularies to be published as dereferencable resources on the Web, which makes them easily retrievable in re-usable in applications. SKOS plays a major role in the ongoing [Linked Data](http://linkeddata.org/) activities and has attracted attention in [several domains](http://www.w3.org/2006/07/SWD/SKOS/reference/20090315/implementation.html).
+The [Simple Knowledge Organization System (SKOS)](http://www.w3.org/2004/02/skos/) is a model for expressing controlled structured vocabularies (classification schemes, thesauri, taxonomies, etc.). As an application of the [Resource Description Framework (RDF)](http://www.w3.org/RDF/), SKOS allows these vocabularies to be published as dereferenceable resources on the Web, which makes them easy to retrieve and reuse in applications. SKOS plays a major role in the ongoing [Linked Data](http://linkeddata.org/) activities and has attracted attention in [several domains](http://www.w3.org/2006/07/SWD/SKOS/reference/20090315/implementation.html).
 
 ## What is lucene-SKOS?
 
-lucene-SKOS is an analyzer module for [Apache Lucene](http://lucene.apache.org/java/docs/index.html) and [Solr](http://lucene.apache.org/solr/). It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/analysis/TokenFilter.html). A SKOS-aware [Similarity](http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/search/Similarity.html) implementation that considers the properties of SKOS concepts in ranking is planned for future releases.
+lucene-SKOS is an analyzer module for [Apache Lucene](http://lucene.apache.org/java/docs/index.html) and [Solr](http://lucene.apache.org/solr/). It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/TokenFilter.html). A SKOS-aware [Similarity](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/search/Similarity.html) implementation that considers the properties of SKOS concepts in ranking is planned for future releases.
 
 ## Features
 
@@ -27,7 +27,7 @@ You probably want to use the lucene-SKOS analyzer in an application that already
 
 ### Binary Installation
 
-Download and unzip an archive from the [download area](https://code.google.com/p/lucene-skos/downloads/list) and copy all contained jars to your applications' classpath.
+Download and unzip an archive from the [download area](https://github.com/behas/lucene-SKOS/downloads) and copy all contained jars to your applications' classpath.
 
 ### Installation from Source
 
@@ -46,7 +46,7 @@ Build and package the sources
 
 Choose an archive from the _target_ subdirectory and proceed as in the binary installation.
 
-    tar -xzf target/luceneSKOS-0.1-SNAPSHOT-bin-with-dependencies.tar.gz
+    tar -xzf target/luceneSKOS-0.2-SNAPSHOT-bin-with-dependencies.tar.gz
 
 ### Using lucene-SKOS with Solr
 
@@ -79,7 +79,7 @@ The analyzer module can be used to expand references to SKOS concepts in given L
 
 ### Using lucene-SKOS with Lucene
 
-Create a [Lucene Document](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
+Create a [Lucene Document](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
 
     Document doc = new Document();
     doc.add(new Field("title", "Spearhead", Field.Store.YES, Field.Index.ANALYZED));
@@ -92,20 +92,21 @@ Create a [Lucene Document](http://lucene.apache.org/java/3_0_2/api/core/org/apac
     doc.add(new Field("subject", "http://www.ukat.org.uk/thesaurus/concept/859",
         Field.Store.NO, Field.Index.ANALYZED));
 
-Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.URI* indicates that the analyzer should perform URI-based term expansion.
+Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.URI* indicates that the analyzer should perform URI-based term expansion. The argument matchVersion can be set to *Version.LUCENE_36* if you are using Lucene 3.6, for example.
 
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
 
-    Analyzer skosAnalyzer = new SKOSAnalyzer(skosFile, ExpansionType.URI);
+    Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile, ExpansionType.URI);
 
-You might want to use different [Analyzers](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/analysis/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other field, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](http://lucene.apache.org/java/3_0_2/api/core/org/apache/lucene/analysis/SimpleAnalyzer.html) instance.
+You might want to use different [Analyzers](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other field, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/SimpleAnalyzer.html) instance.
 
-    PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer());
-    indexAnalyzer.addAnalyzer("subject", skosAnalyzer);
+    Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
+    analyzerPerField.put("subject", skosAnalyzer);
+    PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer(matchVersion), analyzerPerField);
 
-Set up a writer using the previously analyzer and add the document to the index.
+Set up a writer using the previously created analyzer and add the document to the index.
 
-    IndexWriter = new IndexWriter(new RAMDirectory(), indexAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED);
+    IndexWriter writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(matchVersion, indexAnalyzer));
 
     writer.addDocument(doc);
 
@@ -116,13 +117,13 @@ Now a search for *arms*, for instance, returns the indexed document in the resul
     query1.add(new TermQuery(new Term("description", "arms")), BooleanClause.Occur.SHOULD);
     query1.add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
 
-    IndexSearcher = new IndexSearcher(writer.getReader());
+    IndexSearcher searcher = new IndexSearcher(IndexReader.open(writer, false));
 
     TopDocs results = searcher.search(query1, 10);
 
     Assert.assertEquals(1, results.totalHits);
 
-For the complete code, please check our [JUnit Test](https://code.google.com/p/lucene-skos/source/browse/trunk/src/test/java/at/ac/univie/mminf/luceneSKOS/URIbasedTermExpansionTest.java) in the SVN Repository
+For the complete code, please check our [JUnit Test](https://github.com/behas/lucene-SKOS/blob/master/src/test/java/at/ac/univie/mminf/luceneSKOS/URIbasedTermExpansionTest.java) in the Git Repository
 
 ### Using lucene-SKOS with Solr
 
@@ -145,7 +146,7 @@ Create the following fieldType definition in Solr's schema.xml file located in $
 
     <field name="subject" type="skosReference" indexed="true" stored="true" />
 
- A complete, minimal _schema.xml_ configuration for the described use case is available [here]( https://code.google.com/p/lucene-skos/source/browse/trunk/docs/solr/schema.xml).
+ A complete, minimal _schema.xml_ configuration for the described use case is available [here]( https://github.com/behas/lucene-SKOS/blob/master/docs/solr/schema.xml).
 
 Now you can add a sample document by following the instructions described in _Indexing Data_ section of the [Solr tutorial](http://lucene.apache.org/solr/tutorial.html). Here is a sample:
 
@@ -183,15 +184,15 @@ Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabula
 
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
 
-    Analyzer skosAnalyzer = new SKOSAnalyzer(skosFile, ExpansionType.LABEL);
+    Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile, ExpansionType.LABEL);
 
 As in the previous use case, we define a PerFieldAnalyzerWrapper instance and index the document.
 
-    PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer());
-    indexAnalyzer.addAnalyzer("subject", skosAnalyzer);
+    Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
+    analyzerPerField.put("subject", skosAnalyzer);
+    PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer(matchVersion), analyzerPerField);
 
-    writer = new IndexWriter(new RAMDirectory(), indexAnalyzer,
-        IndexWriter.MaxFieldLength.UNLIMITED);
+    IndexWriter writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(matchVersion, indexAnalyzer));
 
     writer.addDocument(doc);
 
@@ -202,14 +203,14 @@ Now a search for "arms", for instance, returns the indexed document in the resul
     query1.add(new TermQuery(new Term("description", "arms")), BooleanClause.Occur.SHOULD);
     query1.add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
 
-    IndexSearcher = new IndexSearcher(writer.getReader());
+    IndexSearcher searcher = new IndexSearcher(IndexReader.open(writer, false));
 
     TopDocs results = searcher.search(query1, 10);
 
     Assert.assertEquals(1, results.totalHits);
 
 
-For the complete code, please check our [JUnit Test](https://code.google.com/p/lucene-skos/source/browse/trunk/src/test/java/at/ac/univie/mminf/luceneSKOS/LabelbasedTermExpansionTest.java).
+For the complete code, please check our [JUnit Test](https://github.com/behas/lucene-SKOS/blob/master/src/test/java/at/ac/univie/mminf/luceneSKOS//LabelbasedTermExpansionTest.java).
 
 
 ### Using lucene-SKOS with Solr
@@ -224,7 +225,7 @@ Introduce another fieldType...
         <tokenizer class="solr.StandardTokenizerFactory" />
         <filter class="solr.StandardFilterFactory" />
         <filter class="at.ac.univie.mminf.luceneSKOS.solr.SKOSFilterFactory"
-            skosFile="ukat_examples.n3" expansionType="LABEL" />
+            skosFile="ukat_examples.n3" expansionType="LABEL" bufferSize="2" language="en"/>
         <filter class="solr.LowerCaseFilterFactory" />
     </analyzer>
     <analyzer type="query">
@@ -235,8 +236,10 @@ Introduce another fieldType...
 
 ...and set the _subject_ field to that type
 
-    <field name="subject" type="skosLabel" indexed="true"
-        stored="true" />
+    <field name="subject" type="skosLabel" indexed="true" stored="true" />
+
+In the example above the labels are restricted to the English language tag, however you can also do cross-language expansion by configuring language="en pt" for example.
+Also, bufferSize controls the maximum length of concepts (in number of words) that will be checked for expansion.
 
 Again, you can add a sample document such as the following and retrieve results for queries (e.g., arms) containing terms that are not explicitly contained in the indexed document.
 
