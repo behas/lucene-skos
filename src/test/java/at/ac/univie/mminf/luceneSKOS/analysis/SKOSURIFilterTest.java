@@ -20,8 +20,9 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
@@ -60,11 +61,11 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
-        Field.Store.YES, Field.Index.ANALYZED));
+        TextField.TYPE_STORED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(IndexReader.open(writer, false));
+    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
     
     Query query = new TermQuery(new Term("subject", "leaps"));
     
@@ -87,11 +88,11 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
-        Field.Store.NO, Field.Index.ANALYZED));
+        TextField.TYPE_NOT_STORED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(IndexReader.open(writer, false));
+    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
     
     Query query = new TermQuery(new Term("subject", "jumps"));
     
@@ -111,13 +112,13 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
     
     Document doc = new Document();
     doc.add(new Field("subject", "http://example.com/concept/1",
-        Field.Store.YES, Field.Index.ANALYZED));
+        TextField.TYPE_STORED));
     doc.add(new Field("subject", "http://example.com/concept/2",
-        Field.Store.YES, Field.Index.ANALYZED));
+        TextField.TYPE_STORED));
     
     writer.addDocument(doc);
     
-    searcher = new IndexSearcher(IndexReader.open(writer, false));
+    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
     
     // querying for alternative term of concept 1
     Query query = new TermQuery(new Term("subject", "hops"));
