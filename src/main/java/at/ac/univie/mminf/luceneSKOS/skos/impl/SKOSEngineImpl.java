@@ -208,6 +208,9 @@ public class SKOSEngineImpl implements SKOSEngine {
     if (!dir.isDirectory()) {
       // load the skos model from the given file
       FileManager fileManager = new FileManager();
+      fileManager.addLocatorFile();
+      fileManager.addLocatorURL();
+      fileManager.addLocatorClassLoader(SKOSEngineImpl.class.getClassLoader());
       
       if (FilenameUtils.getExtension(filenameOrURI).equals("zip")) {
         fileManager.addLocatorZip(filenameOrURI);
