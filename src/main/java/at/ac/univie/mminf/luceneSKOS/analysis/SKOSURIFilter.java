@@ -32,9 +32,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * It takes references to SKOS concepts (URIs) as input and searches a given
  * SKOS vocabulary for matching concepts. If a match is found, it adds the
  * concept's labels to the output token stream.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public final class SKOSURIFilter extends AbstractSKOSFilter {
   

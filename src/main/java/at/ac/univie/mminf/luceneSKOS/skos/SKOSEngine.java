@@ -21,9 +21,6 @@ import java.io.IOException;
 /**
  * An interface to the used SKOS model. It provides accessors to all the data
  * needed for the expansion process.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public interface SKOSEngine {
   

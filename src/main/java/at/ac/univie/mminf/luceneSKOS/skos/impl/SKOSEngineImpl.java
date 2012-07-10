@@ -69,9 +69,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
  * Each SKOS concept is stored/indexed as a Lucene document.
  * 
  * All labels are converted to lowercase
- * 
- * @author haslhofer
- * 
  */
 public class SKOSEngineImpl implements SKOSEngine {
   

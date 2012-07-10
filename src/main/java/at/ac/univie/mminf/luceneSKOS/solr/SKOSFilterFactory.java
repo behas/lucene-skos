@@ -37,10 +37,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 
 /**
  * A factory for plugging SKOS filters into Apache Solr
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * @author Martin Kysel <martin.kysel@univie.ac.at>
- * 
  */
 public class SKOSFilterFactory extends BaseTokenFilterFactory implements
     ResourceLoaderAware {

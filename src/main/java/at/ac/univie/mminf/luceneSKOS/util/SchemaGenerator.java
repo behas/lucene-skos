@@ -21,10 +21,6 @@ import jena.schemagen;
 /**
  * Uses the JENA schema generator to convert the used OWL ontologies/vocabs to
  * corresponding Java classes.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * @author Niko Popitsch <niko.popitsch@univie.ac.at>
- * 
  */
 public class SchemaGenerator {
   

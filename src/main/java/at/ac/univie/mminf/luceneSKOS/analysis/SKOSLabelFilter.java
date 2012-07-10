@@ -34,10 +34,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
  * It takes labels (String values) as input and searches a given SKOS vocabulary
  * for matching concepts (based on their prefLabels). If a match is found, it
  * adds the concept's labels to the output token stream.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * @author Martin Kysel <martin.kysel@univie.ac.at>
- * 
  */
 public final class SKOSLabelFilter extends AbstractSKOSFilter {
   

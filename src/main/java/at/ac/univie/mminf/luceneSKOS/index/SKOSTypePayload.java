@@ -26,9 +26,6 @@ import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttributeI
 /**
  * Encodes a given SKOSAttribute as term payload simply by converting the
  * SKOSAttribute enums to and from int.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class SKOSTypePayload extends Payload {
   

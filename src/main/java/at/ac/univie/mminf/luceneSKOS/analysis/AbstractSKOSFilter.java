@@ -39,9 +39,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 
 /**
  * A SKOS-specific TokenFilter implementation
- * 
- * @author haslhofer
- * 
  */
 public abstract class AbstractSKOSFilter extends TokenFilter {
   
@@ -216,9 +213,6 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
   
   /**
    * Helper class for capturing terms and term types
-   * 
-   * @author haslhofer
-   * 
    */
   protected static class ExpandedTerm {
     

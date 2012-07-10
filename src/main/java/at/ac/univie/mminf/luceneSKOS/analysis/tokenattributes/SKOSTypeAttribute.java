@@ -24,17 +24,11 @@ import org.apache.lucene.util.Attribute;
  * 
  * Note: when tokens are posted to the index as terms, attribute information is
  * lost unless it is encoded in the terms' payload.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public interface SKOSTypeAttribute extends Attribute {
   
   /**
    * An enumeration of supported SKOS concept types
-   * 
-   * @author haslhofer
-   * 
    */
   public static enum SKOSType {
     

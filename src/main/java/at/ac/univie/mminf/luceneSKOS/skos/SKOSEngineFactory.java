@@ -25,8 +25,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.impl.SKOSEngineImpl;
 
 /**
  * This factory instantiates the various kinds of SKOSEngine implementations
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
  */
 public class SKOSEngineFactory {
   

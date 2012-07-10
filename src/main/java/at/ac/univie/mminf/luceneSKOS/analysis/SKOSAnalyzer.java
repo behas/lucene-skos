@@ -39,10 +39,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 /**
  * An analyzer for expanding fields that contain either (i) URI references to
  * SKOS concepts OR (ii) SKOS concept prefLabels as values.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * @author Martin Kysel <martin.kysel@univie.ac.at>
- * 
  */
 public class SKOSAnalyzer extends StopwordAnalyzerBase {
   

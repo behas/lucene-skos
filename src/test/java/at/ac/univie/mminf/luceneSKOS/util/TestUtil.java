@@ -26,9 +26,6 @@ import org.apache.lucene.search.TopDocs;
 
 /**
  * Common utilities for testing.
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class TestUtil {
   

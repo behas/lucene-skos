@@ -40,9 +40,6 @@ import org.junit.Test;
 
 /**
  * Common code used for all Use Case (UC) tests
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public abstract class AbstractTermExpansionTest {
   

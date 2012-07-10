@@ -26,9 +26,6 @@ import org.junit.Test;
 
 /**
  * Tests the functionality of the Lucene-backed SKOS Engine implementation
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class SKOSEngineTest {
   

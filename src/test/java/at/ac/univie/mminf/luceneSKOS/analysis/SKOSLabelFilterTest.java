@@ -44,10 +44,6 @@ import at.ac.univie.mminf.luceneSKOS.util.TestUtil;
 
 /**
  * Testing the SKOS Label Filter
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * @author Martin Kysel <martin.kysel@univie.ac.at>
- * 
  */
 public class SKOSLabelFilterTest extends AbstractFilterTest {
   

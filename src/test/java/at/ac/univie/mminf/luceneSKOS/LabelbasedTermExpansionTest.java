@@ -46,9 +46,6 @@ import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
  * This test-case verifies and demonstrates the "Label-based term expansion" use
  * case as described in https://code.
  * google.com/p/lucene-skos/wiki/UseCases#UC2:_Label-based_term_expansion
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class LabelbasedTermExpansionTest extends AbstractTermExpansionTest {
   

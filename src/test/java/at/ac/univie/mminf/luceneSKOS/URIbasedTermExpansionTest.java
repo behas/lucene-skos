@@ -47,9 +47,6 @@ import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
  * "Expansion of URI terms to SKOS labels" use case as described in
  * https://code.
  * google.com/p/lucene-skos/wiki/UseCases#UC1:_URI-based_term_expansion
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class URIbasedTermExpansionTest extends AbstractTermExpansionTest {
   

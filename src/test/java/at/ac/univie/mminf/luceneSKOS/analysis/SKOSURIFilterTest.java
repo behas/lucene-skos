@@ -38,9 +38,6 @@ import at.ac.univie.mminf.luceneSKOS.util.AnalyzerUtils;
 
 /**
  * Testing the SKOS URI Filter
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class SKOSURIFilterTest extends AbstractFilterTest {
   

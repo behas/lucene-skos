@@ -28,9 +28,6 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
 
 /**
  * A mock that simulates the behavior of a SKOS engine for testing purposes
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class SKOSEngineMock implements SKOSEngine {
   

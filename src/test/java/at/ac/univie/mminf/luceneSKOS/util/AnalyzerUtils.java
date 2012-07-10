@@ -31,9 +31,6 @@ import org.apache.lucene.util.BytesRef;
 
 /**
  * Utils for displaying the results of the Lucene analysis process
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public class AnalyzerUtils {
   

@@ -29,9 +29,6 @@ import at.ac.univie.mminf.luceneSKOS.mock.SKOSEngineMock;
 
 /**
  * Abstract class containing common code for filter tests
- * 
- * @author Bernhard Haslhofer <bernhard.haslhofer@univie.ac.at>
- * 
  */
 public abstract class AbstractFilterTest {
   
