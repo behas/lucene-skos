@@ -37,6 +37,15 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>xhaker</id>
+            <name>Flavio Martins</name>
+            <email>xhaker@gmail.com</email>
+            <organization>New University of Lisbon, Center for Informatics and Information Technologies</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
 
     <licenses>
