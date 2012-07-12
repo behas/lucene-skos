@@ -194,11 +194,6 @@
 
     <repositories>
         <repository>
-            <id>mis-repo</id>
-            <name>MIS Maven Repository</name>
-            <url>http://develop.mminf.univie.ac.at/artifactory/repo/</url>
-        </repository>
-        <repository>
             <id>apache-repo-releases</id>
             <url>https://repository.apache.org/content/repositories/releases/</url>
             <releases>
