@@ -220,8 +220,8 @@ public class SKOSEngineImpl implements SKOSEngine {
       langSig = "-" + StringUtils.join(this.languages, ".");
     }
     
-    String baseName = FilenameUtils.getBaseName(filenameOrURI);
-    File dir = new File("skosdata/" + baseName + langSig);
+    String name = FilenameUtils.getName(filenameOrURI);
+    File dir = new File("skosdata/" + name + langSig);
     indexDir = FSDirectory.open(dir);
     
     // TODO: Generate also if source file is modified
