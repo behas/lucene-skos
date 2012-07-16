@@ -45,3 +45,7 @@
       a       skos:Concept ;
       skos:altLabel "canine" , "pooch" ;
       skos:prefLabel "dog" .
+      
+<http://www.cs.univie.ac.at/thesaurus/concept/6>
+    skos:altLabel "ram", "ewe" ;
+    skos:prefLabel "sheep" .

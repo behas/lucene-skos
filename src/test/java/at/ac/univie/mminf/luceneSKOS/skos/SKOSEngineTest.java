@@ -59,6 +59,22 @@ public class SKOSEngineTest {
     
   }
   
+  /**
+   * Tests retrieval of non-explicitly types SKOS concepts
+   */
+  @Test
+  public void testSimpleSKOSSampleN3NoType() throws IOException {
+      
+      String skosFile = "src/test/resources/skos_samples/simple_test_skos.n3";
+
+      SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(matchVersion,
+          skosFile);
+
+      Assert.assertEquals(2, skosEngine.getAltTerms("sheep").length);
+      
+  }
+  
+  
   @Test
   public void testSKOSSpecSamples() throws IOException {
     
