@@ -60,6 +60,11 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.update.GraphStore;
+import com.hp.hpl.jena.update.GraphStoreFactory;
+import com.hp.hpl.jena.update.UpdateAction;
+import com.hp.hpl.jena.update.UpdateFactory;
+import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -176,6 +181,8 @@ public class SKOSEngineImpl implements SKOSEngine {
     
     indexDir = new RAMDirectory();
     
+    entailSKOSModel();
+    
     indexSKOSModel();
     
     searcher = new IndexSearcher(IndexReader.open(indexDir));
@@ -232,12 +239,27 @@ public class SKOSEngineImpl implements SKOSEngine {
       
       skosModel = fileManager.loadModel(filenameOrURI);
       
+      entailSKOSModel();
+      
       indexSKOSModel();
     }
     
     searcher = new IndexSearcher(IndexReader.open(indexDir));
   }
   
+  private void entailSKOSModel() {
+    GraphStore graphStore = GraphStoreFactory.create(skosModel) ;
+    String sparqlQuery = StringUtils.join(new String[]{
+        "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+        "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+        "INSERT { ?subject rdf:type skos:Concept }",
+        "WHERE { ?subject skos:prefLabel ?text . ",
+        "FILTER NOT EXISTS { ?subject rdf:type skos:Concept } }",
+        }, "\n");
+    UpdateRequest request = UpdateFactory.create(sparqlQuery);
+    UpdateAction.execute(request, graphStore) ;
+  }
+
   /**
    * Creates lucene documents from SKOS concept. In order to allow language
    * restrictions, one document per language is created.
