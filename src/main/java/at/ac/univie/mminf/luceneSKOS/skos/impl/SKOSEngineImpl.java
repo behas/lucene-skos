@@ -253,8 +253,11 @@ public class SKOSEngineImpl implements SKOSEngine {
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
         "INSERT { ?subject rdf:type skos:Concept }",
-        "WHERE { ?subject skos:prefLabel ?text . ",
-        "FILTER NOT EXISTS { ?subject rdf:type skos:Concept } }",
+        "WHERE {",
+          "{ ?subject skos:prefLabel ?text } UNION",
+          "{ ?subject skos:altLabel ?text } UNION",
+          "{ ?subject skos:hiddenLabel ?text }",
+         "}",
         }, "\n");
     UpdateRequest request = UpdateFactory.create(sparqlQuery);
     UpdateAction.execute(request, graphStore) ;
