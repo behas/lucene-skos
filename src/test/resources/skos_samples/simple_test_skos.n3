@@ -49,3 +49,7 @@
 <http://www.cs.univie.ac.at/thesaurus/concept/7>
     skos:altLabel "ram", "ewe" ;
     skos:prefLabel "sheep" .
+
+<http://www.cs.univie.ac.at/thesaurus/concept/8>
+    skos:altLabel "kitty", "kitten" ;
+    skos:hiddenLabel "kity" .

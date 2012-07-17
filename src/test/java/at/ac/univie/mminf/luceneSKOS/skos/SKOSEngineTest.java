@@ -71,7 +71,8 @@ public class SKOSEngineTest {
           skosFile);
 
       Assert.assertEquals(2, skosEngine.getAltTerms("sheep").length);
-      
+
+      Assert.assertEquals(2, skosEngine.getAltTerms("kity").length);
   }
   
   
