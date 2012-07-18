@@ -147,21 +147,21 @@ public interface SKOSEngine {
   String[] getNarrowerTransitiveLabels(String conceptURI) throws IOException;
   
   /**
-   * Returns all concepts (URIs) matching a given preferred label
+   * Returns all concepts (URIs) matching a given label
    * 
-   * @param prefLabel
+   * @param label
    * @return String[]
    * @throws IOException
    */
-  String[] getConcepts(String prefLabel) throws IOException;
+  String[] getConcepts(String label) throws IOException;
   
   /**
-   * Returns all alternative terms for a given preferred label
+   * Returns all alternative terms for a given label
    * 
-   * @param prefLabel
+   * @param label
    * @return String[]
    * @throws IOException
    */
-  String[] getAltTerms(String prefLabel) throws IOException;
+  String[] getAltTerms(String label) throws IOException;
   
 }
