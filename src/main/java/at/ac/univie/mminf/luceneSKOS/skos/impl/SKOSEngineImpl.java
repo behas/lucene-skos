@@ -311,20 +311,20 @@ public class SKOSEngineImpl implements SKOSEngine {
   }
   
   @Override
-  public String[] getAltTerms(String prefLabel) throws IOException {
+  public String[] getAltTerms(String label) throws IOException {
     List<String> result = new ArrayList<String>();
     
     // convert the query to lower-case
-    String queryString = prefLabel.toLowerCase();
+    String queryString = label.toLowerCase();
     
     try {
       String[] conceptURIs = getConcepts(queryString);
       
       for (String conceptURI : conceptURIs) {
-        String[] labels = getAltLabels(conceptURI);
-        if (labels != null) {
-          for (String label : labels) {
-            result.add(label);
+        String[] altLabels = getAltLabels(conceptURI);
+        if (altLabels != null) {
+          for (String altLabel : altLabels) {
+            result.add(altLabel);
           }
         }
       }
@@ -364,11 +364,11 @@ public class SKOSEngineImpl implements SKOSEngine {
   }
   
   @Override
-  public String[] getConcepts(String prefLabel) throws IOException {
+  public String[] getConcepts(String label) throws IOException {
     List<String> concepts = new ArrayList<String>();
     
     // convert the query to lower-case
-    String queryString = prefLabel.toLowerCase();
+    String queryString = label.toLowerCase();
     
     AllDocCollector collector = new AllDocCollector();
     

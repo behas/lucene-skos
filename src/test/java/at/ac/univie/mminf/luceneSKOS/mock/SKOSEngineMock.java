@@ -89,11 +89,11 @@ public class SKOSEngineMock implements SKOSEngine {
   }
   
   @Override
-  public String[] getAltTerms(String prefLabel) throws IOException {
+  public String[] getAltTerms(String label) throws IOException {
     List<String> altTerms = new ArrayList<String>();
     
     // convert the query to lower-case
-    String queryString = prefLabel.toLowerCase();
+    String queryString = label.toLowerCase();
     
     String[] conceptURIs = getConcepts(queryString);
     
@@ -102,9 +102,9 @@ public class SKOSEngineMock implements SKOSEngine {
     }
     
     for (String conceptURI : conceptURIs) {
-      String[] alt = getAltLabels(conceptURI);
-      if (alt != null) {
-        altTerms.addAll(Arrays.asList(alt));
+      String[] altLabels = getAltLabels(conceptURI);
+      if (altLabels != null) {
+        altTerms.addAll(Arrays.asList(altLabels));
       }
     }
     
@@ -139,8 +139,8 @@ public class SKOSEngineMock implements SKOSEngine {
   }
   
   @Override
-  public String[] getConcepts(String prefLabel) throws IOException {
-    String queryString = prefLabel.toLowerCase();
+  public String[] getConcepts(String label) throws IOException {
+    String queryString = label.toLowerCase();
     
     List<String> conceptURIs = new ArrayList<String>();
     
@@ -150,6 +150,18 @@ public class SKOSEngineMock implements SKOSEngine {
       List<String> prefLabels = entryMap.get(SKOSType.PREF);
       
       if (prefLabels != null && prefLabels.contains(queryString)) {
+        conceptURIs.add(conceptURI);
+      }
+      
+      List<String> altLabels = entryMap.get(SKOSType.ALT);
+      
+      if (altLabels != null && altLabels.contains(queryString)) {
+        conceptURIs.add(conceptURI);
+      }
+      
+      List<String> hiddenLabels = entryMap.get(SKOSType.HIDDEN);
+      
+      if (hiddenLabels != null && hiddenLabels.contains(queryString)) {
         conceptURIs.add(conceptURI);
       }
     }
