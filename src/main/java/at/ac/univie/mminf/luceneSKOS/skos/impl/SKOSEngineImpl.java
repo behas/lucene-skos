@@ -457,7 +457,7 @@ public class SKOSEngineImpl implements SKOSEngine {
       label = label.toLowerCase();
       
       Field labelField = new Field(field, label, Field.Store.YES,
-          Field.Index.NOT_ANALYZED);
+          Field.Index.NOT_ANALYZED_NO_NORMS);
       
       conceptDoc.add(labelField);
     }
