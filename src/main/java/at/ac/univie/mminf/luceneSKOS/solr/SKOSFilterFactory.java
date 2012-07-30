@@ -134,7 +134,7 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
       
     } else {
       return new SKOSURIFilter(input, skosEngine, new StandardAnalyzer(
-          luceneMatchVersion));
+          luceneMatchVersion), type);
     }
     
   }
