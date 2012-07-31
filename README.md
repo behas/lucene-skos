@@ -159,7 +159,7 @@ Now you can add a sample document by following the instructions described in _In
         </doc>
     </add>
 
-Now a search for "arms" or "weapons" returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
+Now a search for "subject:arms" or "subject:weapons" returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
 
 
 ## UC2: Label-based term expansion
@@ -196,7 +196,7 @@ As in the previous use case, we define a PerFieldAnalyzerWrapper instance and in
 
     writer.addDocument(doc);
 
-Now a search for "arms", for instance, returns the indexed document in the result list because the label "weapons", which is define as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
+Now a search for "arms", for instance, returns the indexed document in the result list because the label "weapons", which is defined as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
 
     BooleanQuery query1 = new BooleanQuery();
     query1.add(new TermQuery(new Term("title", "arms")), BooleanClause.Occur.SHOULD);
@@ -241,7 +241,7 @@ Introduce another fieldType...
 In the example above the labels are not restricted to any specific language, however you can restrict them to the English language tag by adding language="en" to the filter attributes. You can also specify a list of languages like for example language="en pt" for English and Portuguese cross-language expansion.
 Also, bufferSize controls the maximum length (in number of words) of concept labels that will be checked for expansion.
 
-Again, you can add a sample document such as the following and retrieve results for queries (e.g., arms) containing terms that are not explicitly contained in the indexed document.
+Again, you can add a sample document such as the following and retrieve results for queries (e.g., subject:arms) containing terms that are not explicitly contained in the indexed document.
 
     <add>
         <doc>
