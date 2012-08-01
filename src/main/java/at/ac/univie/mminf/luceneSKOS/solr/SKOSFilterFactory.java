@@ -106,7 +106,7 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
     }
     
     if (bufferSizeString != null) {
-      int bufferSize = Integer.parseInt(bufferSizeString);
+      bufferSize = Integer.parseInt(bufferSizeString);
       if (bufferSize < 1) {
         throw new IllegalArgumentException(
             "The property 'bufferSize' must be a positive (smallish) integer");
