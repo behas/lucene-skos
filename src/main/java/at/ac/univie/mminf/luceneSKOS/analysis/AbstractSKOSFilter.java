@@ -86,7 +86,7 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
     this.engine = engine;
     this.analyzer = analyzer;
     
-    if (types != null) {
+    if (types != null && types.length > 0) {
       this.types = new TreeSet<SKOSType>(Arrays.asList(types));
     } else {
       this.types = new TreeSet<SKOSType>(Arrays.asList(new SKOSType[] {

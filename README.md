@@ -159,7 +159,7 @@ Now you can add a sample document by following the instructions described in _In
         </doc>
     </add>
 
-Now a search for "arms" or "weapons" returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
+Now a search for "subject:arms" or "subject:weapons" returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
 
 
 ## UC2: Label-based term expansion
@@ -196,7 +196,7 @@ As in the previous use case, we define a PerFieldAnalyzerWrapper instance and in
 
     writer.addDocument(doc);
 
-Now a search for "arms", for instance, returns the indexed document in the result list because the label "weapons", which is define as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
+Now a search for "arms", for instance, returns the indexed document in the result list because the label "weapons", which is defined as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
 
     BooleanQuery query1 = new BooleanQuery();
     query1.add(new TermQuery(new Term("title", "arms")), BooleanClause.Occur.SHOULD);
@@ -225,7 +225,7 @@ Introduce another fieldType...
         <tokenizer class="solr.StandardTokenizerFactory" />
         <filter class="solr.StandardFilterFactory" />
         <filter class="at.ac.univie.mminf.luceneSKOS.solr.SKOSFilterFactory"
-            skosFile="ukat_examples.n3" expansionType="LABEL" bufferSize="2" language="en"/>
+            skosFile="ukat_examples.n3" expansionType="LABEL" bufferSize="2" />
         <filter class="solr.LowerCaseFilterFactory" />
     </analyzer>
     <analyzer type="query">
@@ -238,10 +238,10 @@ Introduce another fieldType...
 
     <field name="subject" type="skosLabel" indexed="true" stored="true" />
 
-In the example above the labels are restricted to the English language tag, however you can also do cross-language expansion by configuring language="en pt" for example.
-Also, bufferSize controls the maximum length of concepts (in number of words) that will be checked for expansion.
+In the example above the labels are not restricted to any specific language, however you can restrict them to the English language tag by adding language="en" to the filter attributes. You can also specify a list of languages like for example language="en pt" for English and Portuguese cross-language expansion.
+Also, bufferSize controls the maximum length (in number of words) of concept labels that will be checked for expansion.
 
-Again, you can add a sample document such as the following and retrieve results for queries (e.g., arms) containing terms that are not explicitly contained in the indexed document.
+Again, you can add a sample document such as the following and retrieve results for queries (e.g., subject:arms) containing terms that are not explicitly contained in the indexed document.
 
     <add>
         <doc>
