@@ -1,3 +1,9 @@
+2012-08-09
+    RELEASE 0.2
+    
+    * Added entailment in SKOSFactory
+    * Upgraded code to support Lucene 3.x and Solr 3.6
+
 2010-08-13
     RELEASE 0.1
     
