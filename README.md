@@ -2,34 +2,29 @@
 
 ## What is SKOS?
 
-The [Simple Knowledge Organization System (SKOS)](http://www.w3.org/2004/02/skos/) is a model for expressing controlled structured vocabularies (classification schemes, thesauri, taxonomies, etc.). As an application of the [Resource Description Framework (RDF)](http://www.w3.org/RDF/), SKOS allows these vocabularies to be published as dereferenceable resources on the Web, which makes them easy to retrieve and reuse in applications. SKOS plays a major role in the ongoing [Linked Data](http://linkeddata.org/) activities and has attracted attention in [several domains](http://www.w3.org/2006/07/SWD/SKOS/reference/20090315/implementation.html).
+The [Simple Knowledge Organization System (SKOS)][skos] is a model for expressing controlled structured vocabularies (classification schemes, thesauri, taxonomies, etc.). As an application of the [Resource Description Framework (RDF)][rdf], SKOS allows these vocabularies to be published as dereferenceable resources on the Web, which makes them easy to retrieve and reuse in applications. SKOS plays a major role in the ongoing [Linked Data][ld] activities.
 
 ## What is lucene-SKOS?
 
-lucene-SKOS is an analyzer module for [Apache Lucene](http://lucene.apache.org/java/docs/index.html) and [Solr](http://lucene.apache.org/solr/). It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/TokenFilter.html). A SKOS-aware [Similarity](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/search/Similarity.html) implementation that considers the properties of SKOS concepts in ranking is planned for future releases.
+lucene-SKOS is an analyzer module for [Apache Lucene 3.x][lucene] and [Solr 3.6.1][solr]. It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/TokenFilter.html).
 
 ## Features
 
 The module supports the following use cases:
 
- * [UC 1](https://github.com/behas/lucene-SKOS/wiki/UseCases): Expansion of URI terms to SKOS labels]: URI-references to SKOS concepts in given Lucene documents are expanded by the labels behind those concepts.
+ * [UC 1](https://github.com/behas/lucene-SKOS/wiki/UseCases): Expansion of URI terms to SKOS labels: URI-references to SKOS concepts in given Lucene documents are expanded by the labels behind those concepts.
 
- * [UC2](https://github.com/behas/lucene-SKOS/wiki/UseCases): Expansion of text terms to SKOS labels]: Labels in given Lucene documents, which are defined as preferred concept labels in a given SKOS vocabulary, are expanded by additional labels defined in that vocabulary.
+ * [UC2](https://github.com/behas/lucene-SKOS/wiki/UseCases): Expansion of text terms to SKOS labels: Labels in given Lucene documents, which are defined as preferred concept labels in a given SKOS vocabulary, are expanded by additional labels defined in that vocabulary.
 
-## Installation and Usage
+## Installation
 
-The SKOS Analyzer Module can be used with [Apache Lucene](http://lucene.apache.org/java/) and [Solr](http://lucene.apache.org/solr/).
+The SKOS Analyzer Module can be used with [Apache Lucene][lucene] and [Solr][solr].
 
-
-### Using lucene-skos with Lucene
-
-You probably want to use the lucene-SKOS analyzer in an application that already uses Lucene. Therefore you must make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena](http://openjena.org/ )) are located in your classpath (= build path in Eclipse).
-
-### Binary Installation
+### Download Binaries
 
 Download and unzip an archive from the [download area](https://github.com/behas/lucene-SKOS/downloads) and copy all contained jars to your applications' classpath.
 
-### Installation from Source
+### Build from Source
 
 Make sure you have [Apache Maven](http://maven.apache.org/) installed. Verify this as follows:
 
@@ -46,13 +41,16 @@ Build and package the sources
 
 Choose an archive from the _target_ subdirectory and proceed as in the binary installation.
 
-    tar -xzf target/luceneSKOS-0.2-SNAPSHOT-bin-with-dependencies.tar.gz
+    tar -xzf target/luceneSKOS-0.2-bin-with-dependencies.tar.gz
+
+### Using lucene-skos with Lucene
+
+You probably want to use the lucene-SKOS analyzer in an application that already uses Lucene. Therefore you must make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
+
 
 ### Using lucene-SKOS with Solr
 
-Installing lucene-SKOS with Solr largely depends on how you deployed Solr in your environment. Here we describe how to use the plugin with a basic Solr installation.
-
-Follow the _Getting Started_ section of the [Solr Tutorial](http://lucene.apache.org/solr/tutorial.html) and make sure you can start up your Solr instance. Make sure _SOLR_HOME_ is set.
+Installing lucene-SKOS with Solr largely depends on how you deployed Solr in your environment. Follow the _Getting Started_ section of the [Solr Tutorial](http://lucene.apache.org/solr/tutorial.html) and make sure you can start up your Solr instance. Make sure _SOLR_HOME_ is set.
 
     cd $SOLR_HOME/example
     java -jar start.jar
@@ -77,7 +75,7 @@ Download an [example thesaurus](./docs/solr) and copy it to $SOLR_HOME/solr/conf
 
 The analyzer module can be used to expand references to SKOS concepts in given Lucene documents by the concepts' labels at indexing time. 
 
-### Using lucene-SKOS with Lucene
+### Lucene
 
 Create a [Lucene Document](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
 
@@ -125,7 +123,7 @@ Now a search for *arms*, for instance, returns the indexed document in the resul
 
 For the complete code, please check our [JUnit Test](https://github.com/behas/lucene-SKOS/blob/master/src/test/java/at/ac/univie/mminf/luceneSKOS/URIbasedTermExpansionTest.java) in the Git Repository
 
-### Using lucene-SKOS with Solr
+### Solr
 
 Create the following fieldType definition in Solr's schema.xml file located in $SOLR_HOME$/conf/schema.xml
 
@@ -146,7 +144,7 @@ Create the following fieldType definition in Solr's schema.xml file located in $
 
     <field name="subject" type="skosReference" indexed="true" stored="true" />
 
- A complete, minimal _schema.xml_ configuration for the described use case is available [here]( https://github.com/behas/lucene-SKOS/blob/master/docs/solr/schema.xml).
+A complete, minimal _schema.xml_ configuration for the described use case is available [here](https://github.com/behas/lucene-SKOS/blob/master/docs/solr/schema.xml).
 
 Now you can add a sample document by following the instructions described in _Indexing Data_ section of the [Solr tutorial](http://lucene.apache.org/solr/tutorial.html). Here is a sample:
 
@@ -166,7 +164,7 @@ Now a search for "subject:arms" or "subject:weapons" returns the indexed documen
 
 The module can also be used to expand plain text labels in given fields by corresponding labels in given SKOS vocabularies.
 
-### Using lucene-SKOS with Lucene
+### Lucene
 
 Similar to UC1 - _URI-based_term expansion UC1, we create a Lucene document containing the data to be indexed. The difference is that this record doesn't contain a reference to a SKOS concept in the subject field but a plain text label "weapons".
 
@@ -213,7 +211,7 @@ Now a search for "arms", for instance, returns the indexed document in the resul
 For the complete code, please check our [JUnit Test](https://github.com/behas/lucene-SKOS/blob/master/src/test/java/at/ac/univie/mminf/luceneSKOS//LabelbasedTermExpansionTest.java).
 
 
-### Using lucene-SKOS with Solr
+### Solr
 
 Follow the instructions from the previous use case with the following differences:
 
@@ -252,6 +250,13 @@ Again, you can add a sample document such as the following and retrieve results 
         </doc>
     </add>
     
-### HELP!?
+## HELP!?
 
-Try to reach us in the #lucene-SKOS IRC channel, or write an email to the authors.
+Try to contact us in the #lucene-SKOS IRC channel, or write an email to the authors.
+
+[skos]: http://www.w3.org/TR/skos-primer/ "SKOS Primer"
+[rdf]: http://www.w3.org/TR/rdf-primer/ "RDF Primer"
+[ld]: http://www.w3.org/standards/semanticweb/data "Linked Data"
+[lucene]: http://lucene.apache.org/core/ "Apache Lucene"
+[solr]: http://lucene.apache.org/solr/ "Apache Solr"
+[jena]: http://jena.apache.org/ "Apache Jena"

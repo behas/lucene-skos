@@ -21,7 +21,7 @@
     <groupId>at.ac.univie.mminf</groupId>
     <artifactId>luceneSKOS</artifactId>
     <packaging>jar</packaging>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2</version>
 
     <name>lucene-skos</name>
     <description>This project provides a term expansion module for Apache Lucene and Solr</description>
@@ -108,10 +108,10 @@
             <type>jar</type>
             <scope>compile</scope>
             <exclusions>
-            	<exclusion>
-            		<artifactId>slf4j-log4j12</artifactId>
-            		<groupId>org.slf4j</groupId>
-            	</exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
