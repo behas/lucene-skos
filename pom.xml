@@ -21,7 +21,7 @@
     <groupId>at.ac.univie.mminf</groupId>
     <artifactId>lucene-skos</artifactId>
     <packaging>jar</packaging>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
 
     <name>lucene-skos</name>
     <description>This project provides a term expansion module for Apache Lucene and Solr</description>
