@@ -6,7 +6,7 @@ The [Simple Knowledge Organization System (SKOS)][skos] is a model for expressin
 
 ## What is lucene-skos?
 
-lucene-skos is an analyzer module for [Apache Lucene 3.x][lucene] and [Solr 3.6.1][solr]. It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/3_6_0/api/all/org/apache/lucene/analysis/TokenFilter.html).
+lucene-skos is an analyzer module for [Apache Lucene 3.x][lucene] and [Solr 3.x][solr]. It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/3_6_1/api/all/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/3_6_1/api/all/org/apache/lucene/analysis/TokenFilter.html).
 
 ## Features
 
@@ -41,11 +41,12 @@ Build and package the sources
 
 Choose and unpack a lucene-skos archive from the _dist_ subdirectory
 
-    tar -xzf dist/lucene-skos-0.2.tar.gz
+    mkdir dist/out
+    tar -xzf dist/lucene-skos-0.2.tar.gz -C dist/out
 
 ### Using lucene-skos with Apache Lucene
 
-If you want to use the lucene-skos analyzer in an application that already uses Lucene make sure that the analyzer jar `lucene-skos-0.2.jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
+If you want to use lucene-skos in an application that already uses Lucene make sure that the jar `lucene-skos-0.2.jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
 
 ### Using lucene-skos with Apache Solr
 
@@ -62,9 +63,9 @@ Download or build the lucene-skos jar and its dependencies as described previous
 
 Create a folder _lib_ in your _SOLR_HOME_ directory. In the default installation $SOLR_HOME$ is ./apache-solr-x.x.x/example/solr
 
-    cd $SOLR_HOME
+    cd $SOLR_HOME/example/solr
     mkdir lib
-    cp lucene-skos-directory/*.jar $SOLR_HOME/lib
+    cp lucene-skos-directory/*.jar $SOLR_HOME/example/solr/lib
 
 Download an [example thesaurus](./docs/solr) and copy it to $SOLR_HOME/solr/conf 
 
@@ -72,11 +73,11 @@ Download an [example thesaurus](./docs/solr) and copy it to $SOLR_HOME/solr/conf
 
 ## UC1: URI-based term expansion
 
-The analyzer module can be used to expand references to SKOS concepts in given Lucene documents by the concepts' labels at indexing time. 
+The analyzer module can be used to expand references to SKOS concepts in given Lucene documents by the concepts' labels. 
 
 ### Lucene
 
-Create a [Lucene Document](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
+Create a [Lucene Document](https://lucene.apache.org/core/3_6_1/api/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
 
     Document doc = new Document();
     doc.add(new Field("title", "Spearhead", Field.Store.YES, Field.Index.ANALYZED));
@@ -94,7 +95,7 @@ Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabula
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
     Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile, ExpansionType.URI);
 
-You might want to use different [Analyzers](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other field, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/SimpleAnalyzer.html) instance.
+You might want to use different [Analyzers](https://lucene.apache.org/core/3_6_1/api/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](https://lucene.apache.org/core/3_6_1/api/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](https://lucene.apache.org/core/3_6_1/api/core/org/apache/lucene/analysis/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other fields, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](https://lucene.apache.org/core/3_6_1/api/core/org/apache/lucene/analysis/SimpleAnalyzer.html) instance.
 
     Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
     analyzerPerField.put("subject", skosAnalyzer);
@@ -154,7 +155,7 @@ Now you can add a sample document by following the instructions described in _In
         </doc>
     </add>
 
-Now a search for "subject:arms" or "subject:weapons" returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
+Now a search for "subject:arms" or "subject:weapons" returns the indexed document in the results list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
 
 
 ## UC2: Label-based term expansion
@@ -175,10 +176,9 @@ Similar to UC1 - URI-based_term expansion UC1, we create a Lucene document conta
         Field.Index.ANALYZED));
     doc.add(new Field("subject", "weapons", Field.Store.NO, Field.Index.ANALYZED));
 
-Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.Label* indicates that the analyzer should perform Label-based term expansion.
+Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.LABEL* indicates that the analyzer should perform Label-based term expansion.
 
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
-
     Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile, ExpansionType.LABEL);
 
 As in the previous use case, we define a PerFieldAnalyzerWrapper instance and index the document.
@@ -188,10 +188,9 @@ As in the previous use case, we define a PerFieldAnalyzerWrapper instance and in
     PerFieldAnalyzerWrapper indexAnalyzer = new PerFieldAnalyzerWrapper(new SimpleAnalyzer(matchVersion), analyzerPerField);
 
     IndexWriter writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(matchVersion, indexAnalyzer));
-
     writer.addDocument(doc);
 
-Now a search for "arms", for instance, returns the indexed document in the result list because the label "weapons", which is defined as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
+Now a search for "arms", for instance, returns the indexed document in the results list because the label "weapons", which is defined as prefLabel of some SKOS concept, has been expanded by additional terms including "arms".
 
     BooleanQuery query1 = new BooleanQuery();
     query1.add(new TermQuery(new Term("title", "arms")), BooleanClause.Occur.SHOULD);
@@ -234,7 +233,7 @@ Introduce another fieldType...
     <field name="subject" type="skosLabel" indexed="true" stored="true" />
 
 In the example above the labels are not restricted to any specific language, however you can restrict them to the English language tag by adding language="en" to the filter attributes. You can also specify a list of languages like for example language="en pt" for English and Portuguese cross-language expansion.
-Also, bufferSize controls the maximum length (in number of words) of concept labels that will be checked for expansion.
+Notice that bufferSize controls the maximum length (in number of words) of concept labels that will be checked for expansion.
 
 Again, you can add a sample document such as the following and retrieve results for queries (e.g., subject:arms) containing terms that are not explicitly contained in the indexed document.
 
