@@ -1,0 +1,9 @@
+Lucene-SKOS
+Copyright 2012 Bernhard Haslhofer
+
+Includes software from Apache Software Foundation projects,
+including, but not limited to:
+ - Apache Jena
+ - Apache HttpComponents
+ - Apache Xerces
+ - Apache log4j
