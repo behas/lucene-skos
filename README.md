@@ -43,12 +43,11 @@ Choose an archive from the _target_ subdirectory and proceed as in the binary in
 
     tar -xzf target/luceneSKOS-0.2-bin-with-dependencies.tar.gz
 
-### Using lucene-skos with Lucene
+### Using lucene-skos with Apache Lucene
 
-You probably want to use the lucene-SKOS analyzer in an application that already uses Lucene. Therefore you must make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
+If you want to use the lucene-SKOS analyzer in an application that already uses Lucene make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
 
-
-### Using lucene-SKOS with Solr
+### Using lucene-SKOS with Apache Solr
 
 Installing lucene-SKOS with Solr largely depends on how you deployed Solr in your environment. Follow the _Getting Started_ section of the [Solr Tutorial](http://lucene.apache.org/solr/tutorial.html) and make sure you can start up your Solr instance. Make sure _SOLR_HOME_ is set.
 
