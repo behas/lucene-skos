@@ -22,6 +22,7 @@
 			<include>AUTHORS*</include>
 			<include>CHANGELOG*</include>
 			<include>LICENSE*</include>
+			<include>NOTICE*</include>
 			<include>README.md*</include>
 		  </includes>
 		</fileSet>
