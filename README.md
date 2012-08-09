@@ -45,7 +45,7 @@ Choose and unpack a lucene-skos archive from the _dist_ subdirectory
 
 ### Using lucene-skos with Apache Lucene
 
-If you want to use the lucene-skos analyzer in an application that already uses Lucene make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
+If you want to use the lucene-skos analyzer in an application that already uses Lucene make sure that the analyzer jar `luceneSKOS-VERSION.jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
 
 ### Using lucene-skos with Apache Solr
 
