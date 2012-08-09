@@ -46,15 +46,6 @@
             </roles>
         </developer>
         <developer>
-            <id>kysel</id>
-            <name>Martin Kysel</name>
-            <email>martin.kysel@univie.ac.at</email>
-            <organization>University of Vienna, Department of Distributed and Multimedia Systems</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
             <id>xhaker</id>
             <name>Flavio Martins</name>
             <email>xhaker@gmail.com</email>
@@ -194,17 +185,6 @@
             </releases>
             <snapshots>
                 <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>jboss.releases</id>
-            <name>JBoss releases</name>
-            <url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
             </snapshots>
         </repository>
     </repositories>
