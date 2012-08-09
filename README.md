@@ -1,4 +1,4 @@
-# A SKOS analyzer module for Apache Lucene and Solr
+# SKOS Support for Apache Lucene and Solr
 
 ## What is SKOS?
 
@@ -45,7 +45,7 @@ Choose and unpack a lucene-skos archive from the _dist_ subdirectory
 
 ### Using lucene-skos with Apache Lucene
 
-If you want to use the lucene-skos analyzer in an application that already uses Lucene make sure that the analyzer jar `luceneSKOS-VERSION-jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
+If you want to use the lucene-skos analyzer in an application that already uses Lucene make sure that the analyzer jar `lucene-skos-0.2.jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
 
 ### Using lucene-skos with Apache Solr
 
@@ -92,7 +92,6 @@ Create a [Lucene Document](https://lucene.apache.org/core/3_6_0/api/core/org/apa
 Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.URI* indicates that the analyzer should perform URI-based term expansion. The argument matchVersion can be set to *Version.LUCENE_36* if you are using Lucene 3.6, for example.
 
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
-
     Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile, ExpansionType.URI);
 
 You might want to use different [Analyzers](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other field, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](https://lucene.apache.org/core/3_6_0/api/core/org/apache/lucene/analysis/SimpleAnalyzer.html) instance.
@@ -104,7 +103,6 @@ You might want to use different [Analyzers](https://lucene.apache.org/core/3_6_0
 Set up a writer using the previously created analyzer and add the document to the index.
 
     IndexWriter writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(matchVersion, indexAnalyzer));
-
     writer.addDocument(doc);
 
 Now a search for *arms*, for instance, returns the indexed document in the result list because the SKOS URI http://www.ukat.org.uk/thesaurus/concept/859 has been expanded by terms defined in the vocabulary.
@@ -165,7 +163,7 @@ The module can also be used to expand plain text labels in given fields by corre
 
 ### Lucene
 
-Similar to UC1 - _URI-based_term expansion UC1, we create a Lucene document containing the data to be indexed. The difference is that this record doesn't contain a reference to a SKOS concept in the subject field but a plain text label "weapons".
+Similar to UC1 - URI-based_term expansion UC1, we create a Lucene document containing the data to be indexed. The difference is that this record doesn't contain a reference to a SKOS concept in the subject field but a plain text label "weapons".
 
     Document doc = new Document();
     doc.add(new Field("title", "Spearhead", Field.Store.YES, Field.Index.ANALYZED));
