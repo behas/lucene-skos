@@ -19,7 +19,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>at.ac.univie.mminf</groupId>
-    <artifactId>luceneSKOS</artifactId>
+    <artifactId>lucene-skos</artifactId>
     <packaging>jar</packaging>
     <version>0.2</version>
 
@@ -176,6 +176,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
                         <descriptor>src/main/assembly/bin-with-dependencies.xml</descriptor>
                     </descriptors>
