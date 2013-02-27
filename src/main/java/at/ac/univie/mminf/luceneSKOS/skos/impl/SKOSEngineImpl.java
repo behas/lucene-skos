@@ -272,6 +272,11 @@ public class SKOSEngineImpl implements SKOSEngine {
     Document conceptDoc = new Document();
     
     String conceptURI = skos_concept.getURI();
+    if (conceptURI == null) {
+      System.err.println("Error when indexing concept NO_URI.");
+      return null;
+    }
+    
     Field uriField = new Field(FIELD_URI, conceptURI, StringField.TYPE_STORED);
     conceptDoc.add(uriField);
     
@@ -470,14 +475,20 @@ public class SKOSEngineImpl implements SKOSEngine {
       
       if (!concept.canAs(Resource.class)) {
         System.err.println("Error when indexing relationship of concept "
-            + skos_concept.getURI() + " .");
+            + skos_concept.getURI() + ".");
         continue;
       }
       
       Resource resource = concept.as(Resource.class);
       
-      Field conceptField = new Field(field, resource.getURI(),
-          StringField.TYPE_STORED);
+      String uri = resource.getURI();
+      if (uri == null) {
+        System.err.println("Error when indexing relationship of concept "
+            + skos_concept.getURI() + ".");
+        continue;
+      }
+      
+      Field conceptField = new Field(field, uri, StringField.TYPE_STORED);
       
       conceptDoc.add(conceptField);
     }
@@ -500,10 +511,9 @@ public class SKOSEngineImpl implements SKOSEngine {
       Resource skos_concept = concept_iter.next();
       
       Document concept_doc = createDocumentsFromConcept(skos_concept);
-      
-      // System.out.println("Adding document to index " + concept_doc);
-      
-      writer.addDocument(concept_doc);
+      if (concept_doc != null) {
+        writer.addDocument(concept_doc);
+      }
     }
     
     writer.close();
