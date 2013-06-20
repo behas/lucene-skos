@@ -246,6 +246,24 @@ Again, you can add a sample document such as the following and retrieve results 
         </doc>
     </add>
     
+## Publications
+
+Further details about Lucene-SKOS have been published in the following papers:
+
+- [Using SKOS Vocabularies for Improving Web Search](http://eprints.cs.univie.ac.at/3689/)
+ 
+        @inproceedings{Haslhofer:2013qf,
+            Address = {Rio de Janeiro},
+            Author = {Bernhard Haslhofer and Fl{\'a}vio Martins and Jo{\~a}o Magalh{\~a}es},
+            Booktitle = {Web of Linked Entities (WoLE)},
+            Month = {May},
+            Series = {Web of Linked Entities (WoLE) Workshop, co-located with WWW2013},
+            Title = {Using SKOS vocabularies for improving Web Search},
+            Url = {http://eprints.cs.univie.ac.at/3689/},
+            Year = {2013},
+
+
+
 ## HELP!?
 
 Try to contact us in the #lucene-skos IRC channel, or write an email to the authors.
