@@ -20,10 +20,6 @@ The module supports the following use cases:
 
 The SKOS Analyzer Module can be used with [Apache Lucene][lucene] and [Solr][solr].
 
-### Download Binaries
-
-Download and unzip an archive from the [download area](https://github.com/behas/lucene-skos/downloads) and copy all contained jars to your applications' classpath.
-
 ### Build from Source
 
 Make sure you have [Apache Maven](http://maven.apache.org/) installed. Verify this as follows:
