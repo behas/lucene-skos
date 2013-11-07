@@ -44,7 +44,7 @@ import org.junit.Test;
  */
 public abstract class AbstractTermExpansionTest {
   
-  protected final Version matchVersion = Version.LUCENE_41;
+  protected final Version matchVersion = Version.LUCENE_45;
   
   protected IndexSearcher searcher;
   
@@ -89,7 +89,7 @@ public abstract class AbstractTermExpansionTest {
     
     /* setting up a writer with a default (simple) analyzer */
     writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(
-        Version.LUCENE_41, new SimpleAnalyzer(Version.LUCENE_41)));
+        Version.LUCENE_45, new SimpleAnalyzer(Version.LUCENE_45)));
     
     /* adding the document to the index */
     writer.addDocument(doc);

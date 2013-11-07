@@ -19,7 +19,7 @@ package at.ac.univie.mminf.luceneSKOS.skos;
 import java.io.IOException;
 import java.util.Arrays;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.lucene.util.Version;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import org.junit.Test;
  */
 public class SKOSEngineTest {
   
-  protected final Version matchVersion = Version.LUCENE_41;
+  protected final Version matchVersion = Version.LUCENE_45;
   
   @Test
   public void testSimpleSKOSSamplesRDFXML() throws IOException {
