@@ -49,15 +49,16 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
   
   private SKOSEngine skosEngine;
   
-  @Override
-  public void init(Map<String,String> args) {
-    super.init(args);
+  protected SKOSFilterFactory(Map<String,String> args) {
+    super(args);
     assureMatchVersion();
   }
   
   @Override
   public void inform(ResourceLoader loader) {
     SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
+    
+    Map<String,String> args = getOriginalArgs();
     
     String skosFile = args.get("skosFile");
     
