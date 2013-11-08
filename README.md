@@ -6,7 +6,7 @@ The [Simple Knowledge Organization System (SKOS)][skos] is a model for expressin
 
 ## What is lucene-skos?
 
-lucene-skos is an analyzer module for [Apache Lucene 4.x][lucene] and [Solr 4.x][solr]. It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/4_2_1/core/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/4_2_1/core/org/apache/lucene/analysis/TokenFilter.html).
+lucene-skos is an analyzer module for [Apache Lucene 4.x][lucene] and [Solr 4.x][solr]. It takes existing SKOS concepts schemes and performs term expansion for given Lucene documents and/or queries. At the moment, the implementation provides custom SKOS [Analyzers](https://lucene.apache.org/core/4_5_1/core/org/apache/lucene/analysis/Analyzer.html) and [TokenFilters](https://lucene.apache.org/core/4_5_1/core/org/apache/lucene/analysis/TokenFilter.html).
 
 ## Features
 
@@ -38,11 +38,11 @@ Build and package the sources
 Choose and unpack a lucene-skos archive from the _dist_ subdirectory
 
     mkdir dist/out
-    tar -xzf dist/lucene-skos-0.4.tar.gz -C dist/out
+    tar -xzf dist/lucene-skos-0.4.5.tar.gz -C dist/out
 
 ### Using lucene-skos with Apache Lucene
 
-If you want to use lucene-skos in an application that already uses Lucene make sure that the jar `lucene-skos-0.4.jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
+If you want to use lucene-skos in an application that already uses Lucene make sure that the jar `lucene-skos-0.4.5.jar` and all its dependencies (currently only [Jena][jena]) are located in your classpath (= build path in Eclipse).
 
 ### Using lucene-skos with Apache Solr
 
@@ -73,7 +73,7 @@ The analyzer module can be used to expand references to SKOS concepts in given L
 
 ### Lucene
 
-Create a [Lucene Document](https://lucene.apache.org/core/4_2_1/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
+Create a [Lucene Document](https://lucene.apache.org/core/4_5_1/core/org/apache/lucene/document/Document.html) containing the data to be indexed. In this case, the document's subject field contains a link to a SKOS concept: http://www.ukat.org.uk/thesaurus/concept/859
 
     Document doc = new Document();
     doc.add(new Field("title", "Spearhead", Field.Store.YES, Field.Index.ANALYZED));
@@ -86,12 +86,12 @@ Create a [Lucene Document](https://lucene.apache.org/core/4_2_1/core/org/apache/
     doc.add(new Field("subject", "http://www.ukat.org.uk/thesaurus/concept/859",
         Field.Store.NO, Field.Index.ANALYZED));
 
-Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.URI* indicates that the analyzer should perform URI-based term expansion. The argument matchVersion can be set to *Version.LUCENE_42* if you are using Lucene 4.2, for example.
+Instantiate a new SKOSAnalyzer instance by passing the path of the SKOS vocabulary serialization to be used. The parameter *ExpansionType.URI* indicates that the analyzer should perform URI-based term expansion. The argument matchVersion can be set to *Version.LUCENE_45* if you are using Lucene 4.5, for example.
 
     String skosFile = "src/test/resources/skos_samples/ukat_examples.n3";
     Analyzer skosAnalyzer = new SKOSAnalyzer(matchVersion, skosFile, ExpansionType.URI);
 
-You might want to use different [Analyzers](https://lucene.apache.org/core/4_2_1/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](https://lucene.apache.org/core/4_2_1/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](https://lucene.apache.org/core/4_2_1/analyzers-common/org/apache/lucene/analysis/miscellaneous/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other fields, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](http://lucene.apache.org/core/4_2_1/analyzers-common/org/apache/lucene/analysis/core/SimpleAnalyzer.html) instance.
+You might want to use different [Analyzers](https://lucene.apache.org/core/4_5_1/core/org/apache/lucene/analysis/Analyzer.html) for different [Lucene Fields](https://lucene.apache.org/core/4_5_1/core/org/apache/lucene/document/Field.html). Lucene's [PerFieldAnalyzerWrapper](https://lucene.apache.org/core/4_5_1/analyzers-common/org/apache/lucene/analysis/miscellaneous/PerFieldAnalyzerWrapper.html) is the solution for that. Here we apply our SKOSAnalyzer only for the *subject* field. For all other fields, the PerFieldAnalyzerWrapper falls back to a default [SimpleAnalyzer](http://lucene.apache.org/core/4_5_1/analyzers-common/org/apache/lucene/analysis/core/SimpleAnalyzer.html) instance.
 
     Map<String,Analyzer> analyzerPerField = new HashMap<String,Analyzer>();
     analyzerPerField.put("subject", skosAnalyzer);

@@ -1,3 +1,9 @@
+TO BE RELEASED
+    RELEASE 0.4.5
+
+    * Support for Lucene/Solr 4.5.1
+    * Added SKOSStandardQueryParser for Lucene
+
 2013-11-07
     RELEASE 0.4
     
