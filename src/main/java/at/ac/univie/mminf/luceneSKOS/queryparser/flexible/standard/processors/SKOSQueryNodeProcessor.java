@@ -17,7 +17,6 @@ package at.ac.univie.mminf.luceneSKOS.queryparser.flexible.standard.processors;
  */
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +42,7 @@ import org.apache.lucene.queryparser.flexible.core.nodes.TokenizedPhraseQueryNod
 import org.apache.lucene.queryparser.flexible.core.processors.QueryNodeProcessorImpl;
 import org.apache.lucene.queryparser.flexible.standard.config.StandardQueryConfigHandler.ConfigurationKeys;
 import org.apache.lucene.queryparser.flexible.standard.nodes.MultiPhraseQueryNode;
+import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.StandardBooleanQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.WildcardQueryNode;
 
@@ -109,6 +109,7 @@ public class SKOSQueryNodeProcessor extends QueryNodeProcessorImpl {
     if (node instanceof TextableQueryNode
         && !(node instanceof WildcardQueryNode)
         && !(node instanceof FuzzyQueryNode)
+        && !(node instanceof RegexpQueryNode)
         && !(node.getParent() instanceof RangeQueryNode)) {
 
       FieldQueryNode fieldNode = ((FieldQueryNode) node);
@@ -117,7 +118,7 @@ public class SKOSQueryNodeProcessor extends QueryNodeProcessorImpl {
 
       TokenStream source;
       try {
-        source = this.analyzer.tokenStream(field, new StringReader(text));
+        source = this.analyzer.tokenStream(field, text);
         source.reset();
       } catch (IOException e1) {
         throw new RuntimeException(e1);

@@ -45,7 +45,7 @@ import at.ac.univie.mminf.luceneSKOS.util.TestUtil;
 
 public class SKOSStandardQueryParserTest {
   
-  protected final Version matchVersion = Version.LUCENE_40;
+  protected final Version matchVersion = Version.LUCENE_45;
   
   protected IndexSearcher searcher;
   
