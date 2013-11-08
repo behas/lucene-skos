@@ -38,54 +38,41 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 /**
  * A factory for plugging SKOS filters into Apache Solr
  */
-public class SKOSFilterFactory extends TokenFilterFactory implements
-    ResourceLoaderAware {
-  
+public class SKOSFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
+  private String skosFile;
+  private String expansionTypeString;
+  private String bufferSizeString;
+  private String typeString;
+  private String languageString;
   private ExpansionType expansionType;
-  
+  private SKOSType[] type;
+  private SKOSEngine skosEngine;
   private int bufferSize;
   
-  private SKOSType[] type;
-  
-  private SKOSEngine skosEngine;
   
   public SKOSFilterFactory(Map<String,String> args) {
     super(args);
     assureMatchVersion();
-  }
-  
-  @Override
-  public void inform(ResourceLoader loader) {
-    SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
+    skosFile = require(args, "skosFile");
+    expansionTypeString = require(args, "expansionType");
+    bufferSizeString = get(args, "bufferSize");
+    typeString = get(args, "type");
+    languageString = get(args, "language");
     
-    Map<String,String> args = getOriginalArgs();
-    
-    String skosFile = args.get("skosFile");
-    
-    String expansionTypeString = args.get("expansionType");
-    
-    String bufferSizeString = args.get("bufferSize");
-    
-    String languageString = args.get("language");
-    
-    String typeString = args.get("type");
-    
-    System.out.println("Passed argument: " + skosFile + " Type: "
+    System.out.println("Passed arguments: " + skosFile + " Type: "
         + expansionTypeString + " bufferSize: "
         + (bufferSizeString != null ? bufferSizeString : "Default")
         + " language: " + (languageString != null ? languageString : "All")
         + " type: " + (typeString != null ? typeString : "Default"));
-    
-    if (skosFile == null || expansionTypeString == null) {
-      throw new IllegalArgumentException(
-          "Mandatory parameters 'skosFile=FILENAME' or 'expansionType=[URI|LABEL]' missing");
-    }
-    
+  }
+  
+  @Override
+  public void inform(ResourceLoader loader) {    
     try {
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
           || skosFile.endsWith(".ttl") || skosFile.endsWith(".zip")) {
         skosEngine = SKOSEngineFactory.getSKOSEngine(luceneMatchVersion,
-            solrLoader.getConfigDir() + skosFile,
+            ((SolrResourceLoader)loader) .getConfigDir() + skosFile,
             languageString != null ? languageString.split(" ") : null);
       } else {
         throw new IOException(
