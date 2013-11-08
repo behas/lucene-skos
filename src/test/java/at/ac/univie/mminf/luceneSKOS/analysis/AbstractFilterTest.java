@@ -32,7 +32,7 @@ import at.ac.univie.mminf.luceneSKOS.mock.SKOSEngineMock;
  */
 public abstract class AbstractFilterTest {
   
-  protected final Version matchVersion = Version.LUCENE_36;
+  protected final Version matchVersion = Version.LUCENE_45;
   
   protected IndexSearcher searcher;
   

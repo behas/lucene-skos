@@ -17,7 +17,7 @@ package at.ac.univie.mminf.luceneSKOS.index;
  */
 
 import org.apache.lucene.analysis.payloads.PayloadHelper;
-import org.apache.lucene.index.Payload;
+import org.apache.lucene.util.BytesRef;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute;
 import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
@@ -27,24 +27,24 @@ import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttributeI
  * Encodes a given SKOSAttribute as term payload simply by converting the
  * SKOSAttribute enums to and from int.
  */
-public class SKOSTypePayload extends Payload {
+public class SKOSTypePayload {
   
+  private BytesRef brefs;
   private static final long serialVersionUID = 1L;
-  
+
   public SKOSTypePayload(SKOSTypeAttribute skosAtt) {
-    super();
     int payload = skosAtt.getSkosType().ordinal();
     byte[] bytes = PayloadHelper.encodeInt(payload);
-    super.setData(bytes);
+    this.brefs = new BytesRef(bytes);
   }
   
   public SKOSTypeAttribute getSKOSTypeAttribute() {
-    if (super.data.length == 0) {
+    if (this.brefs.bytes.length == 0) {
       System.err.println("Error no SKOS Attribute available");
       return null;
     }
     
-    byte[] bytes = super.getData();
+    byte[] bytes = this.brefs.bytes;
     return getSKOSTypeAttribute(bytes);
   }
   
@@ -57,5 +57,9 @@ public class SKOSTypePayload extends Payload {
     }
     
     return new SKOSTypeAttributeImpl(skosType);
+  }
+  
+  public BytesRef getBytesRef() {
+    return this.brefs;
   }
 }

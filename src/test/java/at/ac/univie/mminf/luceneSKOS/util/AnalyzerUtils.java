@@ -26,7 +26,6 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
-import org.apache.lucene.index.Payload;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -99,12 +98,12 @@ public class AnalyzerUtils {
         System.out.print(position + ":");
       }
       
-      Payload pl = payload.getPayload();
+      BytesRef pl = payload.getPayload();
       
       if (pl != null) {
         System.out.print("[" + term.toString() + ":" + offset.startOffset()
             + "->" + offset.endOffset() + ":" + type.type() + ":"
-            + new String(pl.getData()) + "] ");
+            + new String(pl.bytes) + "] ");
         
       } else {
         System.out.print("[" + term.toString() + ":" + offset.startOffset()

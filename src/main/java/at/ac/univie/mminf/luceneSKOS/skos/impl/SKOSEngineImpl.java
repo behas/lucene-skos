@@ -28,9 +28,10 @@ import java.util.TreeSet;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -97,9 +98,9 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
     
     @Override
-    public void setNextReader(IndexReader reader, int docBase)
+    public void setNextReader(AtomicReaderContext arg0)
         throws IOException {
-      base = docBase;
+      base = arg0.docBase;
     }
     
     @Override

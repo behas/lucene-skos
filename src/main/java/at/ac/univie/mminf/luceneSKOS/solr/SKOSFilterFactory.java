@@ -23,10 +23,10 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.solr.analysis.BaseTokenFilterFactory;
-import org.apache.solr.common.ResourceLoader;
+import org.apache.lucene.analysis.util.TokenFilterFactory;
+import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.solr.core.SolrResourceLoader;
-import org.apache.solr.util.plugin.ResourceLoaderAware;
+import org.apache.lucene.analysis.util.ResourceLoaderAware;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSLabelFilter;
@@ -38,8 +38,8 @@ import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
 /**
  * A factory for plugging SKOS filters into Apache Solr
  */
-public class SKOSFilterFactory extends BaseTokenFilterFactory implements
-    ResourceLoaderAware {
+public class SKOSFilterFactory extends TokenFilterFactory implements
+  ResourceLoaderAware {
   
   private ExpansionType expansionType;
   
@@ -48,26 +48,28 @@ public class SKOSFilterFactory extends BaseTokenFilterFactory implements
   private SKOSType[] type;
   
   private SKOSEngine skosEngine;
-  
-  @Override
-  public void init(Map<String,String> args) {
-    super.init(args);
+
+  private Map<String, String> args;
+    
+  public SKOSFilterFactory(Map<String, String> args) {
+    super(args);
+    this.args = args;
     assureMatchVersion();
   }
-  
+
   @Override
   public void inform(ResourceLoader loader) {
     SolrResourceLoader solrLoader = (SolrResourceLoader) loader;
     
-    String skosFile = args.get("skosFile");
+    String skosFile = this.args.get("skosFile");
     
-    String expansionTypeString = args.get("expansionType");
+    String expansionTypeString = this.args.get("expansionType");
     
-    String bufferSizeString = args.get("bufferSize");
+    String bufferSizeString = this.args.get("bufferSize");
     
-    String languageString = args.get("language");
+    String languageString = this.args.get("language");
     
-    String typeString = args.get("type");
+    String typeString = this.args.get("type");
     
     System.out.println("Passed argument: " + skosFile + " Type: "
         + expansionTypeString + " bufferSize: "

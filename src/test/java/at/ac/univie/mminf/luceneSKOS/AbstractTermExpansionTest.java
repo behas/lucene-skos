@@ -18,7 +18,7 @@ package at.ac.univie.mminf.luceneSKOS;
 
 import java.io.IOException;
 
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
@@ -43,7 +43,7 @@ import org.junit.Test;
  */
 public abstract class AbstractTermExpansionTest {
   
-  protected final Version matchVersion = Version.LUCENE_36;
+  protected final Version matchVersion = Version.LUCENE_45;
   
   protected IndexSearcher searcher;
   
@@ -90,7 +90,7 @@ public abstract class AbstractTermExpansionTest {
     
     /* setting up a writer with a default (simple) analyzer */
     writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(
-        Version.LUCENE_36, new SimpleAnalyzer(Version.LUCENE_36)));
+        Version.LUCENE_45, new SimpleAnalyzer(Version.LUCENE_45)));
     
     /* adding the document to the index */
     writer.addDocument(doc);

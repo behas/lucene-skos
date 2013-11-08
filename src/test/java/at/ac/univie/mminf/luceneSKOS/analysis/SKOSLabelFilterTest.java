@@ -18,7 +18,7 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
 
 import java.io.IOException;
 
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -27,8 +27,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
@@ -108,7 +108,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     searcher = new IndexSearcher(IndexReader.open(writer, false));
     
-    Query query = new QueryParser(Version.LUCENE_36, "content", skosAnalyzer)
+    Query query = new QueryParser(Version.LUCENE_45, "content", skosAnalyzer)
         .parse("\"fox jumps\"");
     
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
@@ -117,8 +117,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
         .getClass().getName());
     
-    query = new QueryParser(Version.LUCENE_36, "content", new StandardAnalyzer(
-        Version.LUCENE_36)).parse("\"fox jumps\"");
+    query = new QueryParser(Version.LUCENE_45, "content", new StandardAnalyzer(
+        Version.LUCENE_45)).parse("\"fox jumps\"");
     Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
     
     Assert.assertEquals("content:\"fox jumps\"", query.toString());
@@ -139,8 +139,8 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
     
     searcher = new IndexSearcher(IndexReader.open(writer, false));
     
-    QueryParser parser = new QueryParser(Version.LUCENE_36, "content",
-        new SimpleAnalyzer(Version.LUCENE_36));
+    QueryParser parser = new QueryParser(Version.LUCENE_45, "content",
+        new SimpleAnalyzer(Version.LUCENE_45));
     
     Query query = parser.parse("united nations");
     

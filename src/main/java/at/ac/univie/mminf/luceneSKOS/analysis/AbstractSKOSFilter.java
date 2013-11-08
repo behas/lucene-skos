@@ -155,7 +155,7 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
      * converts the SKOS Attribute to a payload, which is propagated to the
      * index
      */
-    payloadAtt.setPayload(new SKOSTypePayload(skosAtt));
+    payloadAtt.setPayload(new SKOSTypePayload(skosAtt).getBytesRef());
   }
   
   /* Snipped from Solr's SynonymMap */
