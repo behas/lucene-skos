@@ -49,7 +49,7 @@ public class SKOSFilterFactory extends TokenFilterFactory implements
   
   private SKOSEngine skosEngine;
   
-  protected SKOSFilterFactory(Map<String,String> args) {
+  public SKOSFilterFactory(Map<String,String> args) {
     super(args);
     assureMatchVersion();
   }
