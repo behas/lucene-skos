@@ -16,68 +16,63 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
  * limitations under the License.
  */
 
-import java.io.IOException;
-
+import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngine;
+import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute.SKOSType;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
-import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
+import java.io.IOException;
 
 /**
  * A Lucene TokenFilter that supports URI-based term expansion as described in
  * https://code.
  * google.com/p/lucene-skos/wiki/UseCases#UC1:_URI-based_term_expansion
- * 
+ *
  * It takes references to SKOS concepts (URIs) as input and searches a given
  * SKOS vocabulary for matching concepts. If a match is found, it adds the
  * concept's labels to the output token stream.
  */
 public final class SKOSURIFilter extends AbstractSKOSFilter {
-  
-  /**
-   * Constructor.
-   * 
-   * @param input
-   * @param skosEngine
-   * @param types
-   */
+
   public SKOSURIFilter(TokenStream input, SKOSEngine skosEngine,
-      Analyzer analyzer, SKOSType... types) {
+                       Analyzer analyzer, SKOSType... types) {
     super(input, skosEngine, analyzer, types);
   }
-  
+
   /**
    * Advances the stream to the next token
    */
   @Override
   public boolean incrementToken() throws IOException {
-    
-    /* there are expanded terms for the given token */
+
+        /* there are expanded terms for the given token */
     if (termStack.size() > 0) {
       processTermOnStack();
       return true;
     }
-    
-    /* no more tokens on the consumed stream -> end of stream */
+
+        /* no more tokens on the consumed stream -> end of stream */
     if (!input.incrementToken()) {
       return false;
     }
-    
-    /* check whether there are expanded terms for a given token */
+
+        /* check whether there are expanded terms for a given token */
     if (addTermsToStack(termAtt.toString())) {
-      
-      /* if yes, capture the state of all attributes */
+
+            /* if yes, capture the state of all attributes */
       current = captureState();
     }
-    
+
     return true;
   }
-  
+
   /**
    * Assumes that the given term is a concept URI
+   *
+   * @param term the given term
+   * @return true if term stack is not empty
    */
-  public boolean addTermsToStack(String term) throws IOException {
+  public boolean addTermsToStack(String term) {
     try {
       if (types.contains(SKOSType.PREF)) {
         String[] prefLabels = engine.getPrefLabels(term);
@@ -106,14 +101,8 @@ public final class SKOSURIFilter extends AbstractSKOSFilter {
         pushLabelsToStack(narrowerTransitiveLabels, SKOSType.NARROWERTRANSITIVE);
       }
     } catch (Exception e) {
-      System.err
-          .println("Error when accessing SKOS Engine.\n" + e.getMessage());
+      throw new RuntimeException("Error when accessing SKOS Engine.\n" + e.getMessage());
     }
-    
-    if (termStack.isEmpty()) {
-      return false;
-    }
-    
-    return true;
+    return !termStack.isEmpty();
   }
 }

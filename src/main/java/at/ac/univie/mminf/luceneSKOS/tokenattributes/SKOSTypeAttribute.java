@@ -1,4 +1,4 @@
-package at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes;
+package at.ac.univie.mminf.luceneSKOS.tokenattributes;
 
 /**
  * Copyright 2010 Bernhard Haslhofer 
@@ -21,57 +21,31 @@ import org.apache.lucene.util.Attribute;
 /**
  * This class represents SKOS-specific meta-information that is assigned to
  * tokens during the analysis phase.
- * 
+ *
  * Note: when tokens are posted to the index as terms, attribute information is
  * lost unless it is encoded in the terms' payload.
  */
 public interface SKOSTypeAttribute extends Attribute {
-  
+
   /**
    * An enumeration of supported SKOS concept types
    */
-  public static enum SKOSType {
-    
+  enum SKOSType {
+
     PREF, ALT, HIDDEN, BROADER, NARROWER, BROADERTRANSITIVE, NARROWERTRANSITIVE, RELATED;
-    
-    /**
-     * Returns the SKOSType given the ordinal.
-     */
-    public static SKOSType fromInteger(int ordinal) {
-      switch (ordinal) {
-        case 0:
-          return PREF;
-        case 1:
-          return ALT;
-        case 2:
-          return HIDDEN;
-        case 3:
-          return BROADER;
-        case 4:
-          return NARROWER;
-        case 5:
-          return BROADERTRANSITIVE;
-        case 6:
-          return NARROWERTRANSITIVE;
-        case 7:
-          return RELATED;
-        default:
-          return RELATED;
-      }
-    }
   }
-  
+
   /**
    * Returns the SKOS type
-   * 
+   *
    * @return SKOSType
    */
   SKOSType getSkosType();
-  
+
   /**
    * Sets this Token's SKOSType.
-   * 
-   * @param skosType
+   *
+   * @param skosType the SKOS type
    */
   void setSkosType(SKOSType skosType);
 }

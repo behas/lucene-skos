@@ -1,4 +1,4 @@
-package at.ac.univie.mminf.luceneSKOS.util;
+package at.ac.univie.mminf.luceneSKOS.test;
 
 /**
  * Copyright 2010 Bernhard Haslhofer 

@@ -24,7 +24,7 @@ import org.apache.lucene.queryparser.flexible.core.processors.QueryNodeProcessor
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.queryparser.flexible.standard.processors.AnalyzerQueryNodeProcessor;
 
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.queryparser.flexible.standard.processors.SKOSQueryNodeProcessor;
 
 public class SKOSStandardQueryParser extends StandardQueryParser {

@@ -31,9 +31,9 @@ import org.apache.solr.core.SolrResourceLoader;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSLabelFilter;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSURIFilter;
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
-import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
-import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngineFactory;
+import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngine;
+import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngineFactory;
 
 /**
  * A factory for plugging SKOS filters into Apache Solr
@@ -44,6 +44,7 @@ public class SKOSFilterFactory extends TokenFilterFactory implements ResourceLoa
   private String bufferSizeString;
   private String typeString;
   private String languageString;
+  private String indexPath;
   private ExpansionType expansionType;
   private SKOSType[] type;
   private SKOSEngine skosEngine;
@@ -52,12 +53,12 @@ public class SKOSFilterFactory extends TokenFilterFactory implements ResourceLoa
   
   public SKOSFilterFactory(Map<String,String> args) {
     super(args);
-    assureMatchVersion();
     skosFile = require(args, "skosFile");
     expansionTypeString = require(args, "expansionType");
     bufferSizeString = get(args, "bufferSize");
     typeString = get(args, "type");
     languageString = get(args, "language");
+    indexPath = get(args, "bufferSize");
     
     System.out.println("Passed arguments: " + skosFile + " Type: "
         + expansionTypeString + " bufferSize: "
@@ -71,7 +72,8 @@ public class SKOSFilterFactory extends TokenFilterFactory implements ResourceLoa
     try {
       if (skosFile.endsWith(".n3") || skosFile.endsWith(".rdf")
           || skosFile.endsWith(".ttl") || skosFile.endsWith(".zip")) {
-        skosEngine = SKOSEngineFactory.getSKOSEngine(luceneMatchVersion,
+        skosEngine = SKOSEngineFactory.getSKOSEngine(
+            indexPath != null ? indexPath : "",
             ((SolrResourceLoader)loader) .getConfigDir() + skosFile,
             languageString != null ? languageString.split(" ") : null);
       } else {
@@ -117,12 +119,10 @@ public class SKOSFilterFactory extends TokenFilterFactory implements ResourceLoa
   public TokenStream create(TokenStream input) {
     
     if (expansionType.equals(ExpansionType.LABEL)) {
-      return new SKOSLabelFilter(input, skosEngine, new StandardAnalyzer(
-          luceneMatchVersion), bufferSize, type);
+      return new SKOSLabelFilter(input, skosEngine, new StandardAnalyzer(), bufferSize, type);
       
     } else {
-      return new SKOSURIFilter(input, skosEngine, new StandardAnalyzer(
-          luceneMatchVersion), type);
+      return new SKOSURIFilter(input, skosEngine, new StandardAnalyzer(), type);
     }
     
   }

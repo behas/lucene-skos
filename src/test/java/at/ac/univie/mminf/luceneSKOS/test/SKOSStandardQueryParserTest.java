@@ -1,4 +1,4 @@
-package at.ac.univie.mminf.luceneSKOS.queryparser.flexible.standard;
+package at.ac.univie.mminf.luceneSKOS.test;
 
 /**
  * Copyright 2012 Flavio Martins
@@ -18,6 +18,7 @@ package at.ac.univie.mminf.luceneSKOS.queryparser.flexible.standard;
 
 import java.io.IOException;
 
+import at.ac.univie.mminf.luceneSKOS.queryparser.flexible.standard.SKOSStandardQueryParser;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -31,21 +32,19 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
+
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
-import at.ac.univie.mminf.luceneSKOS.analysis.tokenattributes.SKOSTypeAttribute.SKOSType;
-import at.ac.univie.mminf.luceneSKOS.mock.SKOSEngineMock;
-import at.ac.univie.mminf.luceneSKOS.util.TestUtil;
+import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.skos.engine.mock.SKOSEngineMock;
 
 public class SKOSStandardQueryParserTest {
-  
-  protected final Version matchVersion = Version.LUCENE_45;
   
   protected IndexSearcher searcher;
   
@@ -92,11 +91,9 @@ public class SKOSStandardQueryParserTest {
     
     directory = new RAMDirectory();
     
-    skosAnalyzer = new SKOSAnalyzer(matchVersion, skosEngine,
-        ExpansionType.LABEL);
+    skosAnalyzer = new SKOSAnalyzer(skosEngine, ExpansionType.LABEL);
     
-    writer = new IndexWriter(directory, new IndexWriterConfig(matchVersion,
-        skosAnalyzer));
+    writer = new IndexWriter(directory, new IndexWriterConfig(skosAnalyzer));
     
   }
   
@@ -127,18 +124,18 @@ public class SKOSStandardQueryParserTest {
     Query query = new SKOSStandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
         "content");
     
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+    assertEquals(1, searcher.search(query, 1).totalHits);
     
-    Assert.assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
+    assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
+    assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
         .getClass().getName());
     
-    query = new StandardQueryParser(new StandardAnalyzer(matchVersion)).parse(
-        "\"fox jumps\"", "content");
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+    query = new StandardQueryParser(new StandardAnalyzer())
+        .parse("\"fox jumps\"", "content");
+    assertEquals(1, searcher.search(query, 1).totalHits);
     
-    Assert.assertEquals("content:\"fox jumps\"", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.PhraseQuery", query
+    assertEquals("content:\"fox jumps\"", query.toString());
+    assertEquals("org.apache.lucene.search.PhraseQuery", query
         .getClass().getName());
     
   }
@@ -159,27 +156,27 @@ public class SKOSStandardQueryParserTest {
     
     Query query = parser.parse("\"fox jumps\"", "content");
     
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+    assertEquals(1, searcher.search(query, 1).totalHits);
     
     // boosts do not work in phrase queries
-    Assert.assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
+    assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
+    assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
         .getClass().getName());
     
     query = parser.parse("fox jumps", "content");
     
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+    assertEquals(1, searcher.search(query, 1).totalHits);
     
-    Assert.assertEquals("content:fox (content:jumps content:hops^0.5 content:leaps^0.5)", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.BooleanQuery", query
+    assertEquals("content:fox (content:jumps content:hops^0.5 content:leaps^0.5)", query.toString());
+    assertEquals("org.apache.lucene.search.BooleanQuery", query
         .getClass().getName());
     
-    query = new SKOSStandardQueryParser(new StandardAnalyzer(matchVersion)).parse(
-        "fox jumps", "content");
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+    query = new SKOSStandardQueryParser(new StandardAnalyzer())
+        .parse("fox jumps", "content");
+    assertEquals(1, searcher.search(query, 1).totalHits);
     
-    Assert.assertEquals("content:fox content:jumps", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.BooleanQuery", query
+    assertEquals("content:fox content:jumps", query.toString());
+    assertEquals("org.apache.lucene.search.BooleanQuery", query
         .getClass().getName());
     
   }

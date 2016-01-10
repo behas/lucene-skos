@@ -1,4 +1,4 @@
-package at.ac.univie.mminf.luceneSKOS.skos.impl;
+package at.ac.univie.mminf.luceneSKOS.skos.engine.jena;
 
 /**
  * Copyright 2010 Bernhard Haslhofer 
@@ -16,101 +16,74 @@ package at.ac.univie.mminf.luceneSKOS.skos.impl;
  * limitations under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngine;
+import com.hp.hpl.jena.ontology.AnnotationProperty;
+import com.hp.hpl.jena.ontology.ObjectProperty;
+import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.update.*;
+import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.DisjunctionMaxQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 
-import at.ac.univie.mminf.luceneSKOS.skos.SKOS;
-import at.ac.univie.mminf.luceneSKOS.skos.SKOSEngine;
-
-import com.hp.hpl.jena.ontology.AnnotationProperty;
-import com.hp.hpl.jena.ontology.ObjectProperty;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.update.GraphStore;
-import com.hp.hpl.jena.update.GraphStoreFactory;
-import com.hp.hpl.jena.update.UpdateAction;
-import com.hp.hpl.jena.update.UpdateFactory;
-import com.hp.hpl.jena.update.UpdateRequest;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.vocabulary.RDF;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * A Lucene-backed SKOSEngine Implementation.
- * 
+ *
  * Each SKOS concept is stored/indexed as a Lucene document.
- * 
+ *
  * All labels are converted to lowercase
  */
 public class SKOSEngineImpl implements SKOSEngine {
-  
-  /** Records the total number of matches */
-  public static class AllDocCollector extends Collector {
-    private final List<Integer> docs = new ArrayList<Integer>();
+
+  private final static Logger logger = Logger.getLogger(SKOSEngineImpl.class.getName());
+
+  /**
+   * Records the total number of matches
+   */
+  public static class AllDocCollector extends SimpleCollector {
+
+    private final List<Integer> docs = new ArrayList<>();
     private int base;
-    
+
     @Override
-    public boolean acceptsDocsOutOfOrder() {
-      return true;
+    public void setScorer(Scorer scorer) throws IOException {
     }
-    
+
     @Override
     public void collect(int doc) throws IOException {
       docs.add(doc + base);
     }
-    
+
+    @Override
+    protected void doSetNextReader(LeafReaderContext context) throws IOException {
+      base = context.docBase;
+    }
+
+    @Override
+    public boolean needsScores() {
+      return false;
+    }
+
     public List<Integer> getDocs() {
       return docs;
     }
-    
-    @Override
-    public void setNextReader(AtomicReaderContext context) throws IOException {
-      base = context.docBase;
-    }
-    
-    @Override
-    public void setScorer(Scorer scorer) throws IOException {
-      // not needed
-    }
   }
-  
-  protected final Version matchVersion;
-  
+
   /*
    * Static fields used in the Lucene Index
    */
@@ -123,145 +96,127 @@ public class SKOSEngineImpl implements SKOSEngine {
   private static final String FIELD_BROADER_TRANSITIVE = "broaderTransitive";
   private static final String FIELD_NARROWER_TRANSITIVE = "narrowerTransitive";
   private static final String FIELD_RELATED = "related";
-  
   /**
    * The input SKOS model
    */
   private Model skosModel;
-  
   /**
    * The location of the concept index
    */
   private Directory indexDir;
-  
   /**
    * Provides access to the index
    */
   private IndexSearcher searcher;
-  
   /**
    * The languages to be considered when returning labels.
-   * 
+   * <p/>
    * If NULL, all languages are supported
    */
   private Set<String> languages;
-  
   /**
    * The analyzer used during indexing of / querying for concepts
-   * 
+   * <p/>
    * SimpleAnalyzer = LetterTokenizer + LowerCaseFilter
    */
   private final Analyzer analyzer;
-  
+
   /**
    * This constructor loads the SKOS model from a given InputStream using the
    * given serialization language parameter, which must be either N3, RDF/XML,
    * or TURTLE.
-   * 
-   * @param inputStream
-   *          the input stream
-   * @param lang
-   *          the serialization language
-   * @throws IOException
-   *           if the model cannot be loaded
+   *
+   * @param inputStream the input stream
+   * @param lang        the serialization language
+   * @throws IOException if the model cannot be loaded
    */
-  public SKOSEngineImpl(final Version version, InputStream inputStream,
-      String lang) throws IOException {
-    
+  public SKOSEngineImpl(InputStream inputStream, String lang) throws IOException {
     if (!("N3".equals(lang) || "RDF/XML".equals(lang) || "TURTLE".equals(lang))) {
       throw new IOException("Invalid RDF serialization format");
     }
-    
-    matchVersion = version;
-    
-    analyzer = new SimpleAnalyzer(matchVersion);
-    
-    skosModel = ModelFactory.createDefaultModel();
-    
+    this.analyzer = new SimpleAnalyzer();
+    this.skosModel = ModelFactory.createDefaultModel();
     skosModel.read(inputStream, null, lang);
-    
     indexDir = new RAMDirectory();
-    
     entailSKOSModel();
-    
     indexSKOSModel();
-    
     searcher = new IndexSearcher(DirectoryReader.open(indexDir));
   }
-  
+
   /**
-   * Constructor for all label-languages
-   * 
-   * @param filenameOrURI
-   *          the name of the skos file to be loaded
-   * @throws IOException
+   * This constructor loads the SKOS model from a given filename or URI,
+   * starts the indexing process and sets up the index searcher.
+   *
+   * @param languages     the languages to be considered
+   * @param indexPath     index path
+   * @param filenameOrURI file name or URI
+   * @throws IOException if indexing SKOS model fails
    */
-  public SKOSEngineImpl(final Version version, String filenameOrURI)
-      throws IOException {
-    this(version, filenameOrURI, (String[]) null);
-  }
-  
-  /**
-   * This constructor loads the SKOS model from a given filename or URI, starts
-   * the indexing process and sets up the index searcher.
-   * 
-   * @param languages
-   *          the languages to be considered
-   * @param filenameOrURI
-   * @throws IOException
-   */
-  public SKOSEngineImpl(final Version version, String filenameOrURI,
-      String... languages) throws IOException {
-    matchVersion = version;
-    analyzer = new SimpleAnalyzer(matchVersion);
-    
+  public SKOSEngineImpl(String indexPath, String filenameOrURI, String... languages) throws IOException {
+    this.analyzer = new SimpleAnalyzer();
     String langSig = "";
     if (languages != null) {
-      this.languages = new TreeSet<String>(Arrays.asList(languages));
-      langSig = "-" + StringUtils.join(this.languages, ".");
+      this.languages = new TreeSet<>(Arrays.asList(languages));
+      langSig = "_" + join(this.languages.iterator(), '_');
     }
-    
-    String name = FilenameUtils.getName(filenameOrURI);
-    File dir = new File("skosdata/" + name + langSig);
-    indexDir = FSDirectory.open(dir);
-    
-    // TODO: Generate also if source file is modified
-    if (!dir.isDirectory()) {
-      // load the skos model from the given file
-      FileManager fileManager = new FileManager();
-      fileManager.addLocatorFile();
-      fileManager.addLocatorURL();
-      fileManager.addLocatorClassLoader(SKOSEngineImpl.class.getClassLoader());
-      
-      if (FilenameUtils.getExtension(filenameOrURI).equals("zip")) {
-        fileManager.addLocatorZip(filenameOrURI);
-        filenameOrURI = FilenameUtils.getBaseName(filenameOrURI);
-      }
-      
-      skosModel = fileManager.loadModel(filenameOrURI);
-      
-      entailSKOSModel();
-      
-      indexSKOSModel();
+    String name = getName(filenameOrURI);
+    File dir = new File(indexPath + name + langSig);
+    this.indexDir = FSDirectory.open(dir.toPath());
+    // load the skos model from the given file
+    FileManager fileManager = new FileManager();
+    fileManager.addLocatorFile();
+    fileManager.addLocatorURL();
+    fileManager.addLocatorClassLoader(SKOSEngineImpl.class.getClassLoader());
+    if (getExtension(filenameOrURI).equals("zip")) {
+      fileManager.addLocatorZip(filenameOrURI);
+      filenameOrURI = getBaseName(filenameOrURI);
     }
-    
+    skosModel = fileManager.loadModel(filenameOrURI);
+    entailSKOSModel();
+    indexSKOSModel();
     searcher = new IndexSearcher(DirectoryReader.open(indexDir));
   }
-  
+
+  /**
+   * This constructor loads the SKOS model from a given InputStream using the
+   * given serialization language parameter, which must be either N3, RDF/XML,
+   * or TURTLE.
+   *
+   * @param inputStream the input stream
+   * @param format      the serialization language
+   * @param languages   the languages
+   * @throws IOException if the model cannot be loaded
+   */
+  public SKOSEngineImpl(InputStream inputStream, String format, String... languages)
+      throws IOException {
+    if (!("N3".equals(format) || "RDF/XML".equals(format) || "TURTLE".equals(format))) {
+      throw new IOException("Invalid RDF serialization format");
+    }
+    if (languages != null) {
+      this.languages = new TreeSet<>(Arrays.asList(languages));
+    }
+    analyzer = new SimpleAnalyzer();
+    skosModel = ModelFactory.createDefaultModel();
+    skosModel.read(inputStream, null, format);
+    indexDir = new RAMDirectory();
+    entailSKOSModel();
+    indexSKOSModel();
+    searcher = new IndexSearcher(DirectoryReader.open(indexDir));
+  }
+
   private void entailSKOSModel() {
-    GraphStore graphStore = GraphStoreFactory.create(skosModel) ;
-    String sparqlQuery = StringUtils.join(new String[]{
-        "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-        "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
-        "INSERT { ?subject rdf:type skos:Concept }",
-        "WHERE {",
-          "{ ?subject skos:prefLabel ?text } UNION",
-          "{ ?subject skos:altLabel ?text } UNION",
-          "{ ?subject skos:hiddenLabel ?text }",
-         "}",
-        }, "\n");
+    GraphStore graphStore = GraphStoreFactory.create(skosModel);
+    String sparqlQuery =
+        "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n"
+            + "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+            + "INSERT { ?subject rdf:type skos:Concept }\n"
+            + "WHERE {\n"
+            + "{ ?subject skos:prefLabel ?text } UNION\n"
+            + "{ ?subject skos:altLabel ?text } UNION\n"
+            + "{ ?subject skos:hiddenLabel ?text }\n"
+            + "}";
     UpdateRequest request = UpdateFactory.create(sparqlQuery);
-    UpdateAction.execute(request, graphStore) ;
+    UpdateAction.execute(request, graphStore);
   }
 
   /**
@@ -270,272 +225,298 @@ public class SKOSEngineImpl implements SKOSEngine {
    */
   private Document createDocumentsFromConcept(Resource skos_concept) {
     Document conceptDoc = new Document();
-    
     String conceptURI = skos_concept.getURI();
-    if (conceptURI == null) {
-      System.err.println("Error when indexing concept NO_URI.");
-      return null;
-    }
-    
     Field uriField = new Field(FIELD_URI, conceptURI, StringField.TYPE_STORED);
     conceptDoc.add(uriField);
-    
     // store the preferred lexical labels
     indexAnnotation(skos_concept, conceptDoc, SKOS.prefLabel, FIELD_PREF_LABEL);
-    
     // store the alternative lexical labels
     indexAnnotation(skos_concept, conceptDoc, SKOS.altLabel, FIELD_ALT_LABEL);
-    
     // store the hidden lexical labels
-    indexAnnotation(skos_concept, conceptDoc, SKOS.hiddenLabel,
-        FIELD_HIDDEN_LABEL);
-    
+    indexAnnotation(skos_concept, conceptDoc, SKOS.hiddenLabel, FIELD_HIDDEN_LABEL);
     // store the URIs of the broader concepts
     indexObject(skos_concept, conceptDoc, SKOS.broader, FIELD_BROADER);
-    
     // store the URIs of the broader transitive concepts
-    indexObject(skos_concept, conceptDoc, SKOS.broaderTransitive,
-        FIELD_BROADER_TRANSITIVE);
-    
+    indexObject(skos_concept, conceptDoc, SKOS.broaderTransitive, FIELD_BROADER_TRANSITIVE);
     // store the URIs of the narrower concepts
     indexObject(skos_concept, conceptDoc, SKOS.narrower, FIELD_NARROWER);
-    
     // store the URIs of the narrower transitive concepts
-    indexObject(skos_concept, conceptDoc, SKOS.narrowerTransitive,
-        FIELD_NARROWER_TRANSITIVE);
-    
+    indexObject(skos_concept, conceptDoc, SKOS.narrowerTransitive, FIELD_NARROWER_TRANSITIVE);
     // store the URIs of the related concepts
     indexObject(skos_concept, conceptDoc, SKOS.related, FIELD_RELATED);
-    
     return conceptDoc;
   }
-  
+
   @Override
   public String[] getAltLabels(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_ALT_LABEL);
   }
-  
+
   @Override
   public String[] getAltTerms(String label) throws IOException {
-    List<String> result = new ArrayList<String>();
-    
+    List<String> result = new ArrayList<>();
     // convert the query to lower-case
     String queryString = label.toLowerCase();
-    
     try {
       String[] conceptURIs = getConcepts(queryString);
-      
       for (String conceptURI : conceptURIs) {
         String[] altLabels = getAltLabels(conceptURI);
         if (altLabels != null) {
-          for (String altLabel : altLabels) {
-            result.add(altLabel);
-          }
+          result.addAll(Arrays.asList(altLabels));
         }
       }
     } catch (Exception e) {
-      System.err
-          .println("Error when accessing SKOS Engine.\n" + e.getMessage());
+      logger.warn("Error when accessing SKOS Engine.\n" + e.getMessage());
     }
-    
     return result.toArray(new String[result.size()]);
   }
-  
+
   @Override
   public String[] getHiddenLabels(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_HIDDEN_LABEL);
   }
-  
+
   @Override
   public String[] getBroaderConcepts(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_BROADER);
   }
-  
+
   @Override
   public String[] getBroaderLabels(String conceptURI) throws IOException {
     return getLabels(conceptURI, FIELD_BROADER);
   }
-  
+
   @Override
   public String[] getBroaderTransitiveConcepts(String conceptURI)
       throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_BROADER_TRANSITIVE);
   }
-  
+
   @Override
   public String[] getBroaderTransitiveLabels(String conceptURI)
       throws IOException {
     return getLabels(conceptURI, FIELD_BROADER_TRANSITIVE);
   }
-  
+
   @Override
   public String[] getConcepts(String label) throws IOException {
-    List<String> concepts = new ArrayList<String>();
-    
+    List<String> concepts = new ArrayList<>();
     // convert the query to lower-case
     String queryString = label.toLowerCase();
-    
     AllDocCollector collector = new AllDocCollector();
-    
     DisjunctionMaxQuery query = new DisjunctionMaxQuery(0.0f);
     query.add(new TermQuery(new Term(FIELD_PREF_LABEL, queryString)));
     query.add(new TermQuery(new Term(FIELD_ALT_LABEL, queryString)));
     query.add(new TermQuery(new Term(FIELD_HIDDEN_LABEL, queryString)));
     searcher.search(query, collector);
-    
     for (Integer hit : collector.getDocs()) {
       Document doc = searcher.doc(hit);
       String conceptURI = doc.getValues(FIELD_URI)[0];
       concepts.add(conceptURI);
     }
-    
     return concepts.toArray(new String[concepts.size()]);
   }
-  
+
   private String[] getLabels(String conceptURI, String field)
       throws IOException {
-    List<String> labels = new ArrayList<String>();
+    List<String> labels = new ArrayList<>();
     String[] concepts = readConceptFieldValues(conceptURI, field);
-    
-    for (String aConceptURI : concepts) {
-      String[] prefLabels = getPrefLabels(aConceptURI);
-      labels.addAll(Arrays.asList(prefLabels));
-      
-      String[] altLabels = getAltLabels(aConceptURI);
-      labels.addAll(Arrays.asList(altLabels));
+    if (concepts != null) {
+      for (String aConceptURI : concepts) {
+        labels.addAll(Arrays.asList(getPrefLabels(aConceptURI)));
+        labels.addAll(Arrays.asList(getAltLabels(aConceptURI)));
+      }
     }
-    
     return labels.toArray(new String[labels.size()]);
   }
-  
+
   @Override
   public String[] getNarrowerConcepts(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_NARROWER);
   }
-  
+
   @Override
   public String[] getNarrowerLabels(String conceptURI) throws IOException {
     return getLabels(conceptURI, FIELD_NARROWER);
   }
-  
+
   @Override
   public String[] getNarrowerTransitiveConcepts(String conceptURI)
       throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_NARROWER_TRANSITIVE);
   }
-  
+
   @Override
   public String[] getNarrowerTransitiveLabels(String conceptURI)
       throws IOException {
     return getLabels(conceptURI, FIELD_NARROWER_TRANSITIVE);
   }
-  
+
   @Override
   public String[] getPrefLabels(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_PREF_LABEL);
   }
-  
+
   @Override
   public String[] getRelatedConcepts(String conceptURI) throws IOException {
     return readConceptFieldValues(conceptURI, FIELD_RELATED);
   }
-  
+
   @Override
   public String[] getRelatedLabels(String conceptURI) throws IOException {
     return getLabels(conceptURI, FIELD_RELATED);
   }
-  
+
   private void indexAnnotation(Resource skos_concept, Document conceptDoc,
-      AnnotationProperty property, String field) {
+                               AnnotationProperty property, String field) {
     StmtIterator stmt_iter = skos_concept.listProperties(property);
     while (stmt_iter.hasNext()) {
-      Literal labelLiteral = stmt_iter.nextStatement().getObject()
-          .as(Literal.class);
+      Literal labelLiteral = stmt_iter.nextStatement().getObject().as(Literal.class);
       String label = labelLiteral.getLexicalForm();
       String labelLang = labelLiteral.getLanguage();
-      
       if (this.languages != null && !this.languages.contains(labelLang)) {
         continue;
       }
-      
       // converting label to lower-case
       label = label.toLowerCase();
-      
       Field labelField = new Field(field, label, StringField.TYPE_STORED);
-      
       conceptDoc.add(labelField);
     }
   }
-  
+
   private void indexObject(Resource skos_concept, Document conceptDoc,
-      ObjectProperty property, String field) {
+                           ObjectProperty property, String field) {
     StmtIterator stmt_iter = skos_concept.listProperties(property);
     while (stmt_iter.hasNext()) {
       RDFNode concept = stmt_iter.nextStatement().getObject();
-      
       if (!concept.canAs(Resource.class)) {
-        System.err.println("Error when indexing relationship of concept "
-            + skos_concept.getURI() + ".");
+        logger.warn("Error when indexing relationship of concept " + skos_concept.getURI() + " .");
         continue;
       }
-      
       Resource resource = concept.as(Resource.class);
-      
-      String uri = resource.getURI();
-      if (uri == null) {
-        System.err.println("Error when indexing relationship of concept "
-            + skos_concept.getURI() + ".");
-        continue;
-      }
-      
-      Field conceptField = new Field(field, uri, StringField.TYPE_STORED);
-      
+      Field conceptField = new Field(field, resource.getURI(), TextField.TYPE_STORED);
       conceptDoc.add(conceptField);
     }
   }
-  
+
   /**
    * Creates the synonym index
-   * 
+   *
    * @throws IOException
    */
   private void indexSKOSModel() throws IOException {
-    IndexWriterConfig cfg = new IndexWriterConfig(matchVersion, analyzer);
+    IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(indexDir, cfg);
     writer.getConfig().setRAMBufferSizeMB(48);
-    
-    /* iterate SKOS concepts, create Lucene docs and add them to the index */
-    ResIterator concept_iter = skosModel.listResourcesWithProperty(RDF.type,
-        SKOS.Concept);
+        /* iterate SKOS concepts, create Lucene docs and add them to the index */
+    ResIterator concept_iter = skosModel.listResourcesWithProperty(RDF.type, SKOS.Concept);
     while (concept_iter.hasNext()) {
       Resource skos_concept = concept_iter.next();
-      
       Document concept_doc = createDocumentsFromConcept(skos_concept);
-      if (concept_doc != null) {
-        writer.addDocument(concept_doc);
-      }
+      writer.addDocument(concept_doc);
     }
-    
     writer.close();
   }
-  
-  /** Returns the values of a given field for a given concept */
+
+  /**
+   * Returns the values of a given field for a given concept
+   */
   private String[] readConceptFieldValues(String conceptURI, String field)
       throws IOException {
-    
     Query query = new TermQuery(new Term(FIELD_URI, conceptURI));
-    
     TopDocs docs = searcher.search(query, 1);
-    
     ScoreDoc[] results = docs.scoreDocs;
-    
     if (results.length != 1) {
-      System.out.println("Unknown concept " + conceptURI);
+      logger.warn("Unknown concept " + conceptURI);
       return null;
     }
-    
     Document conceptDoc = searcher.doc(results[0].doc);
-    
     return conceptDoc.getValues(field);
+  }
+
+  private String join(Iterator iterator, char separator) {
+    // handle null, zero and one elements before building a buffer
+    if (iterator == null) {
+      return null;
+    }
+    if (!iterator.hasNext()) {
+      return "";
+    }
+    Object first = iterator.next();
+    if (!iterator.hasNext()) {
+      return first == null ? "" : first.toString();
+    }
+    // two or more elements
+    StringBuilder buf = new StringBuilder();
+    if (first != null) {
+      buf.append(first);
+    }
+    while (iterator.hasNext()) {
+      buf.append(separator);
+      Object obj = iterator.next();
+      if (obj != null) {
+        buf.append(obj);
+      }
+    }
+    return buf.toString();
+  }
+
+  private static final char UNIX_SEPARATOR = '/';
+  private static final char WINDOWS_SEPARATOR = '\\';
+
+  private String getName(String filename) {
+    if (filename == null) {
+      return null;
+    }
+    int index = indexOfLastSeparator(filename);
+    return filename.substring(index + 1);
+  }
+
+  private int indexOfLastSeparator(String filename) {
+    if (filename == null) {
+      return -1;
+    }
+    int lastUnixPos = filename.lastIndexOf(UNIX_SEPARATOR);
+    int lastWindowsPos = filename.lastIndexOf(WINDOWS_SEPARATOR);
+    return Math.max(lastUnixPos, lastWindowsPos);
+  }
+
+  private String getExtension(String filename) {
+    if (filename == null) {
+      return null;
+    }
+    int index = indexOfExtension(filename);
+    if (index == -1) {
+      return "";
+    } else {
+      return filename.substring(index + 1);
+    }
+  }
+
+  private int indexOfExtension(String filename) {
+    if (filename == null) {
+      return -1;
+    }
+    int extensionPos = filename.lastIndexOf(EXTENSION_SEPARATOR);
+    int lastSeparator = indexOfLastSeparator(filename);
+    return (lastSeparator > extensionPos ? -1 : extensionPos);
+  }
+
+  public static final char EXTENSION_SEPARATOR = '.';
+
+  private String getBaseName(String filename) {
+    return removeExtension(getName(filename));
+  }
+
+  private String removeExtension(String filename) {
+    if (filename == null) {
+      return null;
+    }
+    int index = indexOfExtension(filename);
+    if (index == -1) {
+      return filename;
+    } else {
+      return filename.substring(0, index);
+    }
   }
 }
