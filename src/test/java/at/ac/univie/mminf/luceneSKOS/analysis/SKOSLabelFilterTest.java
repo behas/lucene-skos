@@ -46,116 +46,104 @@ import at.ac.univie.mminf.luceneSKOS.util.TestUtil;
  * Testing the SKOS Label Filter
  */
 public class SKOSLabelFilterTest extends AbstractFilterTest {
-  
-  @Before
-  @Override
-  public void setUp() throws Exception {
-    
-    super.setUp();
-    
-    skosAnalyzer = new SKOSAnalyzer(matchVersion, skosEngine,
-        ExpansionType.LABEL);
-    
-    writer = new IndexWriter(directory, new IndexWriterConfig(matchVersion,
-        skosAnalyzer));
-    
-  }
-  
-  @Test
-  public void termQuerySearch() throws CorruptIndexException, IOException {
-    
-    Document doc = new Document();
-    doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
-    
-    writer.addDocument(doc);
-    
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-    
-    TermQuery tq = new TermQuery(new Term("content", "hops"));
-    
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, tq));
-    
-  }
-  
-  @Test
-  public void phraseQuerySearch() throws CorruptIndexException, IOException {
-    
-    Document doc = new Document();
-    doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
-    
-    writer.addDocument(doc);
-    
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-    
-    PhraseQuery pq = new PhraseQuery();
-    pq.add(new Term("content", "fox"));
-    pq.add(new Term("content", "hops"));
-    
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, pq));
-    
-  }
-  
-  @Test
-  public void queryParserSearch() throws IOException, QueryNodeException {
-    
-    Document doc = new Document();
-    doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
-    
-    writer.addDocument(doc);
-    
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-    
-    Query query = new StandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
-        "content");
-    
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
-    
-    Assert.assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
-        .getClass().getName());
-    
-    query = new StandardQueryParser(new StandardAnalyzer(matchVersion)).parse(
-        "\"fox jumps\"", "content");
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
-    
-    Assert.assertEquals("content:\"fox jumps\"", query.toString());
-    Assert.assertEquals("org.apache.lucene.search.PhraseQuery", query
-        .getClass().getName());
-    
-  }
-  
-  @Test
-  public void testTermQuery() throws CorruptIndexException, IOException,
-      QueryNodeException {
-    
-    Document doc = new Document();
-    doc.add(new Field("content", "I work for the united nations",
-        TextField.TYPE_STORED));
-    
-    writer.addDocument(doc);
-    
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-    
-    StandardQueryParser parser = new StandardQueryParser(new SimpleAnalyzer(
-        matchVersion));
-    
-    Query query = parser.parse("united nations", "content");
-    
-    Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
-    
-  }
-  
-  // @Test
-  public void displayTokensWithLabelExpansion() throws IOException {
-    
-    String text = "The quick brown fox jumps over the lazy dog";
-    
-    AnalyzerUtils.displayTokensWithFullDetails(skosAnalyzer, text);
-    // AnalyzerUtils.displayTokensWithPositions(synonymAnalyzer, text);
-    
-  }
-  
+
+    @Before
+    @Override
+    public void setUp() throws Exception {
+
+        super.setUp();
+
+        skosAnalyzer = new SKOSAnalyzer(skosEngine, ExpansionType.LABEL);
+
+        writer = new IndexWriter(directory, new IndexWriterConfig(skosAnalyzer));
+
+    }
+
+    @Test
+    public void termQuerySearch() throws CorruptIndexException, IOException {
+
+        Document doc = new Document();
+        doc.add(new Field("content", "The quick brown fox jumps over the lazy dog", TextField.TYPE_STORED));
+
+        writer.addDocument(doc);
+
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+
+        TermQuery tq = new TermQuery(new Term("content", "hops"));
+
+        Assert.assertEquals(1, TestUtil.hitCount(searcher, tq));
+
+    }
+
+    @Test
+    public void phraseQuerySearch() throws CorruptIndexException, IOException {
+
+        Document doc = new Document();
+        doc.add(new Field("content", "The quick brown fox jumps over the lazy dog", TextField.TYPE_STORED));
+
+        writer.addDocument(doc);
+
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+
+        PhraseQuery pq = new PhraseQuery();
+        pq.add(new Term("content", "fox"));
+        pq.add(new Term("content", "hops"));
+
+        Assert.assertEquals(1, TestUtil.hitCount(searcher, pq));
+
+    }
+
+    @Test
+    public void queryParserSearch() throws IOException, QueryNodeException {
+
+        Document doc = new Document();
+        doc.add(new Field("content", "The quick brown fox jumps over the lazy dog", TextField.TYPE_STORED));
+
+        writer.addDocument(doc);
+
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+
+        Query query = new StandardQueryParser(skosAnalyzer).parse("\"fox jumps\"", "content");
+
+        Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+
+        Assert.assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
+        Assert.assertEquals("org.apache.lucene.search.MultiPhraseQuery", query.getClass().getName());
+
+        query = new StandardQueryParser(new StandardAnalyzer()).parse("\"fox jumps\"", "content");
+        Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+
+        Assert.assertEquals("content:\"fox jumps\"", query.toString());
+        Assert.assertEquals("org.apache.lucene.search.PhraseQuery", query.getClass().getName());
+
+    }
+
+    @Test
+    public void testTermQuery() throws CorruptIndexException, IOException, QueryNodeException {
+
+        Document doc = new Document();
+        doc.add(new Field("content", "I work for the united nations", TextField.TYPE_STORED));
+
+        writer.addDocument(doc);
+
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+
+        StandardQueryParser parser = new StandardQueryParser(new SimpleAnalyzer());
+
+        Query query = parser.parse("united nations", "content");
+
+        Assert.assertEquals(1, TestUtil.hitCount(searcher, query));
+
+    }
+
+    // @Test
+    public void displayTokensWithLabelExpansion() throws IOException {
+
+        String text = "The quick brown fox jumps over the lazy dog";
+
+        AnalyzerUtils.displayTokensWithFullDetails(skosAnalyzer, text);
+        // AnalyzerUtils.displayTokensWithPositions(synonymAnalyzer, text);
+
+    }
+
 }
