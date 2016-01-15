@@ -16,14 +16,16 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
  * limitations under the License.
  */
 
-import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngine;
-import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
+import at.ac.univie.mminf.luceneSKOS.analysis.engine.SKOSEngine;
+import at.ac.univie.mminf.luceneSKOS.analysis.SKOSTypeAttribute.SKOSType;
 
 /**
  * A Lucene TokenFilter that supports label-based term expansion as described in
@@ -35,137 +37,118 @@ import java.util.Queue;
  */
 public final class SKOSLabelFilter extends AbstractSKOSFilter {
 
-  public static final int DEFAULT_BUFFER_SIZE = 1;
-  /* the size of the buffer used for multi-term prediction */
-  private int bufferSize = DEFAULT_BUFFER_SIZE;
-  /* a list serving as token buffer between consumed and consuming stream */
-  private Queue<State> buffer = new LinkedList<>();
+    public static final int DEFAULT_BUFFER_SIZE = 1;
+    /* the size of the buffer used for multi-term prediction */
+    private int bufferSize = DEFAULT_BUFFER_SIZE;
+    /* a list serving as token buffer between consumed and consuming stream */
+    private Queue<State> buffer = new LinkedList<>();
 
-  /**
-   * Constructor for multi-term expansion support. Takes an input token
-   * stream, the SKOS engine, and an integer indicating the maximum token
-   * length of the preferred labels in the SKOS vocabulary.
-   *
-   * @param input      the consumed token stream
-   * @param engine     the skos expansion engine
-   * @param analyzer   the analyzer
-   * @param bufferSize the length of the longest pref-label to consider
-   *                   (needed for mult-term expansion)
-   * @param types      the skos types to expand to
-   */
-  public SKOSLabelFilter(TokenStream input, SKOSEngine engine,
-                         Analyzer analyzer, int bufferSize, SKOSTypeAttribute.SKOSType... types) {
-    super(input, engine, analyzer, types);
-    this.bufferSize = bufferSize;
-  }
+    /**
+     * Constructor for multi-term expansion support. Takes an input token
+     * stream, the SKOS engine, and an integer indicating the maximum token
+     * length of the preferred labels in the SKOS vocabulary.
+     *
+     * @param input the consumed token stream
+     * @param engine the skos expansion engine
+     * @param analyzer the analyzer
+     * @param bufferSize the length of the longest pref-label to consider
+     * (needed for mult-term expansion)
+     * @param types the skos types to expand to
+     */
+    public SKOSLabelFilter(TokenStream input, SKOSEngine engine,
+            Analyzer analyzer, int bufferSize, List<SKOSType> types) {
+        super(input, engine, analyzer, types);
+        this.bufferSize = bufferSize;
+    }
 
-  /**
-   * Advances the stream to the next token
-   */
-  @Override
-  public boolean incrementToken() throws IOException {
-        /* there are expanded terms for the given token */
-    if (termStack.size() > 0) {
-      processTermOnStack();
-      return true;
+    /**
+     * Advances the stream to the next token
+     */
+    @Override
+    public boolean incrementToken() throws IOException {
+        // there are expanded terms for the given token
+        if (termStack.size() > 0) {
+            processTermOnStack();
+            return true;
+        }
+        while (buffer.size() < bufferSize && input.incrementToken()) {
+            buffer.add(input.captureState());
+        }
+        if (buffer.isEmpty()) {
+            return false;
+        }
+        restoreState(buffer.peek());
+        // check whether there are expanded terms for a given token
+        if (addAliasesToStack()) {
+            // if yes, capture the state of all attributes
+            current = captureState();
+        }
+        buffer.remove();
+        return true;
     }
-    while (buffer.size() < bufferSize && input.incrementToken()) {
-      buffer.add(input.captureState());
-    }
-    if (buffer.isEmpty()) {
-      return false;
-    }
-    restoreState(buffer.peek());
-        /* check whether there are expanded terms for a given token */
-    if (addAliasesToStack()) {
-            /* if yes, capture the state of all attributes */
-      current = captureState();
-    }
-    buffer.remove();
-    return true;
-  }
 
-  private boolean addAliasesToStack() throws IOException {
-    for (int i = buffer.size(); i > 0; i--) {
-      String inputTokens = bufferToString(i);
-      if (addTermsToStack(inputTokens)) {
-        break;
-      }
+    private boolean addAliasesToStack() throws IOException {
+        for (int i = buffer.size(); i > 0; i--) {
+            String inputTokens = bufferToString(i);
+            if (addTermsToStack(inputTokens)) {
+                break;
+            }
+        }
+        return !termStack.isEmpty();
     }
-    return !termStack.isEmpty();
-  }
 
-  /**
-   * Converts the first x=noTokens states in the queue to a concatenated token
-   * string separated by white spaces
-   *
-   * @param noTokens the number of tokens
-   * @return the concatenated token string
-   */
-  private String bufferToString(int noTokens) {
-    State entered = captureState();
-    State[] bufferedStates = buffer.toArray(new State[buffer.size()]);
-    StringBuilder builder = new StringBuilder();
-    builder.append(termAtt.toString());
-    restoreState(bufferedStates[0]);
-    for (int i = 1; i < noTokens; i++) {
-      restoreState(bufferedStates[i]);
-      builder.append(" ").append(termAtt.toString());
+    /**
+     * Converts the first x=noTokens states in the queue to a concatenated token
+     * string separated by white spaces
+     * @param noTokens the number of tokens
+     * @return the concatenated token string
+     */
+    private String bufferToString(int noTokens) {
+        State entered = captureState();
+        State[] bufferedStates = buffer.toArray(new State[buffer.size()]);
+        StringBuilder builder = new StringBuilder();
+        builder.append(termAtt.toString());
+        restoreState(bufferedStates[0]);
+        for (int i = 1; i < noTokens; i++) {
+            restoreState(bufferedStates[i]);
+            builder.append(" ").append(termAtt.toString());
+        }
+        restoreState(entered);
+        return builder.toString();
     }
-    restoreState(entered);
-    return builder.toString();
-  }
 
-  /**
-   * Add terms to stack
-   * Assumes that the given term is a textual token
-   *
-   * @param term the given term
-   * @return true if term stack is not empty
-   */
-  public boolean addTermsToStack(String term) {
-    try {
-      String[] conceptURIs = engine.getConcepts(term);
-      for (String conceptURI : conceptURIs) {
-        if (types.contains(SKOSTypeAttribute.SKOSType.PREF)) {
-          String[] prefLabels = engine.getPrefLabels(conceptURI);
-          pushLabelsToStack(prefLabels, SKOSTypeAttribute.SKOSType.PREF);
+    /**
+     * Add terms to stack
+     * Assumes that the given term is a textual token
+     * @param term the given term
+     * @return true if term stack is not empty
+     */
+    public boolean addTermsToStack(String term) throws IOException {
+        List<String> conceptURIs = engine.getConcepts(term);
+        for (String conceptURI : conceptURIs) {
+            if (types.contains(SKOSType.PREF)) {
+                pushLabelsToStack(engine.getPrefLabels(conceptURI), SKOSType.PREF);
+            }
+            if (types.contains(SKOSType.ALT)) {
+                pushLabelsToStack(engine.getAltLabels(conceptURI), SKOSType.ALT);
+            }
+            if (types.contains(SKOSType.HIDDEN)) {
+                pushLabelsToStack(engine.getHiddenLabels(conceptURI), SKOSType.HIDDEN);
+            }
+            if (types.contains(SKOSType.BROADER)) {
+                pushLabelsToStack(engine.getBroaderLabels(conceptURI), SKOSType.BROADER);
+            }
+            if (types.contains(SKOSType.BROADERTRANSITIVE)) {
+                pushLabelsToStack(engine.getBroaderTransitiveLabels(conceptURI), SKOSType.BROADERTRANSITIVE);
+            }
+            if (types.contains(SKOSType.NARROWER)) {
+                pushLabelsToStack(engine.getNarrowerLabels(conceptURI), SKOSType.NARROWER);
+            }
+            if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
+                pushLabelsToStack(engine.getNarrowerTransitiveLabels(conceptURI), SKOSType.NARROWERTRANSITIVE);
+            }
         }
-        if (types.contains(SKOSTypeAttribute.SKOSType.ALT)) {
-          String[] altLabels = engine.getAltLabels(conceptURI);
-          pushLabelsToStack(altLabels, SKOSTypeAttribute.SKOSType.ALT);
-        }
-        if (types.contains(SKOSTypeAttribute.SKOSType.HIDDEN)) {
-          String[] hiddenLabels = engine.getHiddenLabels(conceptURI);
-          pushLabelsToStack(hiddenLabels, SKOSTypeAttribute.SKOSType.HIDDEN);
-        }
-        if (types.contains(SKOSTypeAttribute.SKOSType.BROADER)) {
-          String[] broaderLabels = engine.getBroaderLabels(conceptURI);
-          pushLabelsToStack(broaderLabels, SKOSTypeAttribute.SKOSType.BROADER);
-        }
-        if (types.contains(SKOSTypeAttribute.SKOSType.BROADERTRANSITIVE)) {
-          String[] broaderTransitiveLabels = engine
-              .getBroaderTransitiveLabels(conceptURI);
-          pushLabelsToStack(broaderTransitiveLabels, SKOSTypeAttribute.SKOSType.BROADERTRANSITIVE);
-        }
-        if (types.contains(SKOSTypeAttribute.SKOSType.NARROWER)) {
-          String[] narrowerLabels = engine.getNarrowerLabels(conceptURI);
-          pushLabelsToStack(narrowerLabels, SKOSTypeAttribute.SKOSType.NARROWER);
-        }
-        if (types.contains(SKOSTypeAttribute.SKOSType.NARROWERTRANSITIVE)) {
-          String[] narrowerTransitiveLabels = engine
-              .getNarrowerTransitiveLabels(conceptURI);
-          pushLabelsToStack(narrowerTransitiveLabels,
-              SKOSTypeAttribute.SKOSType.NARROWERTRANSITIVE);
-        }
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("error when accessing SKOS engine: " + e.getMessage());
+        return !termStack.isEmpty();
     }
-    return !termStack.isEmpty();
-  }
 
-  public int getBufferSize() {
-    return this.bufferSize;
-  }
 }

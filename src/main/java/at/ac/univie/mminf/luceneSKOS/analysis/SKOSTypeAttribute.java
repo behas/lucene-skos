@@ -1,4 +1,4 @@
-package at.ac.univie.mminf.luceneSKOS.tokenattributes;
+package at.ac.univie.mminf.luceneSKOS.analysis;
 
 /**
  * Copyright 2010 Bernhard Haslhofer 
@@ -27,25 +27,25 @@ import org.apache.lucene.util.Attribute;
  */
 public interface SKOSTypeAttribute extends Attribute {
 
-  /**
-   * An enumeration of supported SKOS concept types
-   */
-  enum SKOSType {
+    /**
+     * An enumeration of supported SKOS concept types
+     */
+    enum SKOSType {
 
-    PREF, ALT, HIDDEN, BROADER, NARROWER, BROADERTRANSITIVE, NARROWERTRANSITIVE, RELATED;
-  }
+        PREF, ALT, HIDDEN, BROADER, NARROWER, BROADERTRANSITIVE, NARROWERTRANSITIVE, RELATED;
+    }
 
-  /**
-   * Returns the SKOS type
-   *
-   * @return SKOSType
-   */
-  SKOSType getSkosType();
+    /**
+     * Returns the SKOS type
+     *
+     * @return SKOSType
+     */
+    SKOSType getSkosType();
 
-  /**
-   * Sets this Token's SKOSType.
-   *
-   * @param skosType the SKOS type
-   */
-  void setSkosType(SKOSType skosType);
+    /**
+     * Sets this Token's SKOSType.
+     *
+     * @param skosType the SKOS type
+     */
+    void setSkosType(SKOSType skosType);
 }

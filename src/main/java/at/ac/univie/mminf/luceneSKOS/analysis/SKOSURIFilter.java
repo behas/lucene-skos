@@ -16,12 +16,14 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
  * limitations under the License.
  */
 
-import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngine;
-import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute.SKOSType;
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
-import java.io.IOException;
+import at.ac.univie.mminf.luceneSKOS.analysis.engine.SKOSEngine;
+import at.ac.univie.mminf.luceneSKOS.analysis.SKOSTypeAttribute.SKOSType;
 
 /**
  * A Lucene TokenFilter that supports URI-based term expansion as described in
@@ -34,75 +36,57 @@ import java.io.IOException;
  */
 public final class SKOSURIFilter extends AbstractSKOSFilter {
 
-  public SKOSURIFilter(TokenStream input, SKOSEngine skosEngine,
-                       Analyzer analyzer, SKOSType... types) {
-    super(input, skosEngine, analyzer, types);
-  }
+    public SKOSURIFilter(TokenStream input, SKOSEngine skosEngine,
+            Analyzer analyzer, List<SKOSType> types) {
+        super(input, skosEngine, analyzer, types);
+    }
 
-  /**
-   * Advances the stream to the next token
-   */
-  @Override
-  public boolean incrementToken() throws IOException {
-
+    /**
+     * Advances the stream to the next token
+     */
+    @Override
+    public boolean incrementToken() throws IOException {
         /* there are expanded terms for the given token */
-    if (termStack.size() > 0) {
-      processTermOnStack();
-      return true;
-    }
-
+        if (termStack.size() > 0) {
+            processTermOnStack();
+            return true;
+        }
         /* no more tokens on the consumed stream -> end of stream */
-    if (!input.incrementToken()) {
-      return false;
-    }
-
+        if (!input.incrementToken()) {
+            return false;
+        }
         /* check whether there are expanded terms for a given token */
-    if (addTermsToStack(termAtt.toString())) {
-
+        if (addTermsToStack(termAtt.toString())) {
             /* if yes, capture the state of all attributes */
-      current = captureState();
+            current = captureState();
+        }
+        return true;
     }
 
-    return true;
-  }
-
-  /**
-   * Assumes that the given term is a concept URI
-   *
-   * @param term the given term
-   * @return true if term stack is not empty
-   */
-  public boolean addTermsToStack(String term) {
-    try {
-      if (types.contains(SKOSType.PREF)) {
-        String[] prefLabels = engine.getPrefLabels(term);
-        pushLabelsToStack(prefLabels, SKOSType.PREF);
-      }
-      if (types.contains(SKOSType.ALT)) {
-        String[] altLabels = engine.getAltLabels(term);
-        pushLabelsToStack(altLabels, SKOSType.ALT);
-      }
-      if (types.contains(SKOSType.BROADER)) {
-        String[] broaderLabels = engine.getBroaderLabels(term);
-        pushLabelsToStack(broaderLabels, SKOSType.BROADER);
-      }
-      if (types.contains(SKOSType.BROADERTRANSITIVE)) {
-        String[] broaderTransitiveLabels = engine
-            .getBroaderTransitiveLabels(term);
-        pushLabelsToStack(broaderTransitiveLabels, SKOSType.BROADERTRANSITIVE);
-      }
-      if (types.contains(SKOSType.NARROWER)) {
-        String[] narrowerLabels = engine.getNarrowerLabels(term);
-        pushLabelsToStack(narrowerLabels, SKOSType.NARROWER);
-      }
-      if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
-        String[] narrowerTransitiveLabels = engine
-            .getNarrowerTransitiveLabels(term);
-        pushLabelsToStack(narrowerTransitiveLabels, SKOSType.NARROWERTRANSITIVE);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Error when accessing SKOS Engine.\n" + e.getMessage());
+    /**
+     * Assumes that the given term is a concept URI
+     * @param term the given term
+     * @return true if term stack is not empty
+     */
+    public boolean addTermsToStack(String term) throws IOException {
+        if (types.contains(SKOSType.PREF)) {
+            pushLabelsToStack(engine.getPrefLabels(term), SKOSType.PREF);
+        }
+        if (types.contains(SKOSType.ALT)) {
+            pushLabelsToStack(engine.getAltLabels(term), SKOSType.ALT);
+        }
+        if (types.contains(SKOSType.BROADER)) {
+            pushLabelsToStack(engine.getBroaderLabels(term), SKOSType.BROADER);
+        }
+        if (types.contains(SKOSType.BROADERTRANSITIVE)) {
+            pushLabelsToStack(engine.getBroaderTransitiveLabels(term), SKOSType.BROADERTRANSITIVE);
+        }
+        if (types.contains(SKOSType.NARROWER)) {
+            pushLabelsToStack(engine.getNarrowerLabels(term), SKOSType.NARROWER);
+        }
+        if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
+            pushLabelsToStack(engine.getNarrowerTransitiveLabels(term), SKOSType.NARROWERTRANSITIVE);
+        }
+        return !termStack.isEmpty();
     }
-    return !termStack.isEmpty();
-  }
 }
