@@ -41,144 +41,144 @@ import static org.junit.Assert.assertEquals;
 
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer;
 import at.ac.univie.mminf.luceneSKOS.analysis.SKOSAnalyzer.ExpansionType;
-import at.ac.univie.mminf.luceneSKOS.tokenattributes.SKOSTypeAttribute.SKOSType;
+import at.ac.univie.mminf.luceneSKOS.analysis.SKOSTypeAttribute.SKOSType;
 import at.ac.univie.mminf.luceneSKOS.skos.engine.mock.SKOSEngineMock;
 
 public class SKOSStandardQueryParserTest {
   
-  protected IndexSearcher searcher;
-  
-  protected IndexWriter writer;
-  
-  protected SKOSEngineMock skosEngine;
-  
-  protected SKOSAnalyzer skosAnalyzer;
-  
-  protected Directory directory;
-  
-  @Before
-  public void setUp() throws Exception {
+    protected IndexSearcher searcher;
     
-    // adding some test data
-    skosEngine = new SKOSEngineMock();
+    protected IndexWriter writer;
     
-    skosEngine.addEntry("http://example.com/concept/1", SKOSType.PREF, "jumps");
-    skosEngine.addEntry("http://example.com/concept/1", SKOSType.ALT, "leaps",
-        "hops");
+    protected SKOSEngineMock skosEngine;
     
-    skosEngine.addEntry("http://example.com/concept/2", SKOSType.PREF, "quick");
-    skosEngine.addEntry("http://example.com/concept/2", SKOSType.ALT, "fast",
-        "speedy");
+    protected SKOSAnalyzer skosAnalyzer;
     
-    skosEngine.addEntry("http://example.com/concept/3", SKOSType.PREF, "over");
-    skosEngine.addEntry("http://example.com/concept/3", SKOSType.ALT, "above");
+    protected Directory directory;
     
-    skosEngine.addEntry("http://example.com/concept/4", SKOSType.PREF, "lazy");
-    skosEngine.addEntry("http://example.com/concept/4", SKOSType.ALT,
-        "apathic", "sluggish");
-    
-    skosEngine.addEntry("http://example.com/concept/5", SKOSType.PREF, "dog");
-    skosEngine.addEntry("http://example.com/concept/5", SKOSType.ALT, "canine",
-        "pooch");
-    
-    skosEngine.addEntry("http://example.com/concept/6", SKOSType.PREF,
-        "united nations");
-    skosEngine.addEntry("http://example.com/concept/6", SKOSType.ALT, "UN");
-    
-    skosEngine.addEntry("http://example.com/concept/7", SKOSType.PREF,
-        "lazy dog");
-    skosEngine.addEntry("http://example.com/concept/7", SKOSType.ALT, "Odie");
-    
-    directory = new RAMDirectory();
-    
-    skosAnalyzer = new SKOSAnalyzer(skosEngine, ExpansionType.LABEL);
-    
-    writer = new IndexWriter(directory, new IndexWriterConfig(skosAnalyzer));
-    
-  }
-  
-  @After
-  public void tearDown() throws Exception {
-    
-    if (writer != null) {
-      writer.close();
+    @Before
+    public void setUp() throws Exception {
+        
+        // adding some test data
+        skosEngine = new SKOSEngineMock();
+        
+        skosEngine.addEntry("http://example.com/concept/1", SKOSType.PREF, "jumps");
+        skosEngine.addEntry("http://example.com/concept/1", SKOSType.ALT, "leaps",
+            "hops");
+        
+        skosEngine.addEntry("http://example.com/concept/2", SKOSType.PREF, "quick");
+        skosEngine.addEntry("http://example.com/concept/2", SKOSType.ALT, "fast",
+            "speedy");
+        
+        skosEngine.addEntry("http://example.com/concept/3", SKOSType.PREF, "over");
+        skosEngine.addEntry("http://example.com/concept/3", SKOSType.ALT, "above");
+        
+        skosEngine.addEntry("http://example.com/concept/4", SKOSType.PREF, "lazy");
+        skosEngine.addEntry("http://example.com/concept/4", SKOSType.ALT,
+            "apathic", "sluggish");
+        
+        skosEngine.addEntry("http://example.com/concept/5", SKOSType.PREF, "dog");
+        skosEngine.addEntry("http://example.com/concept/5", SKOSType.ALT, "canine",
+            "pooch");
+        
+        skosEngine.addEntry("http://example.com/concept/6", SKOSType.PREF,
+            "united nations");
+        skosEngine.addEntry("http://example.com/concept/6", SKOSType.ALT, "UN");
+        
+        skosEngine.addEntry("http://example.com/concept/7", SKOSType.PREF,
+            "lazy dog");
+        skosEngine.addEntry("http://example.com/concept/7", SKOSType.ALT, "Odie");
+        
+        directory = new RAMDirectory();
+        
+        skosAnalyzer = new SKOSAnalyzer(skosEngine, ExpansionType.LABEL);
+        
+        writer = new IndexWriter(directory, new IndexWriterConfig(skosAnalyzer));
+        
     }
-    
-    if (searcher != null) {
-      searcher.getIndexReader().close();
+  
+    @After
+    public void tearDown() throws Exception {
+        
+        if (writer != null) {
+          writer.close();
+        }
+        
+        if (searcher != null) {
+          searcher.getIndexReader().close();
+        }
+        
     }
-    
-  }
   
-  @Test
-  public void queryParserSearch() throws IOException, QueryNodeException {
-    
-    Document doc = new Document();
-    doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
-    
-    writer.addDocument(doc);
-    
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-    
-    Query query = new SKOSStandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
-        "content");
-    
-    assertEquals(1, searcher.search(query, 1).totalHits);
-    
-    assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
-    assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
-        .getClass().getName());
-    
-    query = new StandardQueryParser(new StandardAnalyzer())
-        .parse("\"fox jumps\"", "content");
-    assertEquals(1, searcher.search(query, 1).totalHits);
-    
-    assertEquals("content:\"fox jumps\"", query.toString());
-    assertEquals("org.apache.lucene.search.PhraseQuery", query
-        .getClass().getName());
-    
-  }
+    @Test
+    public void queryParserSearch() throws IOException, QueryNodeException {
+        
+        Document doc = new Document();
+        doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
+            TextField.TYPE_STORED));
+        
+        writer.addDocument(doc);
+        
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        
+        Query query = new SKOSStandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
+            "content");
+        
+        assertEquals(1, searcher.search(query, 1).totalHits);
+        
+        assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
+        assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
+            .getClass().getName());
+        
+        query = new StandardQueryParser(new StandardAnalyzer())
+            .parse("\"fox jumps\"", "content");
+        assertEquals(1, searcher.search(query, 1).totalHits);
+        
+        assertEquals("content:\"fox jumps\"", query.toString());
+        assertEquals("org.apache.lucene.search.PhraseQuery", query
+            .getClass().getName());
+        
+    }
   
-  @Test
-  public void queryParserSearchWithBoosts() throws IOException, QueryNodeException {
+    @Test
+    public void queryParserSearchWithBoosts() throws IOException, QueryNodeException {
+        
+        Document doc = new Document();
+        doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
+            TextField.TYPE_STORED));
+        
+        writer.addDocument(doc);
+        
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        
+        SKOSStandardQueryParser parser = new SKOSStandardQueryParser(skosAnalyzer);
+        parser.setBoost(SKOSType.ALT, 0.5f);
+        
+        Query query = parser.parse("\"fox jumps\"", "content");
+        
+        assertEquals(1, searcher.search(query, 1).totalHits);
+        
+        // boosts do not work in phrase queries
+        assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
+        assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
+            .getClass().getName());
+        
+        query = parser.parse("fox jumps", "content");
+        
+        assertEquals(1, searcher.search(query, 1).totalHits);
+        
+        assertEquals("content:fox (content:jumps content:hops^0.5 content:leaps^0.5)", query.toString());
+        assertEquals("org.apache.lucene.search.BooleanQuery", query
+            .getClass().getName());
+        
+        query = new SKOSStandardQueryParser(new StandardAnalyzer())
+            .parse("fox jumps", "content");
+        assertEquals(1, searcher.search(query, 1).totalHits);
+        
+        assertEquals("content:fox content:jumps", query.toString());
+        assertEquals("org.apache.lucene.search.BooleanQuery", query
+            .getClass().getName());
+        
+      }
     
-    Document doc = new Document();
-    doc.add(new Field("content", "The quick brown fox jumps over the lazy dog",
-        TextField.TYPE_STORED));
-    
-    writer.addDocument(doc);
-    
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-    
-    SKOSStandardQueryParser parser = new SKOSStandardQueryParser(skosAnalyzer);
-    parser.setBoost(SKOSType.ALT, 0.5f);
-    
-    Query query = parser.parse("\"fox jumps\"", "content");
-    
-    assertEquals(1, searcher.search(query, 1).totalHits);
-    
-    // boosts do not work in phrase queries
-    assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
-    assertEquals("org.apache.lucene.search.MultiPhraseQuery", query
-        .getClass().getName());
-    
-    query = parser.parse("fox jumps", "content");
-    
-    assertEquals(1, searcher.search(query, 1).totalHits);
-    
-    assertEquals("content:fox (content:jumps content:hops^0.5 content:leaps^0.5)", query.toString());
-    assertEquals("org.apache.lucene.search.BooleanQuery", query
-        .getClass().getName());
-    
-    query = new SKOSStandardQueryParser(new StandardAnalyzer())
-        .parse("fox jumps", "content");
-    assertEquals(1, searcher.search(query, 1).totalHits);
-    
-    assertEquals("content:fox content:jumps", query.toString());
-    assertEquals("org.apache.lucene.search.BooleanQuery", query
-        .getClass().getName());
-    
-  }
-  
 }

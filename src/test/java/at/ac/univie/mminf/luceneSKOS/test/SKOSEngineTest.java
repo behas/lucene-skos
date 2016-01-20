@@ -1,5 +1,12 @@
 package at.ac.univie.mminf.luceneSKOS.test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 /**
  * Copyright 2010 Bernhard Haslhofer 
  *
@@ -16,101 +23,88 @@ package at.ac.univie.mminf.luceneSKOS.test;
  * limitations under the License.
  */
 
-import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngine;
-import at.ac.univie.mminf.luceneSKOS.skos.engine.SKOSEngineFactory;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
+import at.ac.univie.mminf.luceneSKOS.analysis.engine.SKOSEngine;
+import at.ac.univie.mminf.luceneSKOS.analysis.engine.SKOSEngineFactory;
 
 /**
  * Tests the functionality of the Lucene-backed SKOS Engine implementation
  */
 public class SKOSEngineTest extends Assert {
 
-  @Test
-  public void testSimpleSKOSSamplesRDFXML() throws IOException {
-    InputStream skosFile = getClass().getResourceAsStream("/skos_samples/simple_test_skos.rdf");
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "RDF/XML");
-    assertEquals(2, skosEngine.getAltTerms("quick").length);
-    assertEquals(1, skosEngine.getAltTerms("over").length);
-  }
+    @Test
+    public void testSimpleSKOSSamplesRDFXML() throws IOException {
+        InputStream skosFile = getClass().getResourceAsStream("/skos_samples/simple_test_skos.rdf");
+        SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "RDF/XML");
+        assertEquals(2, skosEngine.getAltTerms("quick").size());
+        assertEquals(1, skosEngine.getAltTerms("over").size());
+    }
 
-  @Test
-  public void testSimpleSKOSSamplesN3() throws IOException {
-    InputStream skosFile = getClass().getResourceAsStream("/skos_samples/simple_test_skos.rdf");
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "RDF/XML");
-    assertEquals(2, skosEngine.getAltTerms("quick").length);
-    assertEquals(1, skosEngine.getAltTerms("over").length);
-  }
+    @Test
+    public void testSimpleSKOSSamplesN3() throws IOException {
+        InputStream skosFile = getClass().getResourceAsStream("/skos_samples/simple_test_skos.rdf");
+        SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "RDF/XML");
+        assertEquals(2, skosEngine.getAltTerms("quick").size());
+        assertEquals(1, skosEngine.getAltTerms("over").size());
+    }
 
-  /**
-   * Tests retrieval of non-explicitly types SKOS concepts
-   */
-  @Test
-  public void testSimpleSKOSSampleN3NoType() throws IOException {
-    InputStream skosFile = getClass().getResourceAsStream("/skos_samples/simple_test_skos.n3");
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
-    assertEquals(2, skosEngine.getAltTerms("sheep").length);
-    assertEquals(2, skosEngine.getAltTerms("kity").length);
-  }
+    @Test
+    public void testSimpleSKOSSampleN3NoType() throws IOException {
+        InputStream skosFile = getClass().getResourceAsStream("/skos_samples/simple_test_skos.n3");
+        SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
+        assertEquals(2, skosEngine.getAltTerms("sheep").size());
+        assertEquals(2, skosEngine.getAltTerms("kity").size());
+    }
 
-  @Test
-  public void testSKOSSpecSamples() throws IOException {
-    InputStream skosFile = getClass().getResourceAsStream("/skos_samples/skos_spec_samples.n3");
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
-    assertEquals(skosEngine.getAltTerms("animals").length, 3);
-    assertEquals(skosEngine.getAltTerms("Food and Agriculture Organization").length, 1);
-  }
+    @Test
+    public void testSKOSSpecSamples() throws IOException {
+        InputStream skosFile = getClass().getResourceAsStream("/skos_samples/skos_spec_samples.n3");
+        SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
+        assertEquals(skosEngine.getAltTerms("animals").size(), 3);
+        assertEquals(skosEngine.getAltTerms("Food and Agriculture Organization").size(), 1);
+    }
 
-  @Test
-  public void testSKOSSpecSamplesWithLanguageRestriction() throws IOException {
-    InputStream skosFile = getClass().getResourceAsStream("/skos_samples/skos_spec_samples.n3");
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3", "en");
-    String[] altTerms = skosEngine.getAltTerms("animals");
-    assertEquals(1, altTerms.length);
-    assertEquals("creatures", altTerms[0]);
-  }
+    @Test
+    public void testSKOSSpecSamplesWithLanguageRestriction() throws IOException {
+        InputStream skosFile = getClass().getResourceAsStream("/skos_samples/skos_spec_samples.n3");
+        SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3", "en");
+        Collection<String> altTerms = skosEngine.getAltTerms("animals");
+        assertEquals(1, altTerms.size());
+        assertEquals("creatures", altTerms.iterator().next());
+    }
 
-  @Test
-  public void testUKATSamples() throws IOException {
-    InputStream skosFile = getClass().getResourceAsStream("/skos_samples/ukat_examples.n3");
-    String conceptURI = "http://www.ukat.org.uk/thesaurus/concept/859";
-    SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
-    // testing pref-labels
-    String[] prefLabel = skosEngine.getPrefLabels(conceptURI);
-    assertEquals(1, prefLabel.length);
-    assertEquals("weapons", prefLabel[0]);
-    // testing alt-labels
-    String[] altLabel = skosEngine.getAltLabels(conceptURI);
-    assertEquals(2, altLabel.length);
-    assertTrue(Arrays.asList(altLabel).contains("armaments"));
-    assertTrue(Arrays.asList(altLabel).contains("arms"));
-    // testing broader
-    String[] broader = skosEngine.getBroaderConcepts(conceptURI);
-    assertEquals(1, broader.length);
-    assertEquals("http://www.ukat.org.uk/thesaurus/concept/5060", broader[0]);
-    // testing narrower
-    String[] narrower = skosEngine.getNarrowerConcepts(conceptURI);
-    assertEquals(2, narrower.length);
-    assertTrue(Arrays.asList(narrower).contains(
-        "http://www.ukat.org.uk/thesaurus/concept/18874"));
-    assertTrue(Arrays.asList(narrower).contains(
-        "http://www.ukat.org.uk/thesaurus/concept/7630"));
-    // testing broader labels
-    String[] broaderLabels = skosEngine.getBroaderLabels(conceptURI);
-    assertEquals(3, broaderLabels.length);
-    assertTrue(Arrays.asList(broaderLabels).contains(
-        "military equipment"));
-    assertTrue(Arrays.asList(broaderLabels).contains(
-        "defense equipment and supplies"));
-    assertTrue(Arrays.asList(broaderLabels).contains("ordnance"));
-    // testing narrower labels
-    String[] narrowerLabels = skosEngine.getNarrowerLabels(conceptURI);
-    assertEquals(2, narrowerLabels.length);
-    assertTrue(Arrays.asList(narrowerLabels).contains("ammunition"));
-    assertTrue(Arrays.asList(narrowerLabels).contains("artillery"));
-  }
+    @Test
+    public void testUKATSamples() throws IOException {
+        InputStream skosFile = getClass().getResourceAsStream("/skos_samples/ukat_examples.n3");
+        String conceptURI = "http://www.ukat.org.uk/thesaurus/concept/859";
+        SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
+        // testing pref-labels
+        Collection<String> prefLabel = skosEngine.getPrefLabels(conceptURI);
+        assertEquals(1, prefLabel.size());
+        assertEquals("weapons", prefLabel.iterator().next());
+        // testing alt-labels
+        Collection<String> altLabel = skosEngine.getAltLabels(conceptURI);
+        assertEquals(2, altLabel.size());
+        assertTrue(altLabel.contains("armaments"));
+        assertTrue(altLabel.contains("arms"));
+        // testing broader
+        Collection<String> broader = skosEngine.getBroaderConcepts(conceptURI);
+        assertEquals(1, broader.size());
+        assertEquals("http://www.ukat.org.uk/thesaurus/concept/5060", broader.iterator().next());
+        // testing narrower
+        Collection<String> narrower = skosEngine.getNarrowerConcepts(conceptURI);
+        assertEquals(2, narrower.size());
+        assertTrue(narrower.contains("http://www.ukat.org.uk/thesaurus/concept/18874"));
+        assertTrue(narrower.contains("http://www.ukat.org.uk/thesaurus/concept/7630"));
+        // testing broader labels
+        Collection<String> broaderLabels = skosEngine.getBroaderLabels(conceptURI);
+        assertEquals(3, broaderLabels.size());
+        assertTrue(broaderLabels.contains("military equipment"));
+        assertTrue(broaderLabels.contains("defense equipment and supplies"));
+        assertTrue(broaderLabels.contains("ordnance"));
+        // testing narrower labels
+        Collection<String> narrowerLabels = skosEngine.getNarrowerLabels(conceptURI);
+        assertEquals(2, narrowerLabels.size());
+        assertTrue(narrowerLabels.contains("ammunition"));
+        assertTrue(narrowerLabels.contains("artillery"));
+    }
 }

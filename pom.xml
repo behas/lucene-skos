@@ -18,6 +18,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <prerequisites>
+        <maven>3.0.1</maven>
+    </prerequisites>
+    
     <groupId>at.ac.univie.mminf</groupId>
     <artifactId>lucene-skos</artifactId>
     <packaging>jar</packaging>
@@ -109,8 +113,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>${maven.compiler.target}</source>
+                    <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -178,33 +182,87 @@
                   </filesets>
                 </configuration>                
             </plugin>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>2.0</version>
+                <configuration>
+                    <!-- disallow undocumented classes like sun.misc.Unsafe: -->
+                    <internalRuntimeForbidden>true</internalRuntimeForbidden>
+                    <!--
+                      if the used Java version is too new,
+                      don't fail, just do nothing:
+                    -->
+                    <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                    <bundledSignatures>
+                        <!--
+                          This will automatically choose the right
+                          signatures based on 'maven.compiler.target':
+                        -->
+                        <bundledSignature>jdk-unsafe</bundledSignature>
+                        <bundledSignature>jdk-deprecated</bundledSignature>
+                        <bundledSignature>jdk-system-out</bundledSignature>
+                        <bundledSignature>commons-io-unsafe-2.4</bundledSignature>
+                    </bundledSignatures>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                            <goal>testCheck</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+	
+ 	<profiles>
+	   <profile>
+		  <id>jouve</id>
+		  <distributionManagement>
+			<!-- use the following if you're not using a snapshot version. -->
+			<repository>
+			  <id>jouve-releases</id>
+			  <url>http://nexus-master-si.jouve.local/nexus/content/repositories/releases</url>
+			</repository>
+			<!-- use the following if you ARE using a snapshot version. -->
+			<snapshotRepository>
+			  <id>jouve-snapshots</id>
+			  <url>http://nexus-master-si.jouve.local/nexus/content/repositories/snapshots</url>
+			</snapshotRepository>
+		  </distributionManagement>
+		</profile>
+		
+		<profile>
+		  <id>apache</id>
+			<repositories>
+				<repository>
+					<id>apache-repo-releases</id>
+					<url>https://repository.apache.org/content/repositories/releases/</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+				</repository>
+				<repository>
+					<id>apache-repo-snapshots</id>
+					<url>https://repository.apache.org/content/repositories/snapshots/</url>
+					<releases>
+						<enabled>false</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</repository>
+			</repositories>      
+		 </profile>
+	 </profiles>
 
-    <repositories>
-        <repository>
-            <id>apache-repo-releases</id>
-            <url>https://repository.apache.org/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>apache-repo-snapshots</id>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
+  
     <properties>
         <lucene.version>5.3.1</lucene.version>
         <jena.version>2.12.1</jena.version>
-        <java.version>1.7</java.version>
+        <maven.compiler.target>1.7</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>

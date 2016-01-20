@@ -69,13 +69,13 @@ public abstract class AbstractTermExpansionTest {
     Document doc = new Document();
     doc.add(new Field("title", "Spearhead", TextField.TYPE_STORED));
     doc.add(new Field("description",
-        "Roman iron spearhead. The spearhead was attached to one end of a wooden shaft..."
-            + "The spear was mainly a thrusting weapon, but could also be thrown. "
-            + "It was the principal weapon of the auxiliary soldier... "
-            + "(second - fourth century, Arbeia Roman Fort).",
-        TextField.TYPE_NOT_STORED));
+            "Roman iron spearhead. The spearhead was attached to one end of a wooden shaft..."
+                    + "The spear was mainly a thrusting weapon, but could also be thrown. "
+                    + "It was the principal weapon of the auxiliary soldier... "
+                    + "(second - fourth century, Arbeia Roman Fort).",
+            TextField.TYPE_NOT_STORED));
     doc.add(new Field("subject", "weapons",
-        TextField.TYPE_NOT_STORED));
+            TextField.TYPE_NOT_STORED));
 
         /* setting up a writer with a default (simple) analyzer */
     writer = new IndexWriter(new RAMDirectory(), new IndexWriterConfig(new SimpleAnalyzer()));
@@ -86,8 +86,8 @@ public abstract class AbstractTermExpansionTest {
         /* defining a query that searches over all fields */
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     builder.add(new TermQuery(new Term("title", "arms")), BooleanClause.Occur.SHOULD)
-        .add(new TermQuery(new Term("description", "arms")), BooleanClause.Occur.SHOULD)
-        .add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
+            .add(new TermQuery(new Term("description", "arms")), BooleanClause.Occur.SHOULD)
+            .add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
 
         /* creating a new searcher */
     searcher = new IndexSearcher(DirectoryReader.open(writer, false));
