@@ -56,7 +56,7 @@ public final class SKOSURIFilter extends AbstractSKOSFilter {
             return false;
         }
         /* check whether there are expanded terms for a given token */
-        if (addTermsToStack(termAtt.toString())) {
+        if (addTermsToStack(new ExpandedTerm(termAtt.toString(), null, offsettAtt.startOffset(), offsettAtt.endOffset()))) {
             /* if yes, capture the state of all attributes */
             current = captureState();
         }
@@ -65,27 +65,31 @@ public final class SKOSURIFilter extends AbstractSKOSFilter {
 
     /**
      * Assumes that the given term is a concept URI
+     *
      * @param term the given term
      * @return true if term stack is not empty
      */
-    public boolean addTermsToStack(String term) throws IOException {
+    public boolean addTermsToStack(ExpandedTerm term) throws IOException {
         if (types.contains(SKOSType.PREF)) {
-            pushLabelsToStack(engine.getPrefLabels(term), SKOSType.PREF);
+            pushLabelsToStack(term, engine.getPrefLabels(term.getTerm()), SKOSType.PREF);
         }
         if (types.contains(SKOSType.ALT)) {
-            pushLabelsToStack(engine.getAltLabels(term), SKOSType.ALT);
+            pushLabelsToStack(term, engine.getAltLabels(term.getTerm()), SKOSType.ALT);
         }
         if (types.contains(SKOSType.BROADER)) {
-            pushLabelsToStack(engine.getBroaderLabels(term), SKOSType.BROADER);
+            pushLabelsToStack(term, engine.getBroaderLabels(term.getTerm()), SKOSType.BROADER);
         }
         if (types.contains(SKOSType.BROADERTRANSITIVE)) {
-            pushLabelsToStack(engine.getBroaderTransitiveLabels(term), SKOSType.BROADERTRANSITIVE);
+            pushLabelsToStack(term, engine.getBroaderTransitiveLabels(term.getTerm()), SKOSType.BROADERTRANSITIVE);
         }
         if (types.contains(SKOSType.NARROWER)) {
-            pushLabelsToStack(engine.getNarrowerLabels(term), SKOSType.NARROWER);
+            pushLabelsToStack(term, engine.getNarrowerLabels(term.getTerm()), SKOSType.NARROWER);
         }
         if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
-            pushLabelsToStack(engine.getNarrowerTransitiveLabels(term), SKOSType.NARROWERTRANSITIVE);
+            pushLabelsToStack(term, engine.getNarrowerTransitiveLabels(term.getTerm()), SKOSType.NARROWERTRANSITIVE);
+        }
+        if (types.contains(SKOSType.RELATED)) {
+            pushLabelsToStack(term, engine.getRelatedLabels(term.getTerm()), SKOSType.RELATED);
         }
         return !termStack.isEmpty();
     }

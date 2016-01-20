@@ -49,10 +49,13 @@ import org.apache.lucene.store.RAMDirectory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -188,7 +191,9 @@ public class SKOSEngineImpl implements SKOSEngine {
                 fileManager.addLocatorZip(filenameOrURI);
                 filenameOrURI = getBaseName(filenameOrURI);
             }
-            skosModel = fileManager.loadModel(filenameOrURI);
+            File inputFile = new File(filenameOrURI);
+            Path inputPath = Paths.get(inputFile.getParent(), inputFile.getName());
+            skosModel = fileManager.loadModel(inputPath.toUri().toString());
             entailSKOSModel();
             indexSKOSModel();
             searcher = new IndexSearcher(DirectoryReader.open(indexDir));
@@ -266,20 +271,20 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
 
     @Override
-    public List<String> getAltLabels(String conceptURI) throws IOException {
+    public Collection<String> getAltLabels(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_ALT_LABEL);
     }
 
     @Override
-    public List<String> getAltTerms(String label) throws IOException {
-        List<String> result = new LinkedList<>();
+    public Collection<String> getAltTerms(String label) throws IOException {
+        Set<String> result = new HashSet<>();
         // convert the query to lower-case
         String queryString = label.toLowerCase(Locale.ROOT);
         try {
-            List<String> conceptURIs = getConcepts(queryString);
+            Collection<String> conceptURIs = getConcepts(queryString);
             if (conceptURIs != null) {
                 for (String conceptURI : conceptURIs) {
-                    List<String> altLabels = getAltLabels(conceptURI);
+                    Collection<String> altLabels = getAltLabels(conceptURI);
                     if (altLabels != null) {
                         result.addAll(altLabels);
                     }
@@ -292,35 +297,35 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
 
     @Override
-    public List<String> getHiddenLabels(String conceptURI) throws IOException {
+    public Collection<String> getHiddenLabels(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_HIDDEN_LABEL);
     }
 
     @Override
-    public List<String> getBroaderConcepts(String conceptURI) throws IOException {
+    public Collection<String> getBroaderConcepts(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_BROADER);
     }
 
     @Override
-    public List<String> getBroaderLabels(String conceptURI) throws IOException {
+    public Collection<String> getBroaderLabels(String conceptURI) throws IOException {
         return getLabels(conceptURI, FIELD_BROADER);
     }
 
     @Override
-    public List<String> getBroaderTransitiveConcepts(String conceptURI)
+    public Collection<String> getBroaderTransitiveConcepts(String conceptURI)
             throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_BROADER_TRANSITIVE);
     }
 
     @Override
-    public List<String> getBroaderTransitiveLabels(String conceptURI)
+    public Collection<String> getBroaderTransitiveLabels(String conceptURI)
             throws IOException {
         return getLabels(conceptURI, FIELD_BROADER_TRANSITIVE);
     }
 
     @Override
-    public List<String> getConcepts(String label) throws IOException {
-        List<String> concepts = new ArrayList<>();
+    public Collection<String> getConcepts(String label) throws IOException {
+        Set<String> concepts = new HashSet<>();
         // convert the query to lower-case
         String queryString = label.toLowerCase(Locale.ROOT);
         AllDocCollector collector = new AllDocCollector();
@@ -337,10 +342,10 @@ public class SKOSEngineImpl implements SKOSEngine {
         return concepts;
     }
 
-    private List<String> getLabels(String conceptURI, String field)
+    private Collection<String> getLabels(String conceptURI, String field)
             throws IOException {
-        List<String> labels = new LinkedList<>();
-        List<String> concepts = readConceptFieldValues(conceptURI, field);
+        Set<String> labels = new HashSet<>();
+        Collection<String> concepts = readConceptFieldValues(conceptURI, field);
         if (concepts != null) {
             for (String aConceptURI : concepts) {
                 labels.addAll(getPrefLabels(aConceptURI));
@@ -351,37 +356,37 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
 
     @Override
-    public List<String> getNarrowerConcepts(String conceptURI) throws IOException {
+    public Collection<String> getNarrowerConcepts(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_NARROWER);
     }
 
     @Override
-    public List<String> getNarrowerLabels(String conceptURI) throws IOException {
+    public Collection<String> getNarrowerLabels(String conceptURI) throws IOException {
         return getLabels(conceptURI, FIELD_NARROWER);
     }
 
     @Override
-    public List<String> getNarrowerTransitiveConcepts(String conceptURI) throws IOException {
+    public Collection<String> getNarrowerTransitiveConcepts(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_NARROWER_TRANSITIVE);
     }
 
     @Override
-    public List<String>getNarrowerTransitiveLabels(String conceptURI) throws IOException {
+    public Collection<String> getNarrowerTransitiveLabels(String conceptURI) throws IOException {
         return getLabels(conceptURI, FIELD_NARROWER_TRANSITIVE);
     }
 
     @Override
-    public List<String> getPrefLabels(String conceptURI) throws IOException {
+    public Collection<String> getPrefLabels(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_PREF_LABEL);
     }
 
     @Override
-    public List<String> getRelatedConcepts(String conceptURI) throws IOException {
+    public Collection<String> getRelatedConcepts(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_RELATED);
     }
 
     @Override
-    public List<String> getRelatedLabels(String conceptURI) throws IOException {
+    public Collection<String> getRelatedLabels(String conceptURI) throws IOException {
         return getLabels(conceptURI, FIELD_RELATED);
     }
 
@@ -439,7 +444,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     /**
      * Returns the values of a given field for a given concept
      */
-    private List<String> readConceptFieldValues(String conceptURI, String field)
+    private Collection<String> readConceptFieldValues(String conceptURI, String field)
             throws IOException {
         Query query = new TermQuery(new Term(FIELD_URI, conceptURI));
         TopDocs docs = searcher.search(query, 1);

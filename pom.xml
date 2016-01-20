@@ -170,16 +170,16 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>2.5</version>
                 <configuration>
-                  <filesets>
-                    <fileset>
-                        <directory>skosdata</directory>
-                        <followSymlinks>false</followSymlinks>
-                    </fileset>
-                    <fileset>
-                        <directory>dist</directory>
-                        <followSymlinks>false</followSymlinks>
-                    </fileset>                    
-                  </filesets>
+                    <filesets>
+                        <fileset>
+                            <directory>skosdata</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>dist</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
                 </configuration>                
             </plugin>
             <plugin>
@@ -217,25 +217,46 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>apache-repo-releases</id>
-            <url>https://repository.apache.org/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>apache-repo-snapshots</id>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+    <profiles>
+        <profile>
+            <id>jouve</id>
+            <distributionManagement>
+                <!-- use the following if you're not using a snapshot version. -->
+                <repository>
+                    <id>jouve-releases</id>
+                    <url>http://nexus-master-si.jouve.local/nexus/content/repositories/releases</url>
+                </repository>
+                <!-- use the following if you ARE using a snapshot version. -->
+                <snapshotRepository>
+                    <id>jouve-snapshots</id>
+                    <url>http://nexus-master-si.jouve.local/nexus/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>apache</id>
+            <repositories>
+                <repository>
+                    <id>apache-repo-releases</id>
+                    <url>https://repository.apache.org/content/repositories/releases/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                </repository>
+                <repository>
+                    <id>apache-repo-snapshots</id>
+                    <url>https://repository.apache.org/content/repositories/snapshots/</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
 
     <properties>
         <lucene.version>5.3.1</lucene.version>

@@ -17,7 +17,7 @@ package at.ac.univie.mminf.luceneSKOS.analysis.engine;
  */
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * An interface to the used SKOS model. It provides accessors to all the data
@@ -29,140 +29,140 @@ public interface SKOSEngine {
      * Returns the preferred labels (prefLabel) for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the preferrrd label
+     * @return Collection<String> the preferred label
      * @throws IOException if method fails
      */
-    List<String> getPrefLabels(String conceptURI) throws IOException;
+    Collection<String> getPrefLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the alternative labels (altLabel) for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the alternative labels
+     * @return Collection<String> the alternative labels
      * @throws IOException if method fails
      */
-    List<String> getAltLabels(String conceptURI) throws IOException;
+    Collection<String> getAltLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the hidden labels (hiddenLabel) for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the hidden labels
+     * @return Collection<String> the hidden labels
      * @throws IOException if method fails
      */
-    List<String> getHiddenLabels(String conceptURI) throws IOException;
+    Collection<String> getHiddenLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the related labels (related) for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the related labels
+     * @return Collection<String> the related labels
      * @throws IOException if method fails
      */
-    List<String> getRelatedLabels(String conceptURI) throws IOException;
+    Collection<String> getRelatedLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the URIs of all related concepts for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the related concepts
+     * @return Collection<String> the related concepts
      * @throws IOException if method fails
      */
-    List<String> getRelatedConcepts(String conceptURI) throws IOException;
+    Collection<String> getRelatedConcepts(String conceptURI) throws IOException;
 
     /**
      * Returns the URIs of all broader concepts for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the broader concepts
+     * @return Collection<String> the broader concepts
      * @throws IOException if method fails
      */
-    List<String> getBroaderConcepts(String conceptURI) throws IOException;
+    Collection<String> getBroaderConcepts(String conceptURI) throws IOException;
 
     /**
      * Returns the URIs of all narrower concepts for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the narrower concepts
+     * @return Collection<String> the narrower concepts
      * @throws IOException if method fails
      */
-    List<String> getNarrowerConcepts(String conceptURI) throws IOException;
+    Collection<String> getNarrowerConcepts(String conceptURI) throws IOException;
 
     /**
      * Returns the labels (prefLabel + altLabel) of ALL broader concepts for a
      * given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the broader labels
+     * @return Collection<String> the broader labels
      * @throws IOException if method fails
      */
-    List<String> getBroaderLabels(String conceptURI) throws IOException;
+    Collection<String> getBroaderLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the labels (prefLabel + altLabel) of ALL narrower concepts for a
      * given URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the narrower labels
+     * @return Collection<String> the narrower labels
      * @throws IOException if method fails
      */
-    List<String> getNarrowerLabels(String conceptURI) throws IOException;
+    Collection<String> getNarrowerLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the URIs of all broader transitive concepts for a given concept
      * URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the broader transitive concepts
+     * @return Collection<String> the broader transitive concepts
      * @throws IOException if method fails
      */
-    List<String> getBroaderTransitiveConcepts(String conceptURI) throws IOException;
+    Collection<String> getBroaderTransitiveConcepts(String conceptURI) throws IOException;
 
     /**
      * Returns the URIs of all narrower transitive concepts for a given concept
      * URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the nattower transitive concepts
+     * @return Collection<String> the nattower transitive concepts
      * @throws IOException if method fails
      */
-    List<String> getNarrowerTransitiveConcepts(String conceptURI) throws IOException;
+    Collection<String> getNarrowerTransitiveConcepts(String conceptURI) throws IOException;
 
     /**
      * Returns the labels (prefLabel + altLabel) of ALL broader transitive
      * concepts for a given concept URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the broader transitive concepts
+     * @return Collection<String> the broader transitive concepts
      * @throws IOException if method fails
      */
-    List<String> getBroaderTransitiveLabels(String conceptURI) throws IOException;
+    Collection<String> getBroaderTransitiveLabels(String conceptURI) throws IOException;
 
     /**
      * Returns the labels (prefLabel + altLabel) of ALL narrower transitive
      * concepts for a given URI
      *
      * @param conceptURI the concept URI
-     * @return String[] the narrower trasitive concepts
+     * @return Collection<String> the narrower trasitive concepts
      * @throws IOException if method fails
      */
-    List<String> getNarrowerTransitiveLabels(String conceptURI) throws IOException;
+    Collection<String> getNarrowerTransitiveLabels(String conceptURI) throws IOException;
 
     /**
      * Returns all concepts (URIs) matching a given label
      *
      * @param label the label
-     * @return String[] the concepts
+     * @return Collection<String> the concepts
      * @throws IOException if method fails
      */
-    List<String> getConcepts(String label) throws IOException;
+    Collection<String> getConcepts(String label) throws IOException;
 
     /**
      * Returns all alternative terms for a given label
      *
      * @param label the label
-     * @return String[] the alternative terms
+     * @return Collection<String> the alternative terms
      * @throws IOException if method fails
      */
-    List<String> getAltTerms(String label) throws IOException;
+    Collection<String> getAltTerms(String label) throws IOException;
 }

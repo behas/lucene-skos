@@ -63,7 +63,7 @@ public class SKOSFilterFactory extends TokenFilterFactory implements ResourceLoa
         bufferSizeString = get(args, "bufferSize");
         typeString = get(args, "type");
         languageString = get(args, "language");
-        indexPath = get(args, "bufferSize");
+        indexPath = get(args, "indexPath");
 
         logger.info("Passed arguments: " + skosFile + " Type: "
             + expansionTypeString + " bufferSize: "

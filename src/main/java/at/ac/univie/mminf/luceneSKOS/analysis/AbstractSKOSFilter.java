@@ -19,6 +19,7 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -29,6 +30,7 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
@@ -55,6 +57,9 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
     // the term text (propagated to the index)
     protected final CharTermAttribute termAtt;
     // the token position relative to the previous token (propagated)
+    protected final OffsetAttribute offsettAtt;
+    // the token position relative to the previous token (propagated)
+
     protected final PositionIncrementAttribute posIncrAtt;
     // the binary payload attached to the indexed term (propagated to the index)
     protected final PayloadAttribute payloadAtt;
@@ -83,6 +88,7 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
         this.posIncrAtt = addAttribute(PositionIncrementAttribute.class);
         this.payloadAtt = addAttribute(PayloadAttribute.class);
         this.skosAtt = addAttribute(SKOSTypeAttribute.class);
+        this.offsettAtt = addAttribute(OffsetAttribute.class);
     }
 
     /**
@@ -117,6 +123,9 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
         termAtt.setEmpty().append(sTerm);
         // set position increment to zero to put multiple terms into the same position
         posIncrAtt.setPositionIncrement(0);
+        // set offset of the original expression (usefull for highlighting)
+        if (expandedTerm.getStart() >= 0 && expandedTerm.getEnd() >= 0)
+            offsettAtt.setOffset(expandedTerm.getStart(), expandedTerm.getEnd());
         // sets the type of the expanded term (pref, alt, broader, narrower, etc.)
         skosAtt.setSkosType(termType);
         // converts the SKOS Attribute to a payload, which is propagated to the index
@@ -147,10 +156,10 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
         return buffer.get();
     }
 
-    protected void pushLabelsToStack(List<String> labels, SKOSType type) {
+    protected void pushLabelsToStack(ExpandedTerm origin, Collection<String> labels, SKOSType type) {
         if (labels != null) {
             for (String label : labels) {
-                termStack.push(new ExpandedTerm(label, type));
+                termStack.push(new ExpandedTerm(label, type, origin.getStart(), origin.getEnd()));
             }
         }
     }
@@ -163,9 +172,23 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
         private final String term;
         private final SKOSType termType;
 
+        private final int start;
+        private final int end;
+
         protected ExpandedTerm(String term, SKOSType termType) {
             this.term = term;
             this.termType = termType;
+            this.start = -1;
+            this.end = -1;
+
+        }
+
+        protected ExpandedTerm(String term, SKOSType termType, int start, int end) {
+            this.term = term;
+            this.termType = termType;
+            this.start = start;
+            this.end = end;
+
         }
 
         protected String getTerm() {
@@ -175,5 +198,14 @@ public abstract class AbstractSKOSFilter extends TokenFilter {
         protected SKOSType getTermType() {
             return this.termType;
         }
+
+        protected int getStart() {
+            return start;
+        }
+
+        protected int getEnd() {
+            return end;
+        }
+
     }
 }

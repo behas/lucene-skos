@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Tests the functionality of the Lucene-backed SKOS Engine implementation
@@ -66,9 +66,9 @@ public class SKOSEngineTest extends Assert {
     public void testSKOSSpecSamplesWithLanguageRestriction() throws IOException {
         InputStream skosFile = getClass().getResourceAsStream("/skos_samples/skos_spec_samples.n3");
         SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3", "en");
-        List<String> altTerms = skosEngine.getAltTerms("animals");
+        Collection<String> altTerms = skosEngine.getAltTerms("animals");
         assertEquals(1, altTerms.size());
-        assertEquals("creatures", altTerms.get(0));
+        assertEquals("creatures", altTerms.iterator().next());
     }
 
     @Test
@@ -77,31 +77,31 @@ public class SKOSEngineTest extends Assert {
         String conceptURI = "http://www.ukat.org.uk/thesaurus/concept/859";
         SKOSEngine skosEngine = SKOSEngineFactory.getSKOSEngine(skosFile, "N3");
         // testing pref-labels
-        List<String> prefLabel = skosEngine.getPrefLabels(conceptURI);
+        Collection<String> prefLabel = skosEngine.getPrefLabels(conceptURI);
         assertEquals(1, prefLabel.size());
-        assertEquals("weapons", prefLabel.get(0));
+        assertEquals("weapons", prefLabel.iterator().next());
         // testing alt-labels
-        List<String> altLabel = skosEngine.getAltLabels(conceptURI);
+        Collection<String> altLabel = skosEngine.getAltLabels(conceptURI);
         assertEquals(2, altLabel.size());
         assertTrue(altLabel.contains("armaments"));
         assertTrue(altLabel.contains("arms"));
         // testing broader
-        List<String> broader = skosEngine.getBroaderConcepts(conceptURI);
+        Collection<String> broader = skosEngine.getBroaderConcepts(conceptURI);
         assertEquals(1, broader.size());
-        assertEquals("http://www.ukat.org.uk/thesaurus/concept/5060", broader.get(0));
+        assertEquals("http://www.ukat.org.uk/thesaurus/concept/5060", broader.iterator().next());
         // testing narrower
-        List<String> narrower = skosEngine.getNarrowerConcepts(conceptURI);
+        Collection<String> narrower = skosEngine.getNarrowerConcepts(conceptURI);
         assertEquals(2, narrower.size());
         assertTrue(narrower.contains("http://www.ukat.org.uk/thesaurus/concept/18874"));
         assertTrue(narrower.contains("http://www.ukat.org.uk/thesaurus/concept/7630"));
         // testing broader labels
-        List<String> broaderLabels = skosEngine.getBroaderLabels(conceptURI);
+        Collection<String> broaderLabels = skosEngine.getBroaderLabels(conceptURI);
         assertEquals(3, broaderLabels.size());
         assertTrue(broaderLabels.contains("military equipment"));
         assertTrue(broaderLabels.contains("defense equipment and supplies"));
         assertTrue(broaderLabels.contains("ordnance"));
         // testing narrower labels
-        List<String> narrowerLabels = skosEngine.getNarrowerLabels(conceptURI);
+        Collection<String> narrowerLabels = skosEngine.getNarrowerLabels(conceptURI);
         assertEquals(2, narrowerLabels.size());
         assertTrue(narrowerLabels.contains("ammunition"));
         assertTrue(narrowerLabels.contains("artillery"));

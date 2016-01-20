@@ -17,6 +17,7 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
  */
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -89,7 +90,7 @@ public final class SKOSLabelFilter extends AbstractSKOSFilter {
 
     private boolean addAliasesToStack() throws IOException {
         for (int i = buffer.size(); i > 0; i--) {
-            String inputTokens = bufferToString(i);
+            ExpandedTerm inputTokens = bufferToTerm(i);
             if (addTermsToStack(inputTokens)) {
                 break;
             }
@@ -103,50 +104,57 @@ public final class SKOSLabelFilter extends AbstractSKOSFilter {
      * @param noTokens the number of tokens
      * @return the concatenated token string
      */
-    private String bufferToString(int noTokens) {
+    private ExpandedTerm bufferToTerm(int noTokens) {
         State entered = captureState();
         State[] bufferedStates = buffer.toArray(new State[buffer.size()]);
         StringBuilder builder = new StringBuilder();
         builder.append(termAtt.toString());
         restoreState(bufferedStates[0]);
+        int start = offsettAtt.startOffset();
         for (int i = 1; i < noTokens; i++) {
             restoreState(bufferedStates[i]);
             builder.append(" ").append(termAtt.toString());
         }
+        int end = offsettAtt.endOffset();
         restoreState(entered);
-        return builder.toString();
+        return new ExpandedTerm(builder.toString(), null, start, end);
     }
 
     /**
      * Add terms to stack
      * Assumes that the given term is a textual token
+     *
      * @param term the given term
      * @return true if term stack is not empty
      */
-    public boolean addTermsToStack(String term) throws IOException {
-        List<String> conceptURIs = engine.getConcepts(term);
+    public boolean addTermsToStack(ExpandedTerm term) throws IOException {
+        Collection<String> conceptURIs = engine.getConcepts(term.getTerm());
         for (String conceptURI : conceptURIs) {
             if (types.contains(SKOSType.PREF)) {
-                pushLabelsToStack(engine.getPrefLabels(conceptURI), SKOSType.PREF);
+                pushLabelsToStack(term, engine.getPrefLabels(conceptURI), SKOSType.PREF);
             }
             if (types.contains(SKOSType.ALT)) {
-                pushLabelsToStack(engine.getAltLabels(conceptURI), SKOSType.ALT);
+                pushLabelsToStack(term, engine.getAltLabels(conceptURI), SKOSType.ALT);
             }
             if (types.contains(SKOSType.HIDDEN)) {
-                pushLabelsToStack(engine.getHiddenLabels(conceptURI), SKOSType.HIDDEN);
+                pushLabelsToStack(term, engine.getHiddenLabels(conceptURI), SKOSType.HIDDEN);
             }
             if (types.contains(SKOSType.BROADER)) {
-                pushLabelsToStack(engine.getBroaderLabels(conceptURI), SKOSType.BROADER);
+                pushLabelsToStack(term, engine.getBroaderLabels(conceptURI), SKOSType.BROADER);
             }
             if (types.contains(SKOSType.BROADERTRANSITIVE)) {
-                pushLabelsToStack(engine.getBroaderTransitiveLabels(conceptURI), SKOSType.BROADERTRANSITIVE);
+                pushLabelsToStack(term, engine.getBroaderTransitiveLabels(conceptURI), SKOSType.BROADERTRANSITIVE);
             }
             if (types.contains(SKOSType.NARROWER)) {
-                pushLabelsToStack(engine.getNarrowerLabels(conceptURI), SKOSType.NARROWER);
+                pushLabelsToStack(term, engine.getNarrowerLabels(conceptURI), SKOSType.NARROWER);
             }
             if (types.contains(SKOSType.NARROWERTRANSITIVE)) {
-                pushLabelsToStack(engine.getNarrowerTransitiveLabels(conceptURI), SKOSType.NARROWERTRANSITIVE);
+                pushLabelsToStack(term, engine.getNarrowerTransitiveLabels(conceptURI), SKOSType.NARROWERTRANSITIVE);
             }
+            if (types.contains(SKOSType.RELATED)) {
+                pushLabelsToStack(term, engine.getRelatedLabels(conceptURI), SKOSType.RELATED);
+            }
+
         }
         return !termStack.isEmpty();
     }
