@@ -133,16 +133,22 @@
                         </property>
                     </systemProperties>
                 </configuration>
-            </plugin>
+            </plugin>            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.6</version>
                 <configuration>
-                    <outputDirectory>${project.basedir}/dist</outputDirectory>
-                    <excludes>
-                        <exclude>skos.rdf</exclude>
-                    </excludes>
+		          <archive>
+		            <manifest>
+		              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+		              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+		            </manifest>
+		          </archive>
+                  <outputDirectory>${project.basedir}/dist</outputDirectory>
+                  <excludes>
+                      <exclude>skos.rdf</exclude>
+                  </excludes>
                 </configuration>
             </plugin>
             <plugin>
