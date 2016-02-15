@@ -25,7 +25,7 @@
     <groupId>at.ac.univie.mminf</groupId>
     <artifactId>lucene-skos</artifactId>
     <packaging>jar</packaging>
-    <version>0.5.3.1-SNAPSHOT</version>
+    <version>0.5.3.2</version>
 
     <name>lucene-skos</name>
     <description>This project provides a term expansion module for Apache Lucene and Solr</description>
@@ -133,16 +133,22 @@
                         </property>
                     </systemProperties>
                 </configuration>
-            </plugin>
+            </plugin>            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.6</version>
                 <configuration>
-                    <outputDirectory>${project.basedir}/dist</outputDirectory>
-                    <excludes>
-                        <exclude>skos.rdf</exclude>
-                    </excludes>
+		          <archive>
+		            <manifest>
+		              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+		              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+		            </manifest>
+		          </archive>
+                  <outputDirectory>${project.basedir}/dist</outputDirectory>
+                  <excludes>
+                      <exclude>skos.rdf</exclude>
+                  </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -259,7 +265,7 @@
     </profiles>
 
     <properties>
-        <lucene.version>5.3.1</lucene.version>
+        <lucene.version>5.3.2</lucene.version>
         <jena.version>2.12.1</jena.version>
         <maven.compiler.target>1.7</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
