@@ -1,5 +1,71 @@
 package at.ac.univie.mminf.luceneSKOS.analysis.engine.jena;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.DisjunctionMaxQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.SimpleCollector;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
+
+import com.google.common.io.Files;
+import com.hp.hpl.jena.ontology.AnnotationProperty;
+import com.hp.hpl.jena.ontology.ObjectProperty;
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.update.GraphStore;
+import com.hp.hpl.jena.update.GraphStoreFactory;
+import com.hp.hpl.jena.update.UpdateAction;
+import com.hp.hpl.jena.update.UpdateFactory;
+import com.hp.hpl.jena.update.UpdateRequest;
+import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.vocabulary.RDF;
+
 /**
  * Copyright 2010 Bernhard Haslhofer 
  *
@@ -17,54 +83,11 @@ package at.ac.univie.mminf.luceneSKOS.analysis.engine.jena;
  */
 
 import at.ac.univie.mminf.luceneSKOS.analysis.engine.SKOSEngine;
-import com.hp.hpl.jena.ontology.AnnotationProperty;
-import com.hp.hpl.jena.ontology.ObjectProperty;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.update.GraphStore;
-import com.hp.hpl.jena.update.GraphStoreFactory;
-import com.hp.hpl.jena.update.UpdateAction;
-import com.hp.hpl.jena.update.UpdateFactory;
-import com.hp.hpl.jena.update.UpdateRequest;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.vocabulary.RDF;
-import org.apache.log4j.Logger;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.*;
-import org.apache.lucene.search.*;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+//@formatter:off
 
 /**
- * SKOSEngine Implementation for Lucene.
- * Each SKOS concept is stored/indexed as a Lucene document.
- * All labels are converted to lowercase.
+ * SKOSEngine Implementation for Lucene. Each SKOS concept is stored/indexed as a Lucene document. All labels are converted to lowercase.
  */
 public class SKOSEngineImpl implements SKOSEngine {
 
@@ -114,6 +137,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     private static final String FIELD_BROADER_TRANSITIVE = "broaderTransitive";
     private static final String FIELD_NARROWER_TRANSITIVE = "narrowerTransitive";
     private static final String FIELD_RELATED = "related";
+    private static final String PRINT_EXT = ".hash";
     /**
      * The input SKOS model
      */
@@ -127,9 +151,7 @@ public class SKOSEngineImpl implements SKOSEngine {
      */
     private IndexSearcher searcher;
     /**
-     * The languages to be considered when returning labels.
-     *
-     * If NULL, all languages are supported
+     * The languages to be considered when returning labels. If NULL, all languages are supported
      */
     private Set<String> languages;
     /**
@@ -140,9 +162,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     private final Analyzer analyzer;
 
     /**
-     * This constructor loads the SKOS model from a given InputStream using the
-     * given serialization language parameter, which must be either N3, RDF/XML,
-     * or TURTLE.
+     * This constructor loads the SKOS model from a given InputStream using the given serialization language parameter, which must be either N3, RDF/XML, or TURTLE.
      *
      * @param inputStream the input stream
      * @param lang the serialization language
@@ -162,8 +182,8 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
 
     /**
-     * This constructor loads the SKOS model from a given filename or URI,
-     * starts the indexing process and sets up the index searcher.
+     * This constructor loads the SKOS model from a given filename or URI, starts the indexing process and sets up the index searcher. 
+     * GQ: The skos Lucene index is rebuilt if only the resource file has changed.
      *
      * @param indexPath index path
      * @param filenameOrURI file name or URI
@@ -173,7 +193,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     public SKOSEngineImpl(String indexPath, String filenameOrURI, List<String> languages) throws IOException {
         this.analyzer = new SimpleAnalyzer();
         String langSig = "";
-        if (languages != null ) {
+        if (languages != null) {
             this.languages = new TreeSet<>(languages);
             if (!this.languages.isEmpty()) {
                 langSig = "-" + join(this.languages.iterator(), '-');
@@ -181,37 +201,67 @@ public class SKOSEngineImpl implements SKOSEngine {
         }
         String name = getName(filenameOrURI);
         File dir = new File(indexPath + name + langSig);
-        this.indexDir = FSDirectory.open(dir.toPath());
+        String sumOld = null;
+        String sumNew = null;
+
         if (filenameOrURI != null) {
-            FileManager fileManager = new FileManager();
-            fileManager.addLocatorFile();
-            fileManager.addLocatorURL();
-            fileManager.addLocatorClassLoader(SKOSEngineImpl.class.getClassLoader());
-            if (getExtension(filenameOrURI).equals("zip")) {
-                fileManager.addLocatorZip(filenameOrURI);
-                filenameOrURI = getBaseName(filenameOrURI);
+            
+            if (dir.exists()) {
+                try (BufferedReader reader = Files.newReader(new File(dir, name + PRINT_EXT ), StandardCharsets.ISO_8859_1 )){
+                    sumOld = reader.readLine();
+                }catch (FileNotFoundException fnf) {
+                     
+                }
             }
-            File inputFile = new File(filenameOrURI);
-            Path inputPath = Paths.get(inputFile.getParent(), inputFile.getName());
-            skosModel = fileManager.loadModel(inputPath.toUri().toString());
-            entailSKOSModel();
-            indexSKOSModel();
+                       
+            try (BufferedReader reader = Files.newReader(new File(filenameOrURI), StandardCharsets.ISO_8859_1 )){
+                sumNew = getHash(reader);
+            }catch (NoSuchAlgorithmException e) {
+                throw new IOException("Enable to instantiate the hash algorithm.", e);
+            }
+
+
+            if (StringUtils.isEmpty(sumOld) || (StringUtils.isNotEmpty(sumNew) && !sumNew.equals(sumOld))) {
+                
+                deleteFile(dir);
+                this.indexDir = FSDirectory.open(dir.toPath());
+                if (StringUtils.isNotEmpty(sumNew)) {
+                    try( BufferedWriter writer = Files.newWriter(new File (dir, name + PRINT_EXT),  StandardCharsets.ISO_8859_1)){
+                        writer.write(sumNew);
+                    }
+                }
+                
+                FileManager fileManager = new FileManager();
+                fileManager.addLocatorFile();
+                fileManager.addLocatorURL();
+                fileManager.addLocatorClassLoader(SKOSEngineImpl.class.getClassLoader());
+                if (getExtension(filenameOrURI).equals("zip")) {
+                    fileManager.addLocatorZip(filenameOrURI);
+                    filenameOrURI = getBaseName(filenameOrURI);
+                }
+                File inputFile = new File(filenameOrURI);
+                Path inputPath = Paths.get(inputFile.getParent(), inputFile.getName());
+                skosModel = fileManager.loadModel(inputPath.toUri().toString());
+                entailSKOSModel();
+                indexSKOSModel();
+            }
+
+            if (this.indexDir == null)
+                this.indexDir = FSDirectory.open(dir.toPath());
+            
             searcher = new IndexSearcher(DirectoryReader.open(indexDir));
         }
     }
 
     /**
-     * This constructor loads the SKOS model from a given InputStream using the
-     * given serialization language parameter, which must be either N3, RDF/XML,
-     * or TURTLE.
+     * This constructor loads the SKOS model from a given InputStream using the given serialization language parameter, which must be either N3, RDF/XML, or TURTLE.
      *
      * @param inputStream the input stream
      * @param format the serialization language
      * @param languages the languages
      * @throws IOException if the model cannot be loaded
      */
-    public SKOSEngineImpl(InputStream inputStream, String format, List<String> languages)
-            throws IOException {
+    public SKOSEngineImpl(InputStream inputStream, String format, List<String> languages) throws IOException {
         if (!("N3".equals(format) || "RDF/XML".equals(format) || "TURTLE".equals(format))) {
             throw new IOException("Invalid RDF serialization format");
         }
@@ -227,24 +277,51 @@ public class SKOSEngineImpl implements SKOSEngine {
         searcher = new IndexSearcher(DirectoryReader.open(indexDir));
     }
 
+    private static String getHash(Reader reader) throws IOException, NoSuchAlgorithmException
+    {
+        String sha1 = "";
+        char []  cbuf = new char[1024];
+         MessageDigest crypt = MessageDigest.getInstance("SHA-1");
+        crypt.reset();
+        while (reader.read(cbuf) > 0)
+            crypt.update(new String(cbuf).getBytes(StandardCharsets.ISO_8859_1));
+        sha1 = byteToHex(crypt.digest());
+        
+         return sha1;
+    }
+    
+    public static void deleteFile(File element) {
+        if (element.isDirectory()) {
+            for (File sub : element.listFiles()) {
+                deleteFile(sub);
+            }
+        }
+        element.delete();
+    }
+
+
+    private static String byteToHex(final byte[] hash)
+    {
+        Formatter formatter = new Formatter(Locale.US);
+        for (byte b : hash)
+        {
+            formatter.format("%02x", b);
+        }
+        String result = formatter.toString();
+        formatter.close();
+        return result;
+    }
+
+
     private void entailSKOSModel() {
         GraphStore graphStore = GraphStoreFactory.create(skosModel);
-        String sparqlQuery =
-                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n"
-                + "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-                + "INSERT { ?subject rdf:type skos:Concept }\n"
-                + "WHERE {\n"
-                + "{ ?subject skos:prefLabel ?text } UNION\n"
-                + "{ ?subject skos:altLabel ?text } UNION\n"
-                + "{ ?subject skos:hiddenLabel ?text }\n"
-                + "}";
+        String sparqlQuery = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n" + "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + "INSERT { ?subject rdf:type skos:Concept }\n" + "WHERE {\n" + "{ ?subject skos:prefLabel ?text } UNION\n" + "{ ?subject skos:altLabel ?text } UNION\n" + "{ ?subject skos:hiddenLabel ?text }\n" + "}";
         UpdateRequest request = UpdateFactory.create(sparqlQuery);
         UpdateAction.execute(request, graphStore);
     }
 
     /**
-     * Creates lucene documents from SKOS concept. In order to allow language
-     * restrictions, one document per language is created.
+     * Creates lucene documents from SKOS concept. In order to allow language restrictions, one document per language is created.
      */
     private Document createDocumentsFromConcept(Resource skos_concept) {
         Document conceptDoc = new Document();
@@ -312,14 +389,12 @@ public class SKOSEngineImpl implements SKOSEngine {
     }
 
     @Override
-    public Collection<String> getBroaderTransitiveConcepts(String conceptURI)
-            throws IOException {
+    public Collection<String> getBroaderTransitiveConcepts(String conceptURI) throws IOException {
         return readConceptFieldValues(conceptURI, FIELD_BROADER_TRANSITIVE);
     }
 
     @Override
-    public Collection<String> getBroaderTransitiveLabels(String conceptURI)
-            throws IOException {
+    public Collection<String> getBroaderTransitiveLabels(String conceptURI) throws IOException {
         return getLabels(conceptURI, FIELD_BROADER_TRANSITIVE);
     }
 
@@ -342,8 +417,7 @@ public class SKOSEngineImpl implements SKOSEngine {
         return concepts;
     }
 
-    private Collection<String> getLabels(String conceptURI, String field)
-            throws IOException {
+    private Collection<String> getLabels(String conceptURI, String field) throws IOException {
         Set<String> labels = new HashSet<>();
         Collection<String> concepts = readConceptFieldValues(conceptURI, field);
         if (concepts != null) {
@@ -390,8 +464,7 @@ public class SKOSEngineImpl implements SKOSEngine {
         return getLabels(conceptURI, FIELD_RELATED);
     }
 
-    private void indexAnnotation(Resource skos_concept, Document conceptDoc,
-                                 AnnotationProperty property, String field) {
+    private void indexAnnotation(Resource skos_concept, Document conceptDoc, AnnotationProperty property, String field) {
         StmtIterator stmt_iter = skos_concept.listProperties(property);
         while (stmt_iter.hasNext()) {
             Literal labelLiteral = stmt_iter.nextStatement().getObject().as(Literal.class);
@@ -407,8 +480,7 @@ public class SKOSEngineImpl implements SKOSEngine {
         }
     }
 
-    private void indexObject(Resource skos_concept, Document conceptDoc,
-                             ObjectProperty property, String field) {
+    private void indexObject(Resource skos_concept, Document conceptDoc, ObjectProperty property, String field) {
         StmtIterator stmt_iter = skos_concept.listProperties(property);
         while (stmt_iter.hasNext()) {
             RDFNode concept = stmt_iter.nextStatement().getObject();
@@ -444,8 +516,7 @@ public class SKOSEngineImpl implements SKOSEngine {
     /**
      * Returns the values of a given field for a given concept
      */
-    private Collection<String> readConceptFieldValues(String conceptURI, String field)
-            throws IOException {
+    private Collection<String> readConceptFieldValues(String conceptURI, String field) throws IOException {
         Query query = new TermQuery(new Term(FIELD_URI, conceptURI));
         TopDocs docs = searcher.search(query, 1);
         ScoreDoc[] results = docs.scoreDocs;
@@ -524,6 +595,7 @@ public class SKOSEngineImpl implements SKOSEngine {
         int lastSeparator = indexOfLastSeparator(filename);
         return (lastSeparator > extensionPos ? -1 : extensionPos);
     }
+
     public static final char EXTENSION_SEPARATOR = '.';
 
     private String getBaseName(String filename) {
@@ -540,5 +612,7 @@ public class SKOSEngineImpl implements SKOSEngine {
         } else {
             return filename.substring(0, index);
         }
-    }    
+    }
 }
+
+//@formatter:on
