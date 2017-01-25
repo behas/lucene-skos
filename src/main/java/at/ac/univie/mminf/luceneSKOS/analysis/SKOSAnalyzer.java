@@ -187,7 +187,7 @@ public class SKOSAnalyzer extends StopwordAnalyzerBase {
             tok = new RemoveDuplicatesTokenFilter(tok);
             return new TokenStreamComponents(src, tok) {
                 @Override
-                protected void setReader(final Reader reader) throws IOException {
+                protected void setReader(final Reader reader) {
                     src.setMaxTokenLength(maxTokenLength);
                     super.setReader(reader);
                 }

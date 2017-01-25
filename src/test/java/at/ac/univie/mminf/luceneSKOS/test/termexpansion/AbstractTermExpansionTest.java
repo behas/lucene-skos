@@ -90,7 +90,7 @@ public abstract class AbstractTermExpansionTest {
             .add(new TermQuery(new Term("subject", "arms")), BooleanClause.Occur.SHOULD);
 
         /* creating a new searcher */
-    searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+    searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
 
     TopDocs results = searcher.search(builder.build(), 10);
 

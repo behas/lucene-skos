@@ -329,10 +329,11 @@ public class SKOSEngineImpl implements SKOSEngine {
         // convert the query to lower-case
         String queryString = label.toLowerCase(Locale.ROOT);
         AllDocCollector collector = new AllDocCollector();
-        DisjunctionMaxQuery query = new DisjunctionMaxQuery(0.0f);
-        query.add(new TermQuery(new Term(FIELD_PREF_LABEL, queryString)));
-        query.add(new TermQuery(new Term(FIELD_ALT_LABEL, queryString)));
-        query.add(new TermQuery(new Term(FIELD_HIDDEN_LABEL, queryString)));
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.add(new BooleanClause(new TermQuery(new Term(FIELD_PREF_LABEL, queryString)), BooleanClause.Occur.SHOULD));
+        builder.add(new BooleanClause(new TermQuery(new Term(FIELD_ALT_LABEL, queryString)), BooleanClause.Occur.SHOULD));
+        builder.add(new BooleanClause(new TermQuery(new Term(FIELD_HIDDEN_LABEL, queryString)), BooleanClause.Occur.SHOULD));
+        BooleanQuery query = builder.build();
         searcher.search(query, collector);
         for (Integer hit : collector.getDocs()) {
             Document doc = searcher.doc(hit);

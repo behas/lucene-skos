@@ -58,7 +58,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
         Document doc = new Document();
         doc.add(new Field("content", "The quick brown fox jumps over the lazy dog", TextField.TYPE_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         TermQuery tq = new TermQuery(new Term("content", "hops"));
         assertEquals(1, searcher.search(tq, 1).totalHits);
     }
@@ -68,7 +68,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
         Document doc = new Document();
         doc.add(new Field("content", "The quick brown fox jumps over the lazy dog", TextField.TYPE_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         PhraseQuery.Builder builder = new PhraseQuery.Builder();
         builder.add(new Term("content", "fox")).add(new Term("content", "hops"));
         assertEquals(1, searcher.search(builder.build(), 1).totalHits);
@@ -79,7 +79,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
         Document doc = new Document();
         doc.add(new Field("content", "The quick brown fox jumps over the lazy dog", TextField.TYPE_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         Query query = new StandardQueryParser(skosAnalyzer).parse("\"fox jumps\"", "content");
         assertEquals(1, searcher.search(query, 1).totalHits);
         assertEquals("content:\"fox (jumps hops leaps)\"", query.toString());
@@ -96,7 +96,7 @@ public class SKOSLabelFilterTest extends AbstractFilterTest {
         Document doc = new Document();
         doc.add(new Field("content", "I work for the united nations", TextField.TYPE_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         StandardQueryParser parser = new StandardQueryParser(new SimpleAnalyzer());
         Query query = parser.parse("united nations", "content");
         assertEquals(1, searcher.search(query, 1).totalHits);

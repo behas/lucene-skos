@@ -17,6 +17,7 @@ package at.ac.univie.mminf.luceneSKOS.analysis;
  */
 
 import org.apache.lucene.util.AttributeImpl;
+import org.apache.lucene.util.AttributeReflector;
 
 /**
  * The SKOSType of a Token.
@@ -61,6 +62,11 @@ public class SKOSTypeAttributeImpl extends AttributeImpl implements
     @Override
     public void clear() {
         skosType = null;
+    }
+
+    @Override
+    public void reflectWith(AttributeReflector reflector) {
+        reflector.reflect(SKOSTypeAttributeImpl.class, "SKOSType", skosType);
     }
 
     @Override

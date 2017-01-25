@@ -119,7 +119,7 @@ public class SKOSStandardQueryParserTest {
         
         writer.addDocument(doc);
         
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         
         Query query = new SKOSStandardQueryParser(skosAnalyzer).parse("\"fox jumps\"",
             "content");
@@ -149,7 +149,7 @@ public class SKOSStandardQueryParserTest {
         
         writer.addDocument(doc);
         
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         
         SKOSStandardQueryParser parser = new SKOSStandardQueryParser(skosAnalyzer);
         parser.setBoost(SKOSType.ALT, 0.5f);
@@ -167,7 +167,7 @@ public class SKOSStandardQueryParserTest {
         
         assertEquals(1, searcher.search(query, 1).totalHits);
         
-        assertEquals("content:fox (content:jumps content:hops^0.5 content:leaps^0.5)", query.toString());
+        assertEquals("content:fox ((content:jumps)^1.0 (content:hops)^0.5 (content:leaps)^0.5)", query.toString());
         assertEquals("org.apache.lucene.search.BooleanQuery", query
             .getClass().getName());
         

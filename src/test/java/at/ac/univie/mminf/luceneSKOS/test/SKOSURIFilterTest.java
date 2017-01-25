@@ -55,7 +55,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
         Document doc = new Document();
         doc.add(new Field("subject", "http://example.com/concept/1", TextField.TYPE_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         Query query = new TermQuery(new Term("subject", "leaps"));
         TopDocs results = searcher.search(query, 10);
         assertEquals(1, results.totalHits);
@@ -71,7 +71,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
         Document doc = new Document();
         doc.add(new Field("subject", "http://example.com/concept/1", TextField.TYPE_NOT_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
         Query query = new TermQuery(new Term("subject", "jumps"));
         TopDocs results = searcher.search(query, 10);
         assertEquals(1, results.totalHits);
@@ -87,7 +87,7 @@ public class SKOSURIFilterTest extends AbstractFilterTest {
         doc.add(new Field("subject", "http://example.com/concept/1", TextField.TYPE_STORED));
         doc.add(new Field("subject", "http://example.com/concept/2", TextField.TYPE_STORED));
         writer.addDocument(doc);
-        searcher = new IndexSearcher(DirectoryReader.open(writer, false));
+        searcher = new IndexSearcher(DirectoryReader.open(writer, false, false));
 
         // querying for alternative term of concept 1
         Query query = new TermQuery(new Term("subject", "hops"));
